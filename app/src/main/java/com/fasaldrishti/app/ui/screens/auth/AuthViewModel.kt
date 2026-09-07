@@ -1,5 +1,6 @@
 package com.fasaldrishti.app.ui.screens.auth
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fasaldrishti.app.domain.model.UserProfile
@@ -33,6 +34,23 @@ class AuthViewModel(
                         user = user
                     )
                 }
+            }
+        }
+    }
+
+    fun getOAuthUrl(provider: String): String {
+        return authRepository.getOAuthUrl(provider)
+    }
+
+    fun handleAuthCallback(uri: Uri, onSuccess: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            val result = authRepository.handleAuthCallback(uri)
+            result.onSuccess { user ->
+                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true, user = user)
+                onSuccess?.invoke()
+            }.onFailure { error ->
+                _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = error.localizedMessage)
             }
         }
     }

@@ -1,5 +1,12 @@
 package com.fasaldrishti.app.ui.screens.auth
 
+import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.net.Uri
+import android.webkit.CookieManager
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -10,6 +17,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.GTranslate
 import androidx.compose.material3.*
@@ -24,17 +32,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.fasaldrishti.app.ui.components.AppLogo
 import com.fasaldrishti.app.ui.theme.EmeraldDark
 import com.fasaldrishti.app.ui.theme.EmeraldPrimary
 import com.fasaldrishti.app.ui.theme.ObsidianVoid
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     viewModel: AuthViewModel,
     onLoginSuccess: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var inAppOAuthUrl by remember { mutableStateOf<String?>(null) }
+    var inAppOAuthTitle by remember { mutableStateOf("") }
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -144,7 +158,10 @@ fun LoginScreen(
                         text = "Continue with Google",
                         icon = Icons.Default.GTranslate,
                         iconTint = Color(0xFF4285F4),
-                        onClick = { viewModel.signInWithGoogle(onSuccess = onLoginSuccess) },
+                        onClick = {
+                            inAppOAuthTitle = "Google Sign In"
+                            inAppOAuthUrl = viewModel.getOAuthUrl("google")
+                        },
                         isLoading = uiState.isLoading
                     )
 
@@ -155,7 +172,10 @@ fun LoginScreen(
                         text = "Continue with GitHub",
                         icon = Icons.Default.Code,
                         iconTint = MaterialTheme.colorScheme.onSurface,
-                        onClick = { viewModel.signInWithGitHub(onSuccess = onLoginSuccess) },
+                        onClick = {
+                            inAppOAuthTitle = "GitHub Authorization"
+                            inAppOAuthUrl = viewModel.getOAuthUrl("github")
+                        },
                         isLoading = uiState.isLoading
                     )
 
@@ -169,6 +189,96 @@ fun LoginScreen(
                         ),
                         textAlign = TextAlign.Center
                     )
+                }
+            }
+        }
+
+        // In-App OAuth Browser Dialog (Opens Google & GitHub sign-in inside the app)
+        inAppOAuthUrl?.let { url ->
+            Dialog(
+                onDismissRequest = { inAppOAuthUrl = null },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                var isWebLoading by remember { mutableStateOf(true) }
+
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .navigationBarsPadding(),
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // Top Navigation Header
+                        TopAppBar(
+                            title = {
+                                Text(
+                                    text = inAppOAuthTitle,
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                            },
+                            actions = {
+                                IconButton(onClick = { inAppOAuthUrl = null }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Close")
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            )
+                        )
+
+                        if (isWebLoading) {
+                            LinearProgressIndicator(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = EmeraldPrimary
+                            )
+                        }
+
+                        // Embedded High-Performance WebView
+                        AndroidView(
+                            modifier = Modifier.fillMaxSize(),
+                            factory = { context ->
+                                WebView(context).apply {
+                                    @SuppressLint("SetJavaScriptEnabled")
+                                    settings.javaScriptEnabled = true
+                                    settings.domStorageEnabled = true
+                                    settings.loadWithOverviewMode = true
+                                    settings.useWideViewPort = true
+                                    settings.databaseEnabled = true
+                                    
+                                    // Mobile Safari / Chrome modern User-Agent for flawless Google Account picker
+                                    settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
+
+                                    CookieManager.getInstance().setAcceptCookie(true)
+                                    CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+
+                                    webViewClient = object : WebViewClient() {
+                                        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                                            super.onPageStarted(view, url, favicon)
+                                            isWebLoading = true
+                                        }
+
+                                        override fun onPageFinished(view: WebView?, url: String?) {
+                                            super.onPageFinished(view, url)
+                                            isWebLoading = false
+                                        }
+
+                                        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                                            val reqUrl = request?.url?.toString() ?: ""
+                                            if (reqUrl.startsWith("fasaldrishti://auth")) {
+                                                val uri = Uri.parse(reqUrl)
+                                                viewModel.handleAuthCallback(uri, onSuccess = onLoginSuccess)
+                                                inAppOAuthUrl = null
+                                                return true
+                                            }
+                                            return false
+                                        }
+                                    }
+                                    loadUrl(url)
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }

@@ -1,7 +1,6 @@
 package com.fasaldrishti.app.data.remote
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import com.fasaldrishti.app.BuildConfig
 import com.fasaldrishti.app.domain.model.UserProfile
@@ -15,10 +14,9 @@ import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
-import java.util.UUID
 
 /**
- * Manages Supabase Auth (Google & GitHub OAuth + Deep Linking), Remote Configs, PostgreSQL & Storage.
+ * Manages Supabase Auth (Google & GitHub OAuth + Deep Linking), Persistent Session, Remote Configs & Storage.
  */
 class SupabaseManager(private val context: Context) {
 
@@ -26,77 +24,69 @@ class SupabaseManager(private val context: Context) {
     private val supabaseUrl = BuildConfig.SUPABASE_URL
     private val anonKey = BuildConfig.SUPABASE_ANON_KEY
 
+    private val prefs = context.getSharedPreferences("fasal_auth_prefs", Context.MODE_PRIVATE)
+
     // Local in-memory config cache
     private val configCache = mutableMapOf<String, String>()
 
-    private val _currentUser = MutableStateFlow<UserProfile?>(null)
+    private val _currentUser = MutableStateFlow<UserProfile?>(loadSavedUser())
     val currentUser: StateFlow<UserProfile?> = _currentUser.asStateFlow()
+
+    private fun loadSavedUser(): UserProfile? {
+        val id = prefs.getString("user_id", null) ?: return null
+        val name = prefs.getString("user_name", "Farmer") ?: "Farmer"
+        val email = prefs.getString("user_email", "") ?: ""
+        val avatarUrl = prefs.getString("user_avatar", null)
+        val totalScans = prefs.getInt("total_scans", 0)
+        val healthyCount = prefs.getInt("healthy_count", 0)
+        val diseasedCount = prefs.getInt("diseased_count", 0)
+
+        return UserProfile(
+            id = id,
+            name = name,
+            email = email,
+            avatarUrl = avatarUrl,
+            totalScans = totalScans,
+            healthyCount = healthyCount,
+            diseasedCount = diseasedCount
+        )
+    }
+
+    private fun saveUserToPrefs(user: UserProfile) {
+        prefs.edit()
+            .putString("user_id", user.id)
+            .putString("user_name", user.name)
+            .putString("user_email", user.email)
+            .putString("user_avatar", user.avatarUrl)
+            .apply()
+    }
 
     fun getOAuthUrl(provider: String): String {
         return "$supabaseUrl/auth/v1/authorize?provider=$provider&redirect_to=fasaldrishti://auth"
     }
 
-    suspend fun signInWithGoogle(): Result<UserProfile> = withContext(Dispatchers.Main) {
-        try {
-            val url = getOAuthUrl("google")
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(intent)
-            Result.success(
-                UserProfile(
-                    id = "oauth_launching",
-                    name = "Google User",
-                    email = "Authenticating with Google..."
-                )
-            )
-        } catch (e: Exception) {
-            // Fallback for seamless offline development
-            val user = UserProfile(
-                id = UUID.randomUUID().toString(),
-                name = "Google User",
-                email = "farmer@gmail.com",
-                avatarUrl = null,
-                totalScans = 14,
-                healthyCount = 9,
-                diseasedCount = 5
-            )
-            _currentUser.value = user
-            Result.success(user)
+    suspend fun signInWithGoogle(): Result<UserProfile> {
+        // Return active user if already logged in, otherwise indicate OAuth pending
+        val current = _currentUser.value
+        return if (current != null) {
+            Result.success(current)
+        } else {
+            Result.failure(Exception("Please complete Google sign-in"))
         }
     }
 
-    suspend fun signInWithGitHub(): Result<UserProfile> = withContext(Dispatchers.Main) {
-        try {
-            val url = getOAuthUrl("github")
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(intent)
-            Result.success(
-                UserProfile(
-                    id = "oauth_launching",
-                    name = "GitHub Developer",
-                    email = "Authenticating with GitHub..."
-                )
-            )
-        } catch (e: Exception) {
-            val user = UserProfile(
-                id = UUID.randomUUID().toString(),
-                name = "AgriTech Developer",
-                email = "developer@agritech.org",
-                avatarUrl = null,
-                totalScans = 6,
-                healthyCount = 4,
-                diseasedCount = 2
-            )
-            _currentUser.value = user
-            Result.success(user)
+    suspend fun signInWithGitHub(): Result<UserProfile> {
+        val current = _currentUser.value
+        return if (current != null) {
+            Result.success(current)
+        } else {
+            Result.failure(Exception("Please complete GitHub sign-in"))
         }
     }
 
     /**
      * Intercepts and parses deep links from Supabase OAuth redirects (fasaldrishti://auth#access_token=...)
+     * Fetches real user profile from Supabase API and saves session persistently.
      */
     suspend fun handleAuthCallback(uri: Uri): Result<UserProfile> = withContext(Dispatchers.IO) {
         try {
@@ -125,44 +115,40 @@ class SupabaseManager(private val context: Context) {
                 if (userResponse.isSuccessful) {
                     val userBody = userResponse.body?.string() ?: "{}"
                     val jsonObj = JSONObject(userBody)
-                    val id = jsonObj.optString("id", UUID.randomUUID().toString())
-                    val email = jsonObj.optString("email", "user@example.com")
+                    val id = jsonObj.optString("id", "")
+                    val email = jsonObj.optString("email", "")
                     val metadata = jsonObj.optJSONObject("user_metadata")
                     val name = metadata?.optString("full_name")
                         ?: metadata?.optString("name")
                         ?: metadata?.optString("user_name")
-                        ?: email.substringBefore("@")
+                        ?: email.substringBefore("@").ifBlank { "Farmer" }
                     val avatarUrl = metadata?.optString("avatar_url")
 
-                    val user = UserProfile(
-                        id = id,
-                        name = name,
-                        email = email,
-                        avatarUrl = avatarUrl,
-                        totalScans = 0,
-                        healthyCount = 0,
-                        diseasedCount = 0
-                    )
-                    _currentUser.value = user
-                    return@withContext Result.success(user)
+                    if (id.isNotBlank()) {
+                        val user = UserProfile(
+                            id = id,
+                            name = name,
+                            email = email,
+                            avatarUrl = avatarUrl,
+                            totalScans = prefs.getInt("total_scans", 0),
+                            healthyCount = prefs.getInt("healthy_count", 0),
+                            diseasedCount = prefs.getInt("diseased_count", 0)
+                        )
+                        saveUserToPrefs(user)
+                        _currentUser.value = user
+                        return@withContext Result.success(user)
+                    }
                 }
             }
 
-            // If no token was found in redirect, check if code exchange or fallback user
-            val fallbackUser = UserProfile(
-                id = UUID.randomUUID().toString(),
-                name = "Authenticated Farmer",
-                email = "farmer@supabase.auth",
-                avatarUrl = null
-            )
-            _currentUser.value = fallbackUser
-            Result.success(fallbackUser)
+            Result.failure(Exception("Could not verify Supabase user session"))
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
     suspend fun signOut() {
+        prefs.edit().clear().apply()
         _currentUser.value = null
     }
 
