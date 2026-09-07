@@ -1,0 +1,90 @@
+package com.fasaldrishti.app
+
+import android.app.Application
+import com.fasaldrishti.app.data.local.AppDatabase
+import com.fasaldrishti.app.data.ml.TFLiteDiseaseClassifier
+import com.fasaldrishti.app.data.remote.PredictApi
+import com.fasaldrishti.app.data.remote.SupabaseManager
+import com.fasaldrishti.app.data.remote.UpdateManager
+import com.fasaldrishti.app.data.repository.AuthRepositoryImpl
+import com.fasaldrishti.app.data.repository.DiseaseRepositoryImpl
+import com.fasaldrishti.app.data.repository.ScanRepositoryImpl
+import com.fasaldrishti.app.domain.repository.AuthRepository
+import com.fasaldrishti.app.domain.repository.DiseaseRepository
+import com.fasaldrishti.app.domain.repository.ScanRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
+
+class FasalDrishtiApp : Application() {
+
+    lateinit var scanRepository: ScanRepository
+        private set
+    lateinit var authRepository: AuthRepository
+        private set
+    lateinit var diseaseRepository: DiseaseRepository
+        private set
+    lateinit var onDeviceClassifier: TFLiteDiseaseClassifier
+        private set
+    lateinit var updateManager: UpdateManager
+        private set
+
+    override fun onCreate() {
+        super.onCreate()
+
+        // 1. Initialize Local Database
+        val database = AppDatabase.getInstance(this)
+
+        // 2. Initialize Networking (Retrofit)
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+        val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BuildConfig.BACKEND_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val predictApi = retrofit.create(PredictApi::class.java)
+
+        // 3. Initialize Supabase Manager
+        val supabaseManager = SupabaseManager(this)
+
+        // 4. Initialize On-Device TensorFlow Lite Classifier (Primary Neural Net)
+        onDeviceClassifier = TFLiteDiseaseClassifier(this)
+
+        // 5. Initialize Disease Repository
+        diseaseRepository = DiseaseRepositoryImpl(predictApi = predictApi)
+
+        // 6. Initialize Scan Repository
+        scanRepository = ScanRepositoryImpl(
+            scanDao = database.scanDao(),
+            predictApi = predictApi,
+            supabaseManager = supabaseManager,
+            onDeviceClassifier = onDeviceClassifier,
+            diseaseRepository = diseaseRepository
+        )
+
+        authRepository = AuthRepositoryImpl(supabaseManager = supabaseManager)
+
+        // 7. Initialize In-App Update Manager & run auto-check on startup
+        updateManager = UpdateManager(this)
+        if (updateManager.autoCheckEnabled.value) {
+            CoroutineScope(Dispatchers.IO).launch {
+                updateManager.checkForUpdates(isAutoCheck = true)
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Fasal Drishti</string>
+    <string name="app_tagline">AI se apni fasal ki suraksha</string>
+    
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Apne crop ki photo kheenchiye</string>
+    <string name="onboarding_desc_1">Point your camera at the affected crop leaf to capture a clear image in seconds.</string>
+    <string name="onboarding_title_2">AI se turant disease pehchaniye</string>
+    <string name="onboarding_desc_2">Our deep-learning MobileNet AI detects 38 crop disease types with instant precision.</string>
+    <string name="onboarding_title_3">Sahi ilaaj, behtar fasal</string>
+    <string name="onboarding_desc_3">Get actionable chemical and organic treatment advisories and ask our AI Agronomist.</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="get_started">Get Started</string>
+
+    <!-- Auth -->
+    <string name="welcome_title">Welcome to Fasal Drishti</string>
+    <string name="welcome_subtitle">Login to start scanning and protecting your crops</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_github">Continue with GitHub</string>
+    <string name="terms_notice">By continuing, you agree to our Terms &amp; Privacy Policy</string>
+</resources>

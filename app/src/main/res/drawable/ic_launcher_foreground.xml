@@ -1,0 +1,64 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Outer Curved Rice Stalk Stem -->
+    <path
+        android:pathData="M28,78 C32,56 46,36 68,26 C76,22 84,20 86,22 C84,28 76,38 64,48 C50,60 38,72 28,78 Z"
+        android:fillType="nonZero">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="28"
+                android:startY="78"
+                android:endX="86"
+                android:endY="22"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#2E7D32" />
+                <item android:offset="0.5" android:color="#66BB6A" />
+                <item android:offset="1.0" android:color="#FFD54F" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Rice Grain 1 (Top tip) -->
+    <path
+        android:pathData="M78,22 C83,18 89,20 90,24 C87,27 82,27 78,22 Z"
+        android:fillColor="#FFD54F" />
+
+    <!-- Rice Grain 2 -->
+    <path
+        android:pathData="M70,26 C76,21 82,23 83,28 C79,31 74,30 70,26 Z"
+        android:fillColor="#FFCA28" />
+
+    <!-- Rice Grain 3 -->
+    <path
+        android:pathData="M62,32 C68,26 75,28 76,34 C71,37 66,36 62,32 Z"
+        android:fillColor="#FFC107" />
+
+    <!-- Rice Grain 4 -->
+    <path
+        android:pathData="M54,39 C60,33 67,35 68,41 C63,44 58,43 54,39 Z"
+        android:fillColor="#FFB300" />
+
+    <!-- Rice Grain 5 -->
+    <path
+        android:pathData="M46,48 C52,41 59,43 60,50 C55,53 50,51 46,48 Z"
+        android:fillColor="#FFA000" />
+
+    <!-- Lower Inner Eye Arc (Vision) -->
+    <path
+        android:pathData="M42,66 C52,78 68,76 78,66 C72,72 58,74 42,66 Z"
+        android:fillColor="#43A047" />
+
+    <!-- Center Optical Iris / Shutter Pupil -->
+    <path
+        android:pathData="M58,58 m-9,0 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0"
+        android:fillColor="#FFB300" />
+
+    <path
+        android:pathData="M58,58 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0"
+        android:fillColor="#1B5E20" />
+</vector>
