@@ -84,11 +84,11 @@ fun SplashScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             Text(
-                text = "फसल दृष्टि",
+                text = "Fasal Drishti AI",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,
-                    fontSize = 34.sp,
+                    fontSize = 32.sp,
                     letterSpacing = 1.sp
                 )
             )

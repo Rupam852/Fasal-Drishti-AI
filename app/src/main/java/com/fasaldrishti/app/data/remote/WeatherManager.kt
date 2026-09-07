@@ -42,10 +42,10 @@ class WeatherManager(private val context: Context) {
         val wind = prefs.getFloat("cached_wind", 10.5f).toDouble()
         val rain = prefs.getInt("cached_rain", 15)
         val code = prefs.getInt("cached_code", 1)
-        val desc = prefs.getString("cached_desc", "Mainly Clear (साफ मौसम)") ?: "Mainly Clear (साफ मौसम)"
+        val desc = prefs.getString("cached_desc", "Mainly Clear 🌤️") ?: "Mainly Clear 🌤️"
         val sprayStatusStr = prefs.getString("cached_spray_status", SprayStatus.SAFE.name) ?: SprayStatus.SAFE.name
-        val advisory = prefs.getString("cached_advisory", "छिड़काव के लिए उत्तम मौसम (Safe for spraying)")
-            ?: "छिड़काव के लिए उत्तम मौसम (Safe for spraying)"
+        val advisory = prefs.getString("cached_advisory", "Optimal weather conditions for pesticide and fertilizer spraying.")
+            ?: "Optimal weather conditions for pesticide and fertilizer spraying."
 
         val sprayStatus = try {
             SprayStatus.valueOf(sprayStatusStr)
@@ -193,16 +193,16 @@ class WeatherManager(private val context: Context) {
 
     private fun getWeatherDescription(code: Int): String {
         return when (code) {
-            0 -> "Clear Sky (साफ मौसम ☀️)"
-            1, 2 -> "Mainly Clear (हल्के बादल 🌤️)"
-            3 -> "Overcast (घने बादल ☁️)"
-            45, 48 -> "Foggy / Mist (कोहरा 🌫️)"
-            51, 53, 55 -> "Drizzle (बूंदाबांदी 🌦️)"
-            61, 63, 65 -> "Rain Showers (बारिश 🌧️)"
-            71, 73, 75 -> "Snowfall (बर्फबारी ❄️)"
-            80, 81, 82 -> "Heavy Rain (तेज बारिश ⛈️)"
-            95, 96, 99 -> "Thunderstorm (आंधी-तूफान ⚡)"
-            else -> "Partly Cloudy (आंशिक बादल ⛅)"
+            0 -> "Clear Sky ☀️"
+            1, 2 -> "Mainly Clear 🌤️"
+            3 -> "Overcast ☁️"
+            45, 48 -> "Foggy / Mist 🌫️"
+            51, 53, 55 -> "Drizzle 🌦️"
+            61, 63, 65 -> "Rain Showers 🌧️"
+            71, 73, 75 -> "Snowfall ❄️"
+            80, 81, 82 -> "Heavy Rain ⛈️"
+            95, 96, 99 -> "Thunderstorm ⚡"
+            else -> "Partly Cloudy ⛅"
         }
     }
 
@@ -216,19 +216,19 @@ class WeatherManager(private val context: Context) {
             rainProb >= 50 || windSpeed >= 22.0 -> {
                 Pair(
                     SprayStatus.UNSAFE,
-                    "⚠️ आज छिड़काव न करें! ${if (rainProb >= 50) "बारिश की संभावना ($rainProb%) है" else "तेज हवा ($windSpeed km/h) चल रही है"} - दवा व्यर्थ हो जाएगी।"
+                    "Do not spray today. High ${if (rainProb >= 50) "chance of rain ($rainProb%)" else "winds ($windSpeed km/h)"} will wash away or disperse spray chemicals."
                 )
             }
             windSpeed in 15.0..21.9 || temp > 36.0 || humidity > 85 -> {
                 Pair(
                     SprayStatus.CAUTION,
-                    "⚠️ सावधानी से छिड़काव करें: ${if (temp > 36.0) "अधिक तापमान है, सुबह/शाम करें" else "हल्की हवा ($windSpeed km/h) है, नोजल नीचे रखें"}।"
+                    "Apply spray with caution: ${if (temp > 36.0) "High daytime temperature, spray during early morning or evening" else "Moderate wind ($windSpeed km/h), keep spray nozzle low"}."
                 )
             }
             else -> {
                 Pair(
                     SprayStatus.SAFE,
-                    "✅ छिड़काव के लिए उत्तम मौसम! (हवा शांत है और बारिश की कोई संभावना नहीं है)"
+                    "Optimal weather for crop spraying. Calm wind and no rain expected in forecast."
                 )
             }
         }

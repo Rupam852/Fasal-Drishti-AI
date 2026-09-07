@@ -15,7 +15,7 @@ data class WeatherData(
     val weatherCode: Int = 1,
     val weatherDescription: String = "Clear Sky",
     val sprayStatus: SprayStatus = SprayStatus.SAFE,
-    val sprayAdvisory: String = "छिड़काव के लिए उत्तम मौसम (Safe for pesticide & fertilizer spray)",
+    val sprayAdvisory: String = "Optimal weather conditions for pesticide and fertilizer spraying.",
     val isLoading: Boolean = false,
     val isLoaded: Boolean = true
 )

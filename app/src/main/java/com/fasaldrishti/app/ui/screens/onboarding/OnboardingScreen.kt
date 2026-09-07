@@ -152,7 +152,7 @@ fun OnboardingScreen(
 
                 // Primary CTA
                 GradientButton(
-                    text = if (pagerState.currentPage == pages.size - 1) "Get Started (शुरू करें)" else "Next",
+                    text = if (pagerState.currentPage == pages.size - 1) "Get Started" else "Next",
                     onClick = {
                         if (pagerState.currentPage < pages.size - 1) {
                             coroutineScope.launch {
@@ -292,7 +292,7 @@ fun OnboardingScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Camera Access (कैमरा)",
+                                    text = "Camera Access",
                                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                                 )
                                 Text(
@@ -323,7 +323,7 @@ fun OnboardingScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Photos & Storage (गैलरी)",
+                                    text = "Photos & Storage",
                                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                                 )
                                 Text(
@@ -338,33 +338,44 @@ fun OnboardingScreen(
                     }
                 },
                 confirmButton = {
-                    Button(
-                        onClick = {
-                            permissionLauncher.launch(requiredPermissions)
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
-                        shape = RoundedCornerShape(14.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Grant Permissions (अनुमति दें)",
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            showPermissionDialog = false
-                            onFinish()
+                        OutlinedButton(
+                            onClick = {
+                                showPermissionDialog = false
+                                onFinish()
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(14.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                        ) {
+                            Text(
+                                text = "Skip",
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
-                    ) {
-                        Text(
-                            text = "Skip for Now",
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
+
+                        Button(
+                            onClick = {
+                                permissionLauncher.launch(requiredPermissions)
+                            },
+                            modifier = Modifier.weight(1.5f),
+                            colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Text(
+                                text = "Grant Permissions",
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 },
+                dismissButton = null,
                 shape = RoundedCornerShape(26.dp),
                 containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp

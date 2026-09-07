@@ -97,7 +97,7 @@ fun AboutScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = "Fasal Drishti (फसल दृष्टि)",
+                            text = "Fasal Drishti AI",
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 22.sp
@@ -107,7 +107,7 @@ fun AboutScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "v1.0.0 • On-Device AI Agronomy",
+                            text = "v1.0.0 • Precision Agronomy & Crop Disease Vision",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 color = EmeraldPrimary,
                                 fontWeight = FontWeight.Bold
@@ -117,7 +117,7 @@ fun AboutScreen(
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
-                            text = "Fasal Drishti is built to empower Indian farmers with instant, zero-latency, offline crop disease detection and personalized agronomy care.",
+                            text = "Fasal Drishti is built to empower farmers with instant, zero-latency, offline crop disease detection and personalized agronomy care.",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                 lineHeight = 22.sp
@@ -166,7 +166,7 @@ fun AboutScreen(
                 }
             }
 
-            // 3. CONTRIBUTORS & TEAM
+            // 3. CONTRIBUTORS & TEAM SECTION
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -181,16 +181,11 @@ fun AboutScreen(
                         )
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        contributors.forEachIndexed { index, contributor ->
-                            TechSpecRow(
-                                icon = contributor.icon,
-                                title = contributor.name,
-                                subtitle = contributor.role
-                            )
-                            if (index < contributors.size - 1) {
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 10.dp))
-                            }
-                        }
+                        TechSpecRow(
+                            icon = Icons.Default.Group,
+                            title = "Fasal Drishti Open Source Contributors",
+                            subtitle = "Contributors list will be updated soon."
+                        )
                     }
                 }
             }

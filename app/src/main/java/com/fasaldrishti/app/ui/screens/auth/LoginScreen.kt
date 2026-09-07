@@ -130,7 +130,7 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(18.dp))
             Text(
-                text = "फसल दृष्टि AI",
+                text = "Fasal Drishti AI",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,

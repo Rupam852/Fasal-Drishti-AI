@@ -585,9 +585,9 @@ fun HomeScreen(
                             SprayStatus.UNSAFE -> Color(0xFFEF4444)
                         }
                         val sprayTitle = when (weatherData.sprayStatus) {
-                            SprayStatus.SAFE -> "छिड़काव के लिए उत्तम समय (Safe to Spray)"
-                            SprayStatus.CAUTION -> "सावधानी से छिड़काव करें (Spray with Caution)"
-                            SprayStatus.UNSAFE -> "आज छिड़काव न करें (Do Not Spray Today)"
+                            SprayStatus.SAFE -> "Optimal Conditions (Safe to Spray)"
+                            SprayStatus.CAUTION -> "Moderate Conditions (Spray with Caution)"
+                            SprayStatus.UNSAFE -> "Unfavorable Weather (Do Not Spray Today)"
                         }
                         val sprayIcon = when (weatherData.sprayStatus) {
                             SprayStatus.SAFE -> Icons.Default.CheckCircle
