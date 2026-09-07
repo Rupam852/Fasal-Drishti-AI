@@ -68,49 +68,107 @@ class UpdateManager(private val context: Context) {
     }
 
     /**
-     * Check for updates. Connects to backend API or simulates update availability.
-     * When user provides their real API endpoint, replace the remote fetch logic.
+     * Check for updates from the Neo Files Transfer live API endpoint.
      */
     suspend fun checkForUpdates(isAutoCheck: Boolean = false): AppUpdateInfo = withContext(Dispatchers.IO) {
         _updateInfo.value = _updateInfo.value.copy(isChecking = true, checkMessage = "Checking for new version...")
 
-        // Simulated check (Can be hooked to user's remote endpoint easily)
-        kotlinx.coroutines.delay(1200)
-
-        val currentVer = "1.0.0"
-        val serverLatestVer = "1.1.0" // Simulated newer version available
-        val isNewerAvailable = serverLatestVer > currentVer
-
-        val result = if (isNewerAvailable) {
-            AppUpdateInfo(
-                currentVersion = currentVer,
-                latestVersion = serverLatestVer,
-                hasUpdate = true,
-                downloadUrl = "https://github.com/fasal-drishti/app/releases/latest",
-                releaseNotes = "• Improved MobileNetV2 inference speed with NNAPI\n• Added Hindi agronomy chat support\n• Bug fixes & 120Hz refresh rate stability",
-                isChecking = false,
-                checkMessage = "New update available: v$serverLatestVer"
-            )
-        } else {
-            AppUpdateInfo(
-                currentVersion = currentVer,
-                latestVersion = currentVer,
-                hasUpdate = false,
-                downloadUrl = null,
-                releaseNotes = "",
-                isChecking = false,
-                checkMessage = "Your app is up to date!"
-            )
+        val currentVer = try {
+            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            pInfo.versionName ?: "1.0.0"
+        } catch (_: Exception) {
+            "1.0.0"
         }
 
-        _updateInfo.value = result
+        val apiUrl = "https://neo-files-transfer-p3ot.onrender.com/api/version/apk_2c91d932cde44375"
 
-        // Post system notification if auto-check found a newer version
-        if (result.hasUpdate && isAutoCheck) {
-            sendUpdateNotification(result.latestVersion)
+        try {
+            val client = okhttp3.OkHttpClient.Builder()
+                .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                .build()
+
+            val request = okhttp3.Request.Builder()
+                .url(apiUrl)
+                .get()
+                .build()
+
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                val bodyStr = response.body?.string() ?: ""
+                val json = org.json.JSONObject(bodyStr)
+                if (json.optString("status") == "success") {
+                    val rawServerVer = json.optString("version", "1.0.0")
+                    val serverVer = rawServerVer.removePrefix("v").removePrefix("V").trim()
+                    val normCurrentVer = currentVer.removePrefix("v").removePrefix("V").trim()
+                    
+                    val downloadUrl = json.optString("download_url").ifBlank {
+                        json.optString("web_url", "https://neo-files-transfer.pages.dev/download/mtre516vdmlr4152f2ab")
+                    }
+                    val fileName = json.optString("file_name", "Fasal Drishti.apk")
+                    val fileSize = json.optLong("file_size", 0L)
+                    val formattedSize = if (fileSize > 0) String.format("%.1f MB", fileSize / (1024.0 * 1024.0)) else ""
+
+                    val isNewerAvailable = isVersionGreater(serverVer, normCurrentVer)
+
+                    val result = if (isNewerAvailable) {
+                        AppUpdateInfo(
+                            currentVersion = "v$normCurrentVer",
+                            latestVersion = "v$serverVer",
+                            hasUpdate = true,
+                            downloadUrl = downloadUrl,
+                            releaseNotes = "• File: $fileName ($formattedSize)\n• Fast Cloudflare Edge Download CDN\n• PlantVillage Disease Vision & Multilingual NVIDIA NIM Agronomist\n• Bug fixes & 120Hz refresh rate stability",
+                            isChecking = false,
+                            checkMessage = "New update available: v$serverVer"
+                        )
+                    } else {
+                        AppUpdateInfo(
+                            currentVersion = "v$normCurrentVer",
+                            latestVersion = "v$serverVer",
+                            hasUpdate = false,
+                            downloadUrl = downloadUrl,
+                            releaseNotes = "You are on the latest version ($fileName)",
+                            isChecking = false,
+                            checkMessage = "Your app is up to date!"
+                        )
+                    }
+
+                    _updateInfo.value = result
+
+                    if (result.hasUpdate && isAutoCheck) {
+                        sendUpdateNotification(result.latestVersion)
+                    }
+
+                    return@withContext result
+                }
+            }
+        } catch (e: Exception) {
+            // Fallback in case network or API is unreachable
         }
 
-        result
+        val fallback = _updateInfo.value.copy(
+            isChecking = false,
+            checkMessage = "Checked just now. Running v$currentVer"
+        )
+        _updateInfo.value = fallback
+        fallback
+    }
+
+    private fun isVersionGreater(v1: String, v2: String): Boolean {
+        return try {
+            val parts1 = v1.split(".").map { it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0 }
+            val parts2 = v2.split(".").map { it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0 }
+            val maxLen = maxOf(parts1.size, parts2.size)
+            for (i in 0 until maxLen) {
+                val num1 = parts1.getOrElse(i) { 0 }
+                val num2 = parts2.getOrElse(i) { 0 }
+                if (num1 > num2) return true
+                if (num1 < num2) return false
+            }
+            false
+        } catch (_: Exception) {
+            v1 > v2
+        }
     }
 
     fun sendUpdateNotification(newVersion: String) {
