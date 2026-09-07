@@ -66,10 +66,11 @@ fun AppNavHost(
                 FasalBottomBar(
                     currentRoute = currentRoute,
                     onNavigate = { route ->
-                        navController.navigate(route) {
-                            popUpTo(Screen.Home.route) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
+                        if (route != currentRoute) {
+                            navController.navigate(route) {
+                                popUpTo(Screen.Home.route)
+                                launchSingleTop = true
+                            }
                         }
                     },
                     onScanClick = {
@@ -213,7 +214,12 @@ fun AppNavHost(
                 ProfileScreen(
                     authViewModel = authViewModel,
                     updateManager = updateManager,
-                    onNavigateToHistory = { navController.navigate(Screen.History.route) },
+                    onNavigateToHistory = {
+                        navController.navigate(Screen.History.route) {
+                            popUpTo(Screen.Home.route)
+                            launchSingleTop = true
+                        }
+                    },
                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
                     onLogout = {

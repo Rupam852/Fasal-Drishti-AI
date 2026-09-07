@@ -24,18 +24,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.fasaldrishti.app.data.remote.UpdateManager
 import com.fasaldrishti.app.ui.screens.auth.AuthViewModel
 import com.fasaldrishti.app.ui.theme.*
-
-data class AchievementBadge(
-    val title: String,
-    val icon: ImageVector,
-    val color: Color
-)
 
 @Composable
 fun ProfileScreen(
@@ -49,13 +45,6 @@ fun ProfileScreen(
     val authState by authViewModel.uiState.collectAsState()
     val user = authState.user
     val updateInfo by updateManager.updateInfo.collectAsState()
-
-    val badges = listOf(
-        AchievementBadge("First Scan", Icons.Default.CameraAlt, EmeraldPrimary),
-        AchievementBadge("Plant Doctor", Icons.Default.Shield, Color(0xFF00B0FF)),
-        AchievementBadge("7-Day Streak", Icons.Default.LocalFireDepartment, SolarGold),
-        AchievementBadge("AI Pioneer", Icons.Default.Psychology, Color(0xFFAA00FF))
-    )
 
     Scaffold(
         topBar = {
@@ -137,12 +126,21 @@ fun ProfileScreen(
                                 .border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(42.dp)
-                            )
+                            if (!user?.avatarUrl.isNullOrBlank()) {
+                                AsyncImage(
+                                    model = user?.avatarUrl,
+                                    contentDescription = "User Avatar",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(42.dp)
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(14.dp))
@@ -162,35 +160,6 @@ fun ProfileScreen(
                                 fontSize = 13.sp
                             )
                         )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = EmeraldPrimary.copy(alpha = 0.15f),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f))
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Verified,
-                                    contentDescription = null,
-                                    tint = EmeraldPrimary,
-                                    modifier = Modifier.size(15.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Master Agronomist • Level 4",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = EmeraldPrimaryVariant,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 11.sp
-                                    )
-                                )
-                            }
-                        }
                     }
                 }
             }
@@ -203,79 +172,25 @@ fun ProfileScreen(
                 ) {
                     StatCard(
                         title = "Scans",
-                        value = "${user?.totalScans ?: 14}",
+                        value = "${user?.totalScans ?: 0}",
                         icon = Icons.Default.CameraAlt,
                         color = EmeraldPrimary,
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(
                         title = "Healthy",
-                        value = "${user?.healthyCount ?: 9}",
+                        value = "${user?.healthyCount ?: 0}",
                         icon = Icons.Default.Spa,
                         color = NeonLime,
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(
                         title = "Treated",
-                        value = "${user?.diseasedCount ?: 5}",
+                        value = "${user?.diseasedCount ?: 0}",
                         icon = Icons.Default.MedicalServices,
                         color = SolarGold,
                         modifier = Modifier.weight(1f)
                     )
-                }
-            }
-
-            // 3. ACHIEVEMENTS SECTION
-            item {
-                Text(
-                    text = "Agri-Badges & Milestones",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                )
-            }
-
-            item {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    items(badges) { badge ->
-                        Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = MaterialTheme.colorScheme.surface,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
-                            shadowElevation = 2.dp
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(42.dp)
-                                        .clip(CircleShape)
-                                        .background(badge.color.copy(alpha = 0.15f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = badge.icon,
-                                        contentDescription = null,
-                                        tint = badge.color,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = badge.title,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp
-                                    )
-                                )
-                            }
-                        }
-                    }
                 }
             }
 

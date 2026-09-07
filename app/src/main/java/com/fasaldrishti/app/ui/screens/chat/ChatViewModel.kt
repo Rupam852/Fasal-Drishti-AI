@@ -14,7 +14,8 @@ import java.util.UUID
 data class ChatUiState(
     val messages: List<ChatMessage> = emptyList(),
     val isAiTyping: Boolean = false,
-    val contextInfo: String? = null
+    val contextInfo: String? = null,
+    val selectedLanguage: String = "Hinglish"
 )
 
 class ChatViewModel(
@@ -24,6 +25,10 @@ class ChatViewModel(
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
+    fun setResponseLanguage(lang: String) {
+        _uiState.value = _uiState.value.copy(selectedLanguage = lang)
+    }
+
     fun initContext(context: String?) {
         if (context != null && _uiState.value.contextInfo == null) {
             _uiState.value = _uiState.value.copy(
@@ -31,7 +36,7 @@ class ChatViewModel(
                 messages = listOf(
                     ChatMessage(
                         id = UUID.randomUUID().toString(),
-                        text = "Namaste! I am your AI Agronomist. I have reviewed your scan diagnosis ($context). How can I assist you with treatment dosages, spray schedules, or soil management?",
+                        text = "Namaste! Main aapka AI Agronomist hoon 🌾. Maine aapke scan ($context) ka analysis dekha hai. Iske upchar, dava ke dosage, spray timing ya mitti ke baare me kuch bhi poochein!",
                         isUser = false
                     )
                 )
@@ -41,7 +46,7 @@ class ChatViewModel(
                 messages = listOf(
                     ChatMessage(
                         id = UUID.randomUUID().toString(),
-                        text = "Namaste! I am Fasal Drishti's AI Agronomist. Ask me anything about crop diseases, pest controls, fertilizers, and organic treatments!",
+                        text = "Namaste Kisan bhai! Main hoon Fasal Drishti ka AI Krishi Doctor 🌾. Aap kisi bhi bhasha me sawal pooch sakte hain. Upar language button se apni response bhasha (Hinglish/Hindi/Others) chun sakte hain!",
                         isUser = false
                     )
                 )
@@ -62,17 +67,22 @@ class ChatViewModel(
         _uiState.value = _uiState.value.copy(messages = updatedMessages, isAiTyping = true)
 
         viewModelScope.launch {
-            delay(1000)
+            delay(800)
             val primaryClass = _uiState.value.contextInfo ?: "General Crop Query"
+            val currentLang = _uiState.value.selectedLanguage
             val result = diseaseRepository.askAiAdvisory(
                 primaryClass = primaryClass,
                 confidence = 0.94f,
                 query = userText,
-                language = "en"
+                language = currentLang
             )
 
             val aiReplyText = result.getOrDefault(
-                "For $primaryClass, ensure you rotate with non-host crops, prune infected leaves, and maintain balanced potassium and zinc in the soil."
+                if (currentLang == "Hinglish") {
+                    "Fasal ($primaryClass) ke liye: Sankramit pattiyo ko todkar alag karein, Mancozeb (2.5g/L) ka spray karein, aur kheton me jal-nikasi (drainage) accha rakhein."
+                } else {
+                    "For $primaryClass, ensure you rotate with non-host crops, prune infected leaves, and maintain balanced potassium and zinc in the soil."
+                }
             )
 
             val aiMessage = ChatMessage(

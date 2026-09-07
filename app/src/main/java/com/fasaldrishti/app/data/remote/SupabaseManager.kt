@@ -36,7 +36,18 @@ class SupabaseManager(private val context: Context) {
         val id = prefs.getString("user_id", null) ?: return null
         val name = prefs.getString("user_name", "Farmer") ?: "Farmer"
         val email = prefs.getString("user_email", "") ?: ""
-        val avatarUrl = prefs.getString("user_avatar", null)
+        var avatarUrl = prefs.getString("user_avatar", null)
+
+        if (avatarUrl.isNullOrBlank()) {
+            try {
+                val googleAccount = com.google.android.gms.auth.api.signin.GoogleSignIn.getLastSignedInAccount(context)
+                if (googleAccount?.photoUrl != null) {
+                    avatarUrl = googleAccount.photoUrl.toString()
+                    prefs.edit().putString("user_avatar", avatarUrl).apply()
+                }
+            } catch (_: Exception) {}
+        }
+
         val totalScans = prefs.getInt("total_scans", 0)
         val healthyCount = prefs.getInt("healthy_count", 0)
         val diseasedCount = prefs.getInt("diseased_count", 0)
@@ -62,8 +73,17 @@ class SupabaseManager(private val context: Context) {
     }
 
     fun setAuthenticatedUser(user: UserProfile) {
-        saveUserToPrefs(user)
-        _currentUser.value = user
+        var finalUser = user
+        if (finalUser.avatarUrl.isNullOrBlank()) {
+            try {
+                val googleAccount = com.google.android.gms.auth.api.signin.GoogleSignIn.getLastSignedInAccount(context)
+                if (googleAccount?.photoUrl != null) {
+                    finalUser = finalUser.copy(avatarUrl = googleAccount.photoUrl.toString())
+                }
+            } catch (_: Exception) {}
+        }
+        saveUserToPrefs(finalUser)
+        _currentUser.value = finalUser
     }
 
     fun getOAuthUrl(provider: String): String {

@@ -75,20 +75,25 @@ fun ChatScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
+                    if (contextInfo != null) {
+                        IconButton(
+                            onClick = onNavigateBack,
+                            modifier = Modifier.padding(end = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
                     }
 
                     Box(
                         modifier = Modifier
-                            .size(42.dp)
-                            .shadow(6.dp, CircleShape, spotColor = EmeraldPrimary)
+                            .size(38.dp)
+                            .shadow(4.dp, CircleShape, spotColor = EmeraldPrimary)
                             .clip(CircleShape)
                             .background(
                                 brush = Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
@@ -99,36 +104,121 @@ fun ChatScreen(
                             imageVector = Icons.Default.Psychology,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
 
-                    Column {
-                        Text(
-                            text = "AI Krishi Doctor",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 17.sp
-                            )
+                    Text(
+                        text = "AI Krishi Doctor",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 17.sp
                         )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(EmeraldPrimary)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "NVIDIA NIM Multilingual",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = EmeraldPrimary,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 11.sp
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    var showLanguageMenu by remember { mutableStateOf(false) }
+                    val supportedLanguages = listOf(
+                        "Hinglish",
+                        "हिन्दी (Hindi)",
+                        "English",
+                        "বাংলা (Bengali)",
+                        "मराठी (Marathi)",
+                        "ਪੰਜਾਬੀ (Punjabi)",
+                        "ગુજરાતી (Gujarati)",
+                        "తెలుగు (Telugu)",
+                        "தமிழ் (Tamil)",
+                        "ಕನ್ನಡ (Kannada)",
+                        "മലയാളം (Malayalam)",
+                        "ଓଡ଼ିଆ (Odia)"
+                    )
+
+                    Box {
+                        Surface(
+                            onClick = { showLanguageMenu = true },
+                            shape = RoundedCornerShape(20.dp),
+                            color = EmeraldPrimary.copy(alpha = 0.12f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Translate,
+                                    contentDescription = "Language",
+                                    tint = EmeraldPrimary,
+                                    modifier = Modifier.size(15.dp)
                                 )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = uiState.selectedLanguage.substringBefore(" "),
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        DropdownMenu(
+                            expanded = showLanguageMenu,
+                            onDismissRequest = { showLanguageMenu = false },
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.surface)
+                                .heightIn(max = 360.dp)
+                        ) {
+                            Text(
+                                text = "🌐 AI Response Language",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = EmeraldPrimary
+                                ),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
+                            HorizontalDivider(modifier = Modifier.padding(bottom = 4.dp))
+                            supportedLanguages.forEach { lang ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(
+                                                text = if (lang == "Hinglish") "Hinglish (Default)" else lang,
+                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                    fontWeight = if (uiState.selectedLanguage == lang) FontWeight.Bold else FontWeight.Normal,
+                                                    color = if (uiState.selectedLanguage == lang) EmeraldPrimary else MaterialTheme.colorScheme.onSurface
+                                                )
+                                            )
+                                            if (uiState.selectedLanguage == lang) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    tint = EmeraldPrimary,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        }
+                                    },
+                                    onClick = {
+                                        viewModel.setResponseLanguage(lang)
+                                        showLanguageMenu = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -229,7 +319,7 @@ fun ChatScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 12.dp),
+            contentPadding = PaddingValues(top = 4.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // Pinned Context Card

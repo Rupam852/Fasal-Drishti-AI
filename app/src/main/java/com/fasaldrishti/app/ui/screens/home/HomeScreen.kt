@@ -83,12 +83,21 @@ fun HomeScreen(
                                 .border(1.5.dp, Color.White.copy(alpha = 0.5f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Profile",
-                                tint = Color.White,
-                                modifier = Modifier.size(26.dp)
-                            )
+                            if (!user?.avatarUrl.isNullOrBlank()) {
+                                AsyncImage(
+                                    model = user?.avatarUrl,
+                                    contentDescription = "Profile Avatar",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Profile",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(26.dp)
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.width(14.dp))
                         Column {

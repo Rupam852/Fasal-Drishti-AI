@@ -44,15 +44,28 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
 
                 User Message/Query: $query
 
-                CRITICAL INSTRUCTIONS:
-                1. RESPOND IN THE EXACT SAME LANGUAGE AND SCRIPT that the user wrote in or requested (e.g., Hindi, Hinglish, Bengali, Marathi, Punjabi, Gujarati, Tamil, Telugu, Kannada, Malayalam, Odia, English, etc.).
-                2. Be empathetic, practical, and clear.
-                3. Include actionable guidance:
-                   - 🔍 Problem & Cause
-                   - 🧪 Chemical Treatment (Exact medicine/fungicide name & dosage per liter)
-                   - 🌿 Organic / Bio / Desi Remedy
-                   - 🛡️ Preventive Care Tips
-                4. Keep the vocabulary easy for Indian farmers to understand.
+                CRITICAL RESPONSE LANGUAGE REQUIREMENT:
+                - Target Response Language: $language
+                - The user may write or ask questions in ANY language or script (English, Hindi, Bengali, Hinglish, etc.), but your advisory reply MUST STRICTLY be written in '$language'.
+                - If Target Language is 'Hinglish', respond in natural conversational Hindi written in English/Latin letters (e.g. "Aapke tamatar ke paudhe me Late Blight laga hai. Iske upchar ke liye Mancozeb 2.5g per litre paani me milakar spray karein...").
+                - If Target Language contains 'Hindi' or 'हिन्दी', write in Hindi (Devanagari script).
+                - If Target Language contains 'Bengali' or 'বাংলা', write in Bengali script.
+                - If Target Language contains 'Marathi' or 'मराठी', write in Marathi script.
+                - If Target Language contains 'Punjabi' or 'ਪੰਜਾਬੀ', write in Punjabi Gurmukhi script.
+                - If Target Language contains 'Gujarati' or 'ગુજરાતી', write in Gujarati script.
+                - If Target Language contains 'Telugu' or 'తెలుగు', write in Telugu script.
+                - If Target Language contains 'Tamil' or 'தமிழ்', write in Tamil script.
+                - If Target Language contains 'Kannada' or 'ಕನ್ನಡ', write in Kannada script.
+                - If Target Language contains 'Malayalam' or 'മലയാളം', write in Malayalam script.
+                - If Target Language contains 'Odia' or 'ଓଡ଼ିଆ', write in Odia script.
+                - If Target Language is 'English', write in plain English.
+
+                ADVICE STRUCTURE:
+                1. 🔍 Problem & Cause (कारण)
+                2. 🧪 Chemical Treatment (दवा का नाम और सटीक मात्रा प्रति लीटर पानी)
+                3. 🌿 Organic / Desi Remedy (जैविक व देसी उपाय)
+                4. 🛡️ Prevention / Bachav (रोकथाम व सावधानियां)
+                Keep the vocabulary friendly, clear, and actionable for farmers.
             """.trimIndent()
 
             val jsonBody = JSONObject().apply {
