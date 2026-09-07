@@ -1,4 +1,4 @@
-name: Build Fasal Drishti APK
+name: Build Signed Release APK
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-release:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,16 +20,15 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew || true
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
-    - name: Build APK with Gradle
-      run: gradle assembleDebug --stacktrace
-      continue-on-error: true
+    - name: Build Signed Release APK
+      run: gradle assembleRelease --stacktrace
 
-    - name: Upload APK Artifact
+    - name: Upload Signed Release APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Fasal-Drishti-AI-Debug-APK
-        path: app/build/outputs/apk/debug/*.apk
+        name: Fasal-Drishti-AI-Signed-Release-APK
+        path: app/build/outputs/apk/release/*.apk
         if-no-files-found: warn
