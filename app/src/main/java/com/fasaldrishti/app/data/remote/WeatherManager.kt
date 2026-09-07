@@ -104,20 +104,24 @@ class WeatherManager(private val context: Context) {
             if (hasFineLocation || hasCoarseLocation) {
                 try {
                     val cts = CancellationTokenSource()
-                    val location = fusedLocationClient.getCurrentLocation(
-                        Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-                        cts.token
-                    )
-                    
-                    // Await task result safely with timeout
-                    val locResult = kotlinx.coroutines.tasks.await(location)
+                    val locResult = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
+                        fusedLocationClient.getCurrentLocation(
+                            Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                            cts.token
+                        ).addOnSuccessListener { loc ->
+                            if (continuation.isActive) continuation.resume(loc, null)
+                        }.addOnFailureListener {
+                            if (continuation.isActive) continuation.resume(null, null)
+                        }
+                        continuation.invokeOnCancellation { cts.cancel() }
+                    }
                     if (locResult != null) {
                         latitude = locResult.latitude
                         longitude = locResult.longitude
                         resolvedCity = resolveLocationName(latitude, longitude)
                     }
                 } catch (_: Exception) {
-                    // Fallback to last known location or default
+                    // Fallback to default location
                 }
             }
 

@@ -165,11 +165,11 @@ fun ProfileScreen(
                                     modifier = Modifier.fillMaxSize()
                                 )
                             } else {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(42.dp)
+                                androidx.compose.foundation.Image(
+                                    painter = androidx.compose.ui.res.painterResource(id = com.fasaldrishti.app.R.drawable.app_logo),
+                                    contentDescription = "Fasal Drishti Logo",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
                                 )
                             }
                         }
