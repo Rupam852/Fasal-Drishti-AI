@@ -226,159 +226,275 @@ fun ResultScreen(
                     }
                 }
 
-                // 2. DIAGNOSTIC DOSSIER HEADER
-                item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .shadow(6.dp, RoundedCornerShape(26.dp)),
-                        shape = RoundedCornerShape(26.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
-                    ) {
-                        Row(
+                val isInvalidCrop = scan.predictedClass == "Invalid_Crop" || scan.severity.equals("Invalid", ignoreCase = true) || scan.confidence < 0.50f
+
+                if (isInvalidCrop) {
+                    // INVALID SUBJECT / NON-CROP GUIDANCE VIEW
+                    item {
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(22.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(horizontal = 20.dp)
+                                .shadow(6.dp, RoundedCornerShape(26.dp)),
+                            shape = RoundedCornerShape(26.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, CrimsonCoral.copy(alpha = 0.6f))
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                SeverityBadge(severity = scan.severity)
-                                Spacer(modifier = Modifier.height(10.dp))
+                            Column(modifier = Modifier.padding(22.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(46.dp)
+                                            .clip(CircleShape)
+                                            .background(CrimsonCoral.copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.WarningAmber,
+                                            contentDescription = null,
+                                            tint = CrimsonCoral,
+                                            modifier = Modifier.size(26.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(14.dp))
+                                    Column {
+                                        Text(
+                                            text = "No Plant Leaf Detected",
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontWeight = FontWeight.ExtraBold,
+                                                fontSize = 17.sp,
+                                                color = CrimsonCoral
+                                            )
+                                        )
+                                        Text(
+                                            text = "फसल की पत्ती नहीं मिली (Low Match)",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                                fontSize = 12.sp
+                                            )
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(14.dp))
+
                                 Text(
-                                    text = scan.diseaseName,
-                                    style = MaterialTheme.typography.headlineMedium.copy(
-                                        fontWeight = FontWeight.ExtraBold,
-                                        fontSize = 21.sp
-                                    )
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Diagnosed on: ${scan.timestamp}",
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                        fontSize = 12.sp
+                                    text = "AI vision did not detect a recognized crop leaf with sufficient confidence (${(scan.confidence * 100).toInt()}%). The image may contain a non-crop object, person, animal, vehicle, or is blurry.",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                                        fontSize = 13.5.sp,
+                                        lineHeight = 20.sp
                                     )
                                 )
                             }
-
-                            ConfidenceRing(
-                                confidence = scan.confidence,
-                                size = 84.dp,
-                                strokeWidth = 8.dp
-                            )
                         }
                     }
-                }
 
-                // 3. ASK AI KRISHI DOCTOR BANNER (NVIDIA NIM)
-                item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = EmeraldPrimary.copy(alpha = 0.35f))
-                            .clip(RoundedCornerShape(24.dp))
-                            .clickable {
-                                val contextMsg = "Crop: ${scan.cropName}, Disease: ${scan.diseaseName} (${(scan.confidence * 100).toInt()}% confidence, Severity: ${scan.severity})"
-                                onNavigateToChat(contextMsg)
-                            },
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                        border = androidx.compose.foundation.BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.5f))
-                    ) {
-                        Row(
+                    // PHOTOGRAPHY & SCANNING TIPS FOR FARMERS
+                    item {
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(18.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .padding(horizontal = 20.dp),
+                            shape = RoundedCornerShape(22.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                         ) {
-                            Row(
-                                modifier = Modifier.weight(1f),
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier.padding(20.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(46.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            brush = Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Psychology,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(26.dp)
+                                Text(
+                                    text = "💡 How to Take a Valid Crop Photo (सही फोटो कैसे लें)",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = EmeraldPrimary
+                                    )
+                                )
+
+                                Row(verticalAlignment = Alignment.Top) {
+                                    Text("🌿", fontSize = 16.sp)
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = "Center the leaf inside the camera reticle box.",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp)
                                     )
                                 }
-                                Spacer(modifier = Modifier.width(14.dp))
-                                Column {
+
+                                Row(verticalAlignment = Alignment.Top) {
+                                    Text("☀️", fontSize = 16.sp)
+                                    Spacer(modifier = Modifier.width(10.dp))
                                     Text(
-                                        text = "Ask AI Doctor (हिंदी / বাংলা / etc.)",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 15.sp,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                        text = "Ensure bright daylight or turn on camera flash in dim light.",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp)
+                                    )
+                                }
+
+                                Row(verticalAlignment = Alignment.Top) {
+                                    Text("🔍", fontSize = 16.sp)
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = "Take close-up photos of visible spots or discoloration, avoid distant shots.",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // 2. DIAGNOSTIC DOSSIER HEADER
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .shadow(6.dp, RoundedCornerShape(26.dp)),
+                            shape = RoundedCornerShape(26.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(22.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    SeverityBadge(severity = scan.severity)
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Text(
+                                        text = scan.diseaseName,
+                                        style = MaterialTheme.typography.headlineMedium.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 21.sp
                                         )
                                     )
+                                    Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "Get exact spray doses & custom remedies",
+                                        text = "Diagnosed on: ${scan.timestamp}",
                                         style = MaterialTheme.typography.bodySmall.copy(
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                                             fontSize = 12.sp
                                         )
                                     )
                                 }
-                            }
 
-                            Icon(
-                                imageVector = Icons.Default.ChatBubble,
-                                contentDescription = null,
-                                tint = EmeraldPrimary,
-                                modifier = Modifier.size(24.dp)
-                            )
+                                ConfidenceRing(
+                                    confidence = scan.confidence,
+                                    size = 84.dp,
+                                    strokeWidth = 8.dp
+                                )
+                            }
                         }
                     }
-                }
 
-                // 4. ACTIONABLE ACCORDION DOSSIERS
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        AccordionCard(
-                            title = "Disease Symptoms & Identification",
-                            icon = Icons.Default.Coronavirus,
-                            content = scan.symptoms.ifBlank { diseaseInfo?.symptoms ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces." },
-                            initiallyExpanded = true,
-                            accentColor = CrimsonCoral
-                        )
+                    // 3. ASK AI KRISHI DOCTOR BANNER (NVIDIA NIM)
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = EmeraldPrimary.copy(alpha = 0.35f))
+                                .clip(RoundedCornerShape(24.dp))
+                                .clickable {
+                                    val contextMsg = "Crop: ${scan.cropName}, Disease: ${scan.diseaseName} (${(scan.confidence * 100).toInt()}% confidence, Severity: ${scan.severity})"
+                                    onNavigateToChat(contextMsg)
+                                },
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.5f))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(18.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(46.dp)
+                                            .clip(CircleShape)
+                                            .background(
+                                                brush = Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Psychology,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(26.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(14.dp))
+                                    Column {
+                                        Text(
+                                            text = "Ask AI Doctor (हिंदी / বাংলা / etc.)",
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 15.sp,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        )
+                                        Text(
+                                            text = "Get exact spray doses & custom remedies",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                                                fontSize = 12.sp
+                                            )
+                                        )
+                                    }
+                                }
 
-                        AccordionCard(
-                            title = "Chemical Fungicide & Spray Dosages",
-                            icon = Icons.Default.Science,
-                            content = scan.treatment.ifBlank { diseaseInfo?.treatment ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)." },
-                            initiallyExpanded = true,
-                            accentColor = SolarGold
-                        )
+                                Icon(
+                                    imageVector = Icons.Default.ChatBubble,
+                                    contentDescription = null,
+                                    tint = EmeraldPrimary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    }
 
-                        AccordionCard(
-                            title = "Organic / Desi Remedies & Prevention",
-                            icon = Icons.Default.Shield,
-                            content = diseaseInfo?.prevention ?: "Spray 5% Neem oil extract, prune and destroy severely infected leaves, and maintain proper crop spacing.",
-                            initiallyExpanded = false,
-                            accentColor = EmeraldPrimary
-                        )
+                    // 4. ACTIONABLE ACCORDION DOSSIERS
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            AccordionCard(
+                                title = "Disease Symptoms & Identification",
+                                icon = Icons.Default.Coronavirus,
+                                content = scan.symptoms.ifBlank { diseaseInfo?.symptoms ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces." },
+                                initiallyExpanded = true,
+                                accentColor = CrimsonCoral
+                            )
+
+                            AccordionCard(
+                                title = "Chemical Fungicide & Spray Dosages",
+                                icon = Icons.Default.Science,
+                                content = scan.treatment.ifBlank { diseaseInfo?.treatment ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)." },
+                                initiallyExpanded = true,
+                                accentColor = SolarGold
+                            )
+
+                            AccordionCard(
+                                title = "Organic / Desi Remedies & Prevention",
+                                icon = Icons.Default.Shield,
+                                content = diseaseInfo?.prevention ?: "Spray 5% Neem oil extract, prune and destroy severely infected leaves, and maintain proper crop spacing.",
+                                initiallyExpanded = false,
+                                accentColor = EmeraldPrimary
+                            )
+                        }
                     }
                 }
             }

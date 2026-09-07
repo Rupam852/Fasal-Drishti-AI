@@ -44,15 +44,32 @@ class ScanRepositoryImpl(
             val predictedClass = onDeviceResult.predictedClass
             val confidence = onDeviceResult.confidence
 
-            // 2. Fetch rich agronomic metadata
-            val diseaseInfoResult = diseaseRepository.getDiseaseInfo(predictedClass)
-            val diseaseInfo = diseaseInfoResult.getOrNull()
+            // 2. Threshold Check: If confidence < 50%, classify as Non-Crop / Invalid Photo
+            val isInvalidCrop = confidence < 0.50f
 
-            val cropName = diseaseInfo?.cropName ?: predictedClass.substringBefore("___").replace("_", " ")
-            val diseaseName = diseaseInfo?.diseaseName ?: predictedClass.substringAfter("___").replace("_", " ")
-            val severity = diseaseInfo?.severity ?: if (diseaseName.contains("healthy", ignoreCase = true)) "None" else "Moderate"
-            val symptoms = diseaseInfo?.symptoms ?: "Water-soaked lesions on leaf surfaces."
-            val treatment = diseaseInfo?.treatment ?: "Apply recommended fungicide and maintain proper plant spacing."
+            val cropName: String
+            val diseaseName: String
+            val severity: String
+            val symptoms: String
+            val treatment: String
+
+            if (isInvalidCrop) {
+                cropName = "Non-Crop Object"
+                diseaseName = "No Plant Leaf Detected (अमान्य फोटो)"
+                severity = "Invalid"
+                symptoms = "AI vision did not detect a recognized agricultural plant leaf. The photo may contain a non-crop object, person, animal, vehicle, or is too blurry/dark."
+                treatment = "Please align a clear, well-lit plant leaf inside the camera reticle and take a close-up photo."
+            } else {
+                // Fetch rich agronomic metadata
+                val diseaseInfoResult = diseaseRepository.getDiseaseInfo(predictedClass)
+                val diseaseInfo = diseaseInfoResult.getOrNull()
+
+                cropName = diseaseInfo?.cropName ?: predictedClass.substringBefore("___").replace("_", " ")
+                diseaseName = diseaseInfo?.diseaseName ?: predictedClass.substringAfter("___").replace("_", " ")
+                severity = diseaseInfo?.severity ?: if (diseaseName.contains("healthy", ignoreCase = true)) "None" else "Moderate"
+                symptoms = diseaseInfo?.symptoms ?: "Water-soaked lesions on leaf surfaces."
+                treatment = diseaseInfo?.treatment ?: "Apply recommended fungicide and maintain proper plant spacing."
+            }
 
             // 3. Upload image to Supabase Storage in background or save local path
             val uploadResult = supabaseManager.uploadCropImage(imageFile)
@@ -62,7 +79,7 @@ class ScanRepositoryImpl(
             val scanRecord = ScanRecord(
                 id = UUID.randomUUID().toString(),
                 imageUrl = storedImageUrl,
-                predictedClass = predictedClass,
+                predictedClass = if (isInvalidCrop) "Invalid_Crop" else predictedClass,
                 confidence = confidence,
                 cropName = cropName,
                 diseaseName = diseaseName,

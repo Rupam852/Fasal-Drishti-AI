@@ -122,5 +122,8 @@ dependencies {
     // Lottie
     implementation(libs.lottie.compose)
 
+    // Chrome Custom Tabs for Native Device Google Account Picker
+    implementation("androidx.browser:browser:1.8.0")
+
     debugImplementation(libs.androidx.ui.tooling)
 }
