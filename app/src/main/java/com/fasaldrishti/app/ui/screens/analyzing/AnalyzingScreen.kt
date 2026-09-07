@@ -7,9 +7,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,16 +21,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.fasaldrishti.app.ui.theme.PrimaryGradientEnd
-import com.fasaldrishti.app.ui.theme.PrimaryGradientStart
+import com.fasaldrishti.app.ui.theme.EmeraldDark
+import com.fasaldrishti.app.ui.theme.EmeraldPrimary
+import com.fasaldrishti.app.ui.theme.ObsidianVoid
 import kotlinx.coroutines.delay
 
 @Composable
@@ -35,122 +42,183 @@ fun AnalyzingScreen(
     imagePath: String
 ) {
     val statusMessages = listOf(
-        "Photo analyze ho rahi hai...",
-        "Disease pattern check kar rahe hain...",
-        "MobileNet neural layers evaluating...",
-        "Confidence calculate kar rahe hain..."
+        "🌿 Extracting Leaf Vein Topology...",
+        "⚡ Running On-Device MobileNetV2 Neural Graph...",
+        "🔍 Cross-referencing 38 Plant Pathology Indices...",
+        "🩺 Generating Agronomy Treatment Plan..."
     )
 
     var currentMessageIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         while (true) {
-            delay(1500)
+            delay(1200)
             currentMessageIndex = (currentMessageIndex + 1) % statusMessages.size
         }
     }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "LaserScan")
-    val laserY by infiniteTransition.animateFloat(
+    // Rotating Radar Sweep Angle
+    val infiniteTransition = rememberInfiniteTransition(label = "RadarSweep")
+    val sweepAngle by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 1f,
+        targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1800, easing = LinearEasing),
+            animation = tween(durationMillis = 2000, easing = LinearEasing)
+        ),
+        label = "SweepAngle"
+    )
+
+    // Pulsing Rings Scale
+    val rippleScale by infiniteTransition.animateFloat(
+        initialValue = 0.85f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1400, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "LaserY"
+        label = "RippleScale"
     )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(ObsidianVoid)
     ) {
-        // Background blurred preview of captured crop leaf
-        AsyncImage(
-            model = imagePath,
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize()
-                .blur(20.dp)
-                .alpha(0.35f),
-            contentScale = ContentScale.Crop
-        )
+        // Blurred captured image backdrop
+        if (imagePath.isNotBlank()) {
+            AsyncImage(
+                model = imagePath,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .blur(25.dp)
+                    .alpha(0.25f),
+                contentScale = ContentScale.Crop
+            )
+        }
 
-        // Center Scanning Reticle & Laser line
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Bio-Scanner Holographic Radar
             Box(
                 modifier = Modifier
-                    .size(160.dp)
-                    .clip(CircleShape)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(PrimaryGradientEnd.copy(alpha = 0.4f), Color.Transparent)
-                        )
-                    ),
+                    .size(200.dp)
+                    .scale(rippleScale),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Psychology,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(80.dp)
-                )
-
-                // Laser scan line overlay
-                Canvas(modifier = Modifier.size(160.dp)) {
-                    val y = size.height * laserY
-                    drawLine(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(Color.Transparent, Color(0xFF69F0AE), Color.Transparent)
+                Canvas(modifier = Modifier.size(200.dp)) {
+                    // Outer Glow Rings
+                    drawCircle(
+                        color = EmeraldPrimary.copy(alpha = 0.15f),
+                        radius = size.minDimension / 2,
+                        style = Stroke(width = 2.dp.toPx())
+                    )
+                    drawCircle(
+                        color = EmeraldPrimary.copy(alpha = 0.25f),
+                        radius = size.minDimension / 2.8f,
+                        style = Stroke(width = 1.5.dp.toPx())
+                    )
+                    // Rotating Radar Sweep Line
+                    drawArc(
+                        brush = Brush.sweepGradient(
+                            listOf(Color.Transparent, EmeraldPrimary.copy(alpha = 0.7f), EmeraldPrimary)
                         ),
-                        start = Offset(0f, y),
-                        end = Offset(size.width, y),
-                        strokeWidth = 4.dp.toPx()
+                        startAngle = sweepAngle,
+                        sweepAngle = 90f,
+                        useCenter = true
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(90.dp)
+                        .clip(CircleShape)
+                        .background(
+                            brush = Brush.radialGradient(
+                                listOf(EmeraldPrimary.copy(alpha = 0.4f), Color.Transparent)
+                            )
+                        )
+                        .border(2.dp, EmeraldPrimary, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Psychology,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(46.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-            // Rotating status text with animated crossfade
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = EmeraldDark.copy(alpha = 0.25f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = EmeraldPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "TENSORFLOW LITE NNAPI",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = EmeraldPrimary,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.2.sp
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Dynamic Step Ticker
             AnimatedContent(
                 targetState = statusMessages[currentMessageIndex],
-                transitionSpec = { fadeIn(tween(400)) togetherWith fadeOut(tween(400)) },
-                label = "StatusText"
+                transitionSpec = { fadeIn(tween(350)) togetherWith fadeOut(tween(350)) },
+                label = "AnalyzingStatus"
             ) { msg ->
                 Text(
                     text = msg,
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = Color.White,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 17.sp
-                    )
+                        fontSize = 16.sp
+                    ),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
             }
         }
 
-        // Indeterminate gradient progress bar at bottom
+        // Bottom Progress Bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
-                .padding(horizontal = 40.dp, vertical = 40.dp)
+                .padding(horizontal = 40.dp, vertical = 32.dp)
         ) {
             LinearProgressIndicator(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(6.dp)
+                    .height(5.dp)
                     .clip(CircleShape),
-                color = Color(0xFF69F0AE),
-                trackColor = Color.White.copy(alpha = 0.2f)
+                color = EmeraldPrimary,
+                trackColor = Color.White.copy(alpha = 0.15f)
             )
         }
     }

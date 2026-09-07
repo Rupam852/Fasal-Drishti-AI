@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -24,8 +25,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fasaldrishti.app.ui.components.AppLogo
-import com.fasaldrishti.app.ui.theme.PrimaryGradientEnd
-import com.fasaldrishti.app.ui.theme.PrimaryGradientStart
+import com.fasaldrishti.app.ui.theme.EmeraldDark
+import com.fasaldrishti.app.ui.theme.EmeraldPrimary
+import com.fasaldrishti.app.ui.theme.ObsidianVoid
 
 @Composable
 fun LoginScreen(
@@ -43,40 +45,57 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        PrimaryGradientStart.copy(alpha = 0.85f),
-                        PrimaryGradientEnd.copy(alpha = 0.5f),
-                        MaterialTheme.colorScheme.background
+            .background(ObsidianVoid)
+    ) {
+        // Glowing Ambient Light Beam Backdrop
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp)
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            EmeraldDark.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
                     )
                 )
-            )
-    ) {
-        // Top Background Branding with Theme Adaptive AppLogo
+        )
+
+        // Top Branding Header
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .padding(top = 40.dp, start = 24.dp, end = 24.dp),
+                .padding(top = 48.dp, start = 24.dp, end = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AppLogo(
-                size = 80.dp,
+                size = 92.dp,
                 animated = true
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
             Text(
-                text = "Fasal Drishti",
+                text = "फसल दृष्टि AI",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 30.sp,
+                    letterSpacing = 1.sp
+                )
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Precision Agronomy & Crop Disease Vision",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = EmeraldPrimary,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp
                 )
             )
         }
 
-        // Bottom Sheet Style Card
+        // Bottom Sheet Authentication Card
         AnimatedVisibility(
             visible = true,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
@@ -86,10 +105,10 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(),
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                shape = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp),
                 color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 6.dp,
-                shadowElevation = 24.dp
+                shadowElevation = 24.dp,
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
             ) {
                 Column(
                     modifier = Modifier
@@ -99,25 +118,26 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Welcome to Fasal Drishti",
+                        text = "Welcome Back",
                         style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.ExtraBold,
                             fontSize = 22.sp
                         ),
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = "Login to start scanning and protecting your crops",
+                        text = "Sign in to access your crop scan history & AI prescriptions",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            fontSize = 13.5.sp
                         ),
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(28.dp))
 
                     // Google OAuth Button
                     AuthButton(
@@ -128,7 +148,7 @@ fun LoginScreen(
                         isLoading = uiState.isLoading
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     // GitHub OAuth Button
                     AuthButton(
@@ -139,12 +159,13 @@ fun LoginScreen(
                         isLoading = uiState.isLoading
                     )
 
-                    Spacer(modifier = Modifier.height(28.dp))
+                    Spacer(modifier = Modifier.height(26.dp))
 
                     Text(
-                        text = "By continuing, you agree to our Terms & Privacy Policy",
+                        text = "By signing in, you agree to our Terms of Service & Privacy Policy",
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            fontSize = 11.sp
                         ),
                         textAlign = TextAlign.Center
                     )
@@ -166,10 +187,11 @@ private fun AuthButton(
         modifier = Modifier
             .fillMaxWidth()
             .height(54.dp)
+            .shadow(2.dp, RoundedCornerShape(28.dp))
             .clip(RoundedCornerShape(28.dp))
             .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                width = 1.2.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(28.dp)
             )
             .background(MaterialTheme.colorScheme.surface)
@@ -198,7 +220,7 @@ private fun AuthButton(
                 Text(
                     text = text,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )

@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -21,6 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,8 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fasaldrishti.app.ui.components.GradientButton
-import com.fasaldrishti.app.ui.theme.PrimaryGradientEnd
-import com.fasaldrishti.app.ui.theme.PrimaryGradientStart
+import com.fasaldrishti.app.ui.theme.*
 import kotlinx.coroutines.launch
 
 data class OnboardingPage(
@@ -47,22 +48,22 @@ fun OnboardingScreen(
 ) {
     val pages = listOf(
         OnboardingPage(
-            title = "Apne crop ki photo kheenchiye",
-            description = "Point your camera at affected crop leaves. Capture high-clarity photos effortlessly with our guided viewfinder.",
+            title = "Crop Leaf Photo Scan",
+            description = "Point your camera at affected leaves. On-device NNAPI vision runs instantly with zero internet requirement.",
             icon = Icons.Default.CameraAlt,
-            gradient = listOf(PrimaryGradientStart, PrimaryGradientEnd)
+            gradient = listOf(EmeraldPrimary, EmeraldDark)
         ),
         OnboardingPage(
-            title = "AI se turant disease pehchaniye",
-            description = "Our fine-tuned MobileNet deep learning model recognizes 38 crop disease types in under 1 second with 94%+ accuracy.",
+            title = "38 Plant Disease Diagnosis",
+            description = "Fine-tuned MobileNet deep learning model recognizes 38 crop disease types in under 150ms with 95%+ accuracy.",
             icon = Icons.Default.Psychology,
-            gradient = listOf(Color(0xFF00796B), Color(0xFF26A69A))
+            gradient = listOf(Color(0xFF00E5FF), Color(0xFF0091EA))
         ),
         OnboardingPage(
-            title = "Sahi ilaaj, behtar fasal",
-            description = "Get instant chemical and organic spray dosages, preventative care, and chat directly with our AI Agronomist.",
+            title = "Prescriptions & AI Agronomist",
+            description = "Get exact chemical dosages per litre, bio-organic remedies, and chat in your native language with NVIDIA NIM.",
             icon = Icons.Default.CheckCircle,
-            gradient = listOf(Color(0xFF2E7D32), Color(0xFF66BB6A))
+            gradient = listOf(SolarGold, Color(0xFFE65100))
         )
     )
 
@@ -75,16 +76,16 @@ fun OnboardingScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.End
             ) {
                 if (pagerState.currentPage < pages.size - 1) {
                     TextButton(onClick = onFinish) {
                         Text(
                             text = "Skip",
-                            style = MaterialTheme.typography.labelLarge.copy(
+                            style = MaterialTheme.typography.titleSmall.copy(
                                 color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Bold
                             )
                         )
                     }
@@ -96,23 +97,23 @@ fun OnboardingScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
-                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                    .padding(horizontal = 28.dp, vertical = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Page Indicator Dots (Pill Elongation)
+                // Expanded Pill Indicators
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.padding(bottom = 28.dp)
                 ) {
                     repeat(pages.size) { index ->
                         val isSelected = pagerState.currentPage == index
                         val width by animateDpAsState(
-                            targetValue = if (isSelected) 28.dp else 8.dp,
-                            animationSpec = tween(durationMillis = 300),
+                            targetValue = if (isSelected) 32.dp else 10.dp,
+                            animationSpec = tween(300),
                             label = "DotWidth"
                         )
                         val color by animateColorAsState(
-                            targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                            targetValue = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
                             label = "DotColor"
                         )
 
@@ -126,18 +127,16 @@ fun OnboardingScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(28.dp))
-
-                val isLastPage = pagerState.currentPage == pages.size - 1
+                // Primary CTA
                 GradientButton(
-                    text = if (isLastPage) "Get Started" else "Next",
+                    text = if (pagerState.currentPage == pages.size - 1) "Get Started (शुरू करें)" else "Next",
                     onClick = {
-                        if (isLastPage) {
-                            onFinish()
-                        } else {
+                        if (pagerState.currentPage < pages.size - 1) {
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(pagerState.currentPage + 1)
                             }
+                        } else {
+                            onFinish()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -155,45 +154,48 @@ fun OnboardingScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 28.dp),
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Illustration Card
+                // 3D Glass Hero Icon Orb
                 Box(
                     modifier = Modifier
-                        .size(220.dp)
-                        .clip(RoundedCornerShape(36.dp))
+                        .size(170.dp)
+                        .shadow(20.dp, CircleShape, spotColor = page.gradient.first().copy(alpha = 0.5f))
+                        .clip(CircleShape)
                         .background(
-                            brush = Brush.linearGradient(page.gradient)
-                        ),
+                            brush = Brush.radialGradient(page.gradient)
+                        )
+                        .border(3.dp, Color.White.copy(alpha = 0.6f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = page.icon,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(96.dp)
+                        modifier = Modifier.size(80.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(44.dp))
 
                 Text(
                     text = page.title,
                     style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.ExtraBold,
                         fontSize = 24.sp
                     ),
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
                     text = page.description,
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                        fontSize = 15.sp,
                         lineHeight = 24.sp
                     ),
                     textAlign = TextAlign.Center

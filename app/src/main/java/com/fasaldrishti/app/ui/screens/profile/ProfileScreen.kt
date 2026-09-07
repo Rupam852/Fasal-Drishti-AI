@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,17 +20,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fasaldrishti.app.data.remote.UpdateManager
-import com.fasaldrishti.app.ui.components.StatChip
 import com.fasaldrishti.app.ui.screens.auth.AuthViewModel
-import com.fasaldrishti.app.ui.theme.AmberAccent
-import com.fasaldrishti.app.ui.theme.GreenPrimary
-import com.fasaldrishti.app.ui.theme.RedSevere
+import com.fasaldrishti.app.ui.theme.*
 
 data class AchievementBadge(
     val title: String,
@@ -50,10 +51,10 @@ fun ProfileScreen(
     val updateInfo by updateManager.updateInfo.collectAsState()
 
     val badges = listOf(
-        AchievementBadge("First Scan", Icons.Default.CameraAlt, GreenPrimary),
-        AchievementBadge("Green Guardian", Icons.Default.Shield, Color(0xFF00897B)),
-        AchievementBadge("7-Day Streak", Icons.Default.LocalFireDepartment, AmberAccent),
-        AchievementBadge("AI Pioneer", Icons.Default.Psychology, Color(0xFF5E35B1))
+        AchievementBadge("First Scan", Icons.Default.CameraAlt, EmeraldPrimary),
+        AchievementBadge("Plant Doctor", Icons.Default.Shield, Color(0xFF00B0FF)),
+        AchievementBadge("7-Day Streak", Icons.Default.LocalFireDepartment, SolarGold),
+        AchievementBadge("AI Pioneer", Icons.Default.Psychology, Color(0xFFAA00FF))
     )
 
     Scaffold(
@@ -67,10 +68,10 @@ fun ProfileScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "My Profile",
+                    text = "Farmer Profile",
                     style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 22.sp
                     )
                 )
 
@@ -78,6 +79,7 @@ fun ProfileScreen(
                     IconButton(
                         onClick = onNavigateToSettings,
                         modifier = Modifier
+                            .size(40.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                     ) {
@@ -87,7 +89,6 @@ fun ProfileScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
-                    // Red Notification Dot on Settings Icon if update is available
                     if (updateInfo.hasUpdate) {
                         Box(
                             modifier = Modifier
@@ -95,7 +96,7 @@ fun ProfileScreen(
                                 .align(Alignment.TopEnd)
                                 .offset(x = (-2).dp, y = (2).dp)
                                 .clip(CircleShape)
-                                .background(RedSevere)
+                                .background(CrimsonCoral)
                         )
                     }
                 }
@@ -106,191 +107,207 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // User Avatar & Name Card
+            // 1. HERO PROFILE CARD
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(8.dp, RoundedCornerShape(26.dp)),
+                    shape = RoundedCornerShape(26.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp),
+                            .padding(22.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(90.dp)
+                                .size(76.dp)
+                                .shadow(12.dp, CircleShape, spotColor = EmeraldPrimary)
                                 .clip(CircleShape)
-                                .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                                .background(MaterialTheme.colorScheme.primaryContainer),
+                                .background(
+                                    brush = Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
+                                )
+                                .border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(54.dp)
+                                tint = Color.White,
+                                modifier = Modifier.size(42.dp)
                             )
                         }
 
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
-                            text = user?.name ?: "Ramesh Kumar",
+                            text = user?.name ?: "Kisan / Agronomist",
                             style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.ExtraBold,
                                 fontSize = 20.sp
                             )
                         )
 
                         Text(
-                            text = user?.email ?: "ramesh.farmer@example.com",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            text = user?.email ?: "kisan.farmer@gmail.com",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                fontSize = 13.sp
                             )
                         )
-                    }
-                }
-            }
 
-            // Stats Row
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    StatChip(
-                        title = "Total Scans",
-                        value = "${user?.totalScans ?: 12}",
-                        icon = Icons.Default.Analytics,
-                        iconTint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatChip(
-                        title = "Healthy",
-                        value = "${user?.healthyCount ?: 8}",
-                        icon = Icons.Default.CheckCircle,
-                        iconTint = GreenPrimary,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatChip(
-                        title = "Diseased",
-                        value = "${user?.diseasedCount ?: 4}",
-                        icon = Icons.Default.Warning,
-                        iconTint = AmberAccent,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
+                        Spacer(modifier = Modifier.height(12.dp))
 
-            // Achievement Badges Section
-            item {
-                Column {
-                    Text(
-                        text = "Achievements",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(badges) { badge ->
-                            Card(
-                                shape = RoundedCornerShape(18.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface
-                                ),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = EmeraldPrimary.copy(alpha = 0.15f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(34.dp)
-                                            .clip(CircleShape)
-                                            .background(badge.color.copy(alpha = 0.15f)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = badge.icon,
-                                            contentDescription = null,
-                                            tint = badge.color,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = badge.title,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.SemiBold,
-                                            fontSize = 12.sp
-                                        )
+                                Icon(
+                                    imageVector = Icons.Default.Verified,
+                                    contentDescription = null,
+                                    tint = EmeraldPrimary,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Master Agronomist • Level 4",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = EmeraldPrimaryVariant,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp
                                     )
-                                }
+                                )
                             }
                         }
                     }
                 }
             }
 
-            // Navigation Actions Card
+            // 2. STATS ROW
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StatCard(
+                        title = "Scans",
+                        value = "${user?.totalScans ?: 14}",
+                        icon = Icons.Default.CameraAlt,
+                        color = EmeraldPrimary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        title = "Healthy",
+                        value = "${user?.healthyCount ?: 9}",
+                        icon = Icons.Default.Spa,
+                        color = NeonLime,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        title = "Treated",
+                        value = "${user?.diseasedCount ?: 5}",
+                        icon = Icons.Default.MedicalServices,
+                        color = SolarGold,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            // 3. ACHIEVEMENTS SECTION
+            item {
+                Text(
+                    text = "Agri-Badges & Milestones",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                )
+            }
+
+            item {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    items(badges) { badge ->
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
+                            shadowElevation = 2.dp
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .clip(CircleShape)
+                                        .background(badge.color.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = badge.icon,
+                                        contentDescription = null,
+                                        tint = badge.color,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = badge.title,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 4. ACTION TILES
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(22.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                 ) {
-                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                        ProfileMenuItem(
-                            title = "My Scan History",
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        ProfileTile(
                             icon = Icons.Default.History,
+                            title = "My Scan History",
+                            subtitle = "View past diagnoses & prescriptions",
                             onClick = onNavigateToHistory
                         )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                        ProfileMenuItem(
-                            title = "Settings & Appearance",
-                            icon = Icons.Default.Settings,
-                            onClick = onNavigateToSettings,
-                            showBadge = updateInfo.hasUpdate
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                        ProfileMenuItem(
-                            title = "About Fasal Drishti",
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(horizontal = 12.dp))
+                        ProfileTile(
                             icon = Icons.Default.Info,
+                            title = "About Fasal Drishti",
+                            subtitle = "Version, developer vision & contributors",
                             onClick = onNavigateToAbout
                         )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                        ProfileMenuItem(
-                            title = "Logout",
-                            icon = Icons.Default.Logout,
-                            textColor = RedSevere,
-                            iconColor = RedSevere,
-                            onClick = onLogout
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(horizontal = 12.dp))
+                        ProfileTile(
+                            icon = Icons.AutoMirrored.Filled.Logout,
+                            title = "Sign Out",
+                            subtitle = "Log out from current session",
+                            onClick = onLogout,
+                            tint = CrimsonCoral
                         )
                     }
                 }
@@ -300,54 +317,101 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun ProfileMenuItem(
+private fun StatCard(
     title: String,
+    value: String,
     icon: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 20.sp
+                )
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    fontSize = 11.sp
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileTile(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
     onClick: () -> Unit,
-    textColor: Color = MaterialTheme.colorScheme.onSurface,
-    iconColor: Color = MaterialTheme.colorScheme.primary,
-    showBadge: Boolean = false
+    tint: Color = MaterialTheme.colorScheme.primary
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() }
-            .padding(horizontal = 20.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconColor,
-                    modifier = Modifier.size(22.dp)
-                )
-                if (showBadge) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .align(Alignment.TopEnd)
-                            .clip(CircleShape)
-                            .background(RedSevere)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(14.dp))
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(tint.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Medium,
-                    color = textColor
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.5.sp
+                )
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                    fontSize = 12.sp
                 )
             )
         }
         Icon(
-            imageVector = Icons.Default.ChevronRight,
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-            modifier = Modifier.size(20.dp)
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+            modifier = Modifier.size(16.dp)
         )
     }
 }

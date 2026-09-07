@@ -4,11 +4,13 @@ import android.content.Intent
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +32,7 @@ import com.fasaldrishti.app.ui.components.GradientButton
 import com.fasaldrishti.app.ui.components.SeverityBadge
 import com.fasaldrishti.app.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultScreen(
     scanId: String,
@@ -47,62 +51,75 @@ fun ResultScreen(
     val scan = uiState.scanRecord
     val diseaseInfo = uiState.diseaseInfo
 
-    val severityColor = when (scan?.severity?.lowercase()) {
-        "severe" -> RedSevere
-        "moderate" -> AmberAccent
-        "none", "healthy" -> GreenPrimary
-        else -> GreenPrimary
-    }
-
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        "Diagnosis Dossier",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        scan?.let {
+                            val sendIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    "Fasal Drishti Diagnosis Dossier:\nCrop: ${it.cropName}\nCondition: ${it.diseaseName}\nSeverity: ${it.severity}\nConfidence: ${(it.confidence * 100).toInt()}%"
+                                )
+                                type = "text/plain"
+                            }
+                            context.startActivity(Intent.createChooser(sendIntent, "Share Diagnosis"))
+                        }
+                    }) {
+                        Icon(Icons.Default.Share, contentDescription = "Share", tint = EmeraldPrimary)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        },
         bottomBar = {
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding(),
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp,
-                shadowElevation = 16.dp
+                shadowElevation = 16.dp,
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 14.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Share Button
                     OutlinedButton(
-                        onClick = {
-                            val sendIntent: Intent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    "Fasal Drishti Diagnosis:\nCrop: ${scan?.cropName}\nDisease: ${scan?.diseaseName}\nConfidence: ${(scan?.confidence ?: 0f) * 100}%\nTreatment: ${scan?.treatment}"
-                                )
-                                type = "text/plain"
-                            }
-                            context.startActivity(Intent.createChooser(sendIntent, "Share Diagnosis"))
-                        },
+                        onClick = onScanAgain,
                         modifier = Modifier
-                            .size(52.dp)
-                            .clip(CircleShape),
-                        shape = CircleShape,
-                        contentPadding = PaddingValues(0.dp)
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.5f))
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "Share",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Rescan", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
                     }
 
-                    // Scan Again Primary CTA Button
                     GradientButton(
-                        text = "Scan Again",
-                        icon = Icons.Default.CameraAlt,
-                        onClick = onScanAgain,
-                        modifier = Modifier.weight(1f)
+                        text = "Consult AI Doctor",
+                        onClick = { scan?.let { onNavigateToChat(it.diseaseName) } },
+                        modifier = Modifier
+                            .weight(1.3f)
+                            .height(52.dp),
+                        icon = Icons.Default.Chat
                     )
                 }
             }
@@ -110,7 +127,7 @@ fun ResultScreen(
     ) { innerPadding ->
         if (scan == null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                CircularProgressIndicator(color = EmeraldPrimary)
             }
         } else {
             LazyColumn(
@@ -120,27 +137,53 @@ fun ResultScreen(
                 contentPadding = PaddingValues(bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                // Hero Image with dynamic colored glow border
+                // 1. HERO LEAF IMAGE WITH GLOW OVERLAY
                 item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(280.dp)
+                            .height(290.dp)
                             .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-                            .border(
-                                width = 3.dp,
-                                color = severityColor.copy(alpha = 0.6f),
-                                shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
-                            )
                     ) {
-                        AsyncImage(
-                            model = scan.imageUrl,
-                            contentDescription = scan.diseaseName,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                        if (!scan.imageUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = scan.imageUrl,
+                                contentDescription = scan.diseaseName,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(ObsidianVoid),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Eco,
+                                    contentDescription = null,
+                                    tint = EmeraldPrimary,
+                                    modifier = Modifier.size(64.dp)
+                                )
+                            }
+                        }
+
+                        // Gradient Scrim Overlay
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Black.copy(alpha = 0.65f),
+                                            Color.Transparent,
+                                            Color.Black.copy(alpha = 0.75f)
+                                        )
+                                    )
+                                )
                         )
 
-                        // Top Left Back Button Overlay
+                        // Top Floating Back Button
                         IconButton(
                             onClick = onNavigateBack,
                             modifier = Modifier
@@ -148,128 +191,193 @@ fun ResultScreen(
                                 .padding(16.dp)
                                 .size(42.dp)
                                 .clip(CircleShape)
-                                .background(Color.Black.copy(alpha = 0.5f))
+                                .background(Color.Black.copy(alpha = 0.6f))
+                                .border(1.dp, Color.White.copy(alpha = 0.25f), CircleShape)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back",
                                 tint = Color.White
                             )
                         }
+
+                        // Bottom Image Banner Crop Badge
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(horizontal = 20.dp, vertical = 18.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(16.dp),
+                                color = EmeraldPrimary.copy(alpha = 0.92f)
+                            ) {
+                                Text(
+                                    text = scan.cropName.uppercase(),
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        letterSpacing = 0.8.sp
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
 
-                // Disease Header & Confidence Section
+                // 2. DIAGNOSTIC DOSSIER HEADER
                 item {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        shape = RoundedCornerShape(24.dp),
+                            .padding(horizontal = 20.dp)
+                            .shadow(6.dp, RoundedCornerShape(26.dp)),
+                        shape = RoundedCornerShape(26.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface
                         ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(20.dp),
+                                .padding(22.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 SeverityBadge(severity = scan.severity)
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(10.dp))
                                 Text(
                                     text = scan.diseaseName,
                                     style = MaterialTheme.typography.headlineMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 22.sp
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 21.sp
                                     )
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Crop: ${scan.cropName}",
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    text = "Diagnosed on: ${scan.timestamp}",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                        fontSize = 12.sp
                                     )
                                 )
                             }
 
                             ConfidenceRing(
                                 confidence = scan.confidence,
-                                size = 76.dp,
-                                strokeWidth = 7.dp
+                                size = 84.dp,
+                                strokeWidth = 8.dp
                             )
                         }
                     }
                 }
 
-                // Ask AI CTA Banner Button
+                // 3. ASK AI KRISHI DOCTOR BANNER (NVIDIA NIM)
                 item {
-                    OutlinedButton(
-                        onClick = {
-                            val contextMsg = "Crop: ${scan.cropName}, Disease: ${scan.diseaseName} (${(scan.confidence * 100).toInt()}% confidence)"
-                            onNavigateToChat(contextMsg)
-                        },
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 20.dp)
-                            .height(54.dp),
+                            .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = EmeraldPrimary.copy(alpha = 0.35f))
+                            .clip(RoundedCornerShape(24.dp))
+                            .clickable {
+                                val contextMsg = "Crop: ${scan.cropName}, Disease: ${scan.diseaseName} (${(scan.confidence * 100).toInt()}% confidence, Severity: ${scan.severity})"
+                                onNavigateToChat(contextMsg)
+                            },
                         shape = RoundedCornerShape(24.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.primary
-                        ),
-                        border = androidx.compose.foundation.BorderStroke(
-                            1.5.dp,
-                            MaterialTheme.colorScheme.primary
-                        )
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.5f))
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(18.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            brush = Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Psychology,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(26.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(14.dp))
+                                Column {
+                                    Text(
+                                        text = "Ask AI Doctor (हिंदी / বাংলা / etc.)",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                    Text(
+                                        text = "Get exact spray doses & custom remedies",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                                            fontSize = 12.sp
+                                        )
+                                    )
+                                }
+                            }
+
                             Icon(
-                                imageVector = Icons.Default.ChatBubbleOutline,
+                                imageVector = Icons.Default.ChatBubble,
                                 contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                text = "Ask AI for more details",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp
-                                )
+                                tint = EmeraldPrimary,
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
                 }
 
-                // Expandable Accordion Cards (Symptoms, Treatment, Prevention)
+                // 4. ACTIONABLE ACCORDION DOSSIERS
                 item {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 20.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         AccordionCard(
-                            title = "Symptoms",
+                            title = "Disease Symptoms & Identification",
                             icon = Icons.Default.Coronavirus,
-                            content = scan.symptoms.ifBlank { diseaseInfo?.symptoms ?: "Water-soaked lesions on leaf surfaces." },
-                            initiallyExpanded = true
+                            content = scan.symptoms.ifBlank { diseaseInfo?.symptoms ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces." },
+                            initiallyExpanded = true,
+                            accentColor = CrimsonCoral
                         )
 
                         AccordionCard(
-                            title = "Treatment Recommendations",
-                            icon = Icons.Default.MedicalServices,
-                            content = scan.treatment.ifBlank { diseaseInfo?.treatment ?: "Apply approved fungicide." },
-                            initiallyExpanded = true
+                            title = "Chemical Fungicide & Spray Dosages",
+                            icon = Icons.Default.Science,
+                            content = scan.treatment.ifBlank { diseaseInfo?.treatment ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)." },
+                            initiallyExpanded = true,
+                            accentColor = SolarGold
                         )
 
                         AccordionCard(
-                            title = "Prevention Tips",
+                            title = "Organic / Desi Remedies & Prevention",
                             icon = Icons.Default.Shield,
-                            content = diseaseInfo?.prevention ?: "Ensure good aeration between plants, crop rotation, and avoid overhead sprinkler watering.",
-                            initiallyExpanded = false
+                            content = diseaseInfo?.prevention ?: "Spray 5% Neem oil extract, prune and destroy severely infected leaves, and maintain proper crop spacing.",
+                            initiallyExpanded = false,
+                            accentColor = EmeraldPrimary
                         )
                     }
                 }

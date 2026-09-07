@@ -1,9 +1,11 @@
 package com.fasaldrishti.app.ui.screens.chat
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,21 +15,25 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fasaldrishti.app.domain.model.ChatMessage
-import com.fasaldrishti.app.ui.theme.GreenPrimary
-import com.fasaldrishti.app.ui.theme.PrimaryGradientEnd
-import com.fasaldrishti.app.ui.theme.PrimaryGradientStart
-import kotlinx.coroutines.launch
+import com.fasaldrishti.app.ui.theme.EmeraldDark
+import com.fasaldrishti.app.ui.theme.EmeraldPrimary
+import com.fasaldrishti.app.ui.theme.ObsidianVoid
+import com.fasaldrishti.app.ui.theme.SolarGold
 
 @Composable
 fun ChatScreen(
@@ -38,7 +44,6 @@ fun ChatScreen(
     val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(contextInfo) {
         viewModel.initContext(contextInfo)
@@ -52,11 +57,11 @@ fun ChatScreen(
 
     val suggestedChips = listOf(
         "🇮🇳 हिंदी में समझाएं",
-        "🌾 Desi/Organic Upchar?",
-        "🧪 Chemical & Dosage Spray",
+        "🧪 Chemical Spray & Dosage",
+        "🌿 Desi/Organic Upchar",
         "🌾 বাংলা ভাষায় বলুন",
-        "Is it contagious to nearby crops?",
-        "How to prevent in next season?"
+        "🌾 मराठीत सांगा",
+        "Is it contagious to other crops?"
     )
 
     Scaffold(
@@ -64,34 +69,37 @@ fun ChatScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 4.dp
+                shadowElevation = 4.dp
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
 
                     Box(
                         modifier = Modifier
-                            .size(38.dp)
+                            .size(42.dp)
+                            .shadow(6.dp, CircleShape, spotColor = EmeraldPrimary)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
+                            .background(
+                                brush = Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Psychology,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
 
@@ -99,17 +107,29 @@ fun ChatScreen(
 
                     Column {
                         Text(
-                            text = "Ask Fasal AI",
+                            text = "AI Krishi Doctor",
                             style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 17.sp
                             )
                         )
-                        Text(
-                            text = "Powered by NVIDIA Agronomy NIM",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                color = MaterialTheme.colorScheme.primary
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .clip(CircleShape)
+                                    .background(EmeraldPrimary)
                             )
-                        )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "NVIDIA NIM Multilingual",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = EmeraldPrimary,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -119,7 +139,7 @@ fun ChatScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 // Quick suggested reply chips
                 LazyRow(
@@ -128,17 +148,19 @@ fun ChatScreen(
                 ) {
                     items(suggestedChips) { chip ->
                         Surface(
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(20.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
                             modifier = Modifier.clickable {
                                 viewModel.sendMessage(chip)
                             }
                         ) {
                             Text(
                                 text = chip,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             )
                         }
@@ -146,44 +168,56 @@ fun ChatScreen(
                 }
 
                 // Chat Input Row
-                Row(
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
+                    shadowElevation = 6.dp
                 ) {
-                    OutlinedTextField(
-                        value = inputText,
-                        onValueChange = { inputText = it },
-                        placeholder = { Text("Ask your farming question...") },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(26.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        maxLines = 3
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    IconButton(
-                        onClick = {
-                            if (inputText.isNotBlank()) {
-                                viewModel.sendMessage(inputText)
-                                inputText = ""
-                            }
-                        },
+                    Row(
                         modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .background(if (inputText.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Send,
-                            contentDescription = "Send",
-                            tint = if (inputText.isNotBlank()) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        OutlinedTextField(
+                            value = inputText,
+                            onValueChange = { inputText = it },
+                            placeholder = { Text("Apna sawal yahan likhein (Hindi, English, etc.)...") },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.Transparent,
+                                unfocusedBorderColor = Color.Transparent,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent
+                            ),
+                            maxLines = 3
                         )
+
+                        IconButton(
+                            onClick = {
+                                if (inputText.isNotBlank()) {
+                                    viewModel.sendMessage(inputText)
+                                    inputText = ""
+                                }
+                            },
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (inputText.isNotBlank()) EmeraldPrimary
+                                    else MaterialTheme.colorScheme.surfaceVariant
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                contentDescription = "Send",
+                                tint = if (inputText.isNotBlank()) ObsidianVoid else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -203,26 +237,27 @@ fun ChatScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(18.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                        )
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(12.dp),
+                            modifier = Modifier.padding(14.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Info,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = EmeraldDark
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = "Diagnosed Context: ${uiState.contextInfo}",
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             )
                         }
@@ -239,19 +274,29 @@ fun ChatScreen(
             if (uiState.isAiTyping) {
                 item {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(EmeraldPrimary.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Psychology,
+                                contentDescription = null,
+                                tint = EmeraldPrimary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Fasal AI is analyzing...",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            text = "AI Krishi Doctor is thinking...",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                             )
                         )
                     }
@@ -263,51 +308,50 @@ fun ChatScreen(
 
 @Composable
 private fun ChatMessageBubble(message: ChatMessage) {
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = if (message.isUser) Alignment.CenterEnd else Alignment.CenterStart
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start,
-            verticalAlignment = Alignment.Top
-        ) {
-            if (!message.isUser) {
-                Box(
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Psychology,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-            }
+    val isUser = message.isUser
 
-            Surface(
-                shape = RoundedCornerShape(
-                    topStart = 18.dp,
-                    topEnd = 18.dp,
-                    bottomStart = if (message.isUser) 18.dp else 4.dp,
-                    bottomEnd = if (message.isUser) 4.dp else 18.dp
-                ),
-                color = if (message.isUser) GreenPrimary else MaterialTheme.colorScheme.surface,
-                tonalElevation = if (message.isUser) 0.dp else 2.dp,
-                shadowElevation = 2.dp,
-                modifier = Modifier.weight(1f, fill = false)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
+    ) {
+        if (!isUser) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(EmeraldDark),
+                contentAlignment = Alignment.Center
             ) {
+                Icon(
+                    imageVector = Icons.Default.Psychology,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+        Surface(
+            shape = RoundedCornerShape(
+                topStart = 20.dp,
+                topEnd = 20.dp,
+                bottomStart = if (isUser) 20.dp else 4.dp,
+                bottomEnd = if (isUser) 4.dp else 20.dp
+            ),
+            color = if (isUser) EmeraldPrimary
+            else MaterialTheme.colorScheme.surface,
+            border = if (!isUser) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)) else null,
+            shadowElevation = 2.dp,
+            modifier = Modifier.widthIn(max = 310.dp)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
                 Text(
                     text = message.text,
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = if (message.isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                        lineHeight = 20.sp
+                        color = if (isUser) ObsidianVoid else MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 22.sp,
+                        fontSize = 14.5.sp
                     )
                 )
             }

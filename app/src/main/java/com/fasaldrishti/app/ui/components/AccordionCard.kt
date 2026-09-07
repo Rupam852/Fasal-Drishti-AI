@@ -18,9 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fasaldrishti.app.ui.theme.EmeraldPrimary
 
 @Composable
 fun AccordionCard(
@@ -28,7 +32,8 @@ fun AccordionCard(
     icon: ImageVector,
     content: String,
     modifier: Modifier = Modifier,
-    initiallyExpanded: Boolean = false
+    initiallyExpanded: Boolean = false,
+    accentColor: Color = EmeraldPrimary
 ) {
     var expanded by remember { mutableStateOf(initiallyExpanded) }
     val rotation by animateFloatAsState(
@@ -39,18 +44,22 @@ fun AccordionCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .shadow(4.dp, RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(22.dp))
             .clickable { expanded = !expanded },
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            if (expanded) accentColor.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(18.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -60,33 +69,39 @@ fun AccordionCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer),
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(accentColor.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                            tint = accentColor,
+                            modifier = Modifier.size(22.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(14.dp))
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
                     )
                 }
 
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (expanded) "Collapse" else "Expand",
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    modifier = Modifier.rotate(rotation)
-                )
+                IconButton(
+                    onClick = { expanded = !expanded },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (expanded) "Collapse" else "Expand",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.rotate(rotation)
+                    )
+                }
             }
 
             AnimatedVisibility(
@@ -97,18 +112,19 @@ fun AccordionCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 12.dp)
+                        .padding(top = 14.dp)
                 ) {
                     HorizontalDivider(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
                         thickness = 1.dp
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = content,
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
-                            lineHeight = 22.sp
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.88f),
+                            lineHeight = 23.sp,
+                            fontSize = 14.5.sp
                         )
                     )
                 }

@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,8 +21,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fasaldrishti.app.data.remote.UpdateManager
-import com.fasaldrishti.app.ui.theme.AmberAccent
-import com.fasaldrishti.app.ui.theme.RedSevere
+import com.fasaldrishti.app.ui.theme.CrimsonCoral
+import com.fasaldrishti.app.ui.theme.EmeraldPrimary
+import com.fasaldrishti.app.ui.theme.SolarGold
 
 enum class ThemeOption { LIGHT, DARK, SYSTEM }
 enum class LanguageOption { ENGLISH, HINDI }
@@ -45,17 +48,24 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                    .padding(horizontal = 20.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                IconButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Settings",
+                    text = "Settings & Preferences",
                     style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 20.sp
                     )
                 )
             }
@@ -64,26 +74,25 @@ fun SettingsScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(innerPadding),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Appearance Theme Section
+            // 1. APPEARANCE SECTION
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(22.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                 ) {
                     Column(modifier = Modifier.padding(18.dp)) {
                         Text(
-                            text = "Appearance",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            text = "Theme & Appearance",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                         )
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                        // Segmented Control
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -118,204 +127,140 @@ fun SettingsScreen(
                 }
             }
 
-            // Language Section
+            // 2. UPDATER PROMINENT CARD
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(22.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .clickable { onNavigateToUpdater() },
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        if (updateInfo.hasUpdate) SolarGold.copy(alpha = 0.6f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+                    )
                 ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
-                        Text(
-                            text = "Language / भाषा",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { selectedLanguage = LanguageOption.ENGLISH }
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("English", style = MaterialTheme.typography.bodyMedium)
-                            RadioButton(
-                                selected = selectedLanguage == LanguageOption.ENGLISH,
-                                onClick = { selectedLanguage = LanguageOption.ENGLISH }
-                            )
-                        }
-
-                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { selectedLanguage = LanguageOption.HINDI }
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("हिंदी (Hindi)", style = MaterialTheme.typography.bodyMedium)
-                            RadioButton(
-                                selected = selectedLanguage == LanguageOption.HINDI,
-                                onClick = { selectedLanguage = LanguageOption.HINDI }
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Notifications Section
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(22.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
-                        Text(
-                            text = "Notifications",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Weekly Scan Reminders", style = MaterialTheme.typography.bodyMedium)
-                                Text("Alerts to inspect high-risk fields", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)))
-                            }
-                            Switch(
-                                checked = scanRemindersEnabled,
-                                onCheckedChange = { scanRemindersEnabled = it }
-                            )
-                        }
-
-                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Agronomy & Weather Tips", style = MaterialTheme.typography.bodyMedium)
-                                Text("Seasonal spray guidelines", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)))
-                            }
-                            Switch(
-                                checked = tipsEnabled,
-                                onCheckedChange = { tipsEnabled = it }
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Updater & About Action Cards
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(22.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                        // App Updater Item with Red Dot Indicator
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onNavigateToUpdater() }
-                                .padding(horizontal = 20.dp, vertical = 14.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box {
-                                    Icon(
-                                        imageVector = Icons.Default.SystemUpdateAlt,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                    // Small Red Notification Dot if update is available
-                                    if (updateInfo.hasUpdate) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(9.dp)
-                                                .align(Alignment.TopEnd)
-                                                .clip(CircleShape)
-                                                .background(RedSevere)
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(14.dp))
-                                Column {
-                                    Text(
-                                        text = "App Updater",
-                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
-                                    )
-                                    Text(
-                                        text = if (updateInfo.hasUpdate) "Update available: v${updateInfo.latestVersion}" else "App is up to date (v${updateInfo.currentVersion})",
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            color = if (updateInfo.hasUpdate) AmberAccent else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                            fontWeight = if (updateInfo.hasUpdate) FontWeight.Bold else FontWeight.Normal
-                                        )
-                                    )
-                                }
-                            }
-                            Icon(
-                                imageVector = Icons.Default.ChevronRight,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        )
-
-                        // About Fasal Drishti Item
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onNavigateToAbout() }
-                                .padding(horizontal = 20.dp, vertical = 14.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(18.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(42.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(
+                                        if (updateInfo.hasUpdate) SolarGold.copy(alpha = 0.15f)
+                                        else EmeraldPrimary.copy(alpha = 0.15f)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Icon(
-                                    imageVector = Icons.Default.Info,
+                                    imageVector = Icons.Default.SystemUpdateAlt,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = if (updateInfo.hasUpdate) SolarGold else EmeraldPrimary,
                                     modifier = Modifier.size(22.dp)
                                 )
-                                Spacer(modifier = Modifier.width(14.dp))
+                            }
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Column {
                                 Text(
-                                    text = "About Fasal Drishti & Contributors",
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
+                                    text = "Software Updates",
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = if (updateInfo.hasUpdate) "New version ${updateInfo.latestVersion} available" else "Fasal Drishti is up to date",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = if (updateInfo.hasUpdate) SolarGold else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                        fontSize = 12.sp,
+                                        fontWeight = if (updateInfo.hasUpdate) FontWeight.Bold else FontWeight.Normal
+                                    )
                                 )
                             }
-                            Icon(
-                                imageVector = Icons.Default.ChevronRight,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                                modifier = Modifier.size(20.dp)
-                            )
                         }
+
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            // 3. HARDWARE ACCELERATION & AI DIAGNOSTICS
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        Text(
+                            text = "AI Engine & Diagnostics",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        SettingsSwitchTile(
+                            icon = Icons.Default.Memory,
+                            title = "NNAPI Neural Accelerator",
+                            subtitle = "Hardware inference delegate on mobile NPU",
+                            checked = true,
+                            onCheckedChange = {}
+                        )
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 10.dp))
+
+                        SettingsSwitchTile(
+                            icon = Icons.Default.Speed,
+                            title = "120Hz Fluid UI Lock",
+                            subtitle = "Locks display refresh rate to 120 FPS",
+                            checked = true,
+                            onCheckedChange = {}
+                        )
+                    }
+                }
+            }
+
+            // 4. NOTIFICATIONS
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        Text(
+                            text = "Notifications & Reminders",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        SettingsSwitchTile(
+                            icon = Icons.Default.NotificationsActive,
+                            title = "Spray & Crop Health Alerts",
+                            subtitle = "Weekly monitoring reminders",
+                            checked = scanRemindersEnabled,
+                            onCheckedChange = { scanRemindersEnabled = it }
+                        )
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 10.dp))
+
+                        SettingsSwitchTile(
+                            icon = Icons.Default.Lightbulb,
+                            title = "Agronomy Tips & Tricks",
+                            subtitle = "Weather-optimized crop advisories",
+                            checked = tipsEnabled,
+                            onCheckedChange = { tipsEnabled = it }
+                        )
                     }
                 }
             }
@@ -331,29 +276,91 @@ private fun ThemeSegment(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Surface(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-            .clickable { onClick() }
-            .padding(vertical = 8.dp),
-        contentAlignment = Alignment.Center
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        color = if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent,
+        shadowElevation = if (isSelected) 3.dp else 0.dp
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.padding(vertical = 10.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             )
         }
+    }
+}
+
+@Composable
+private fun SettingsSwitchTile(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(EmeraldPrimary.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = EmeraldPrimary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                        fontSize = 11.5.sp
+                    )
+                )
+            }
+        }
+
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = EmeraldPrimary
+            )
+        )
     }
 }

@@ -3,6 +3,7 @@ package com.fasaldrishti.app.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -10,6 +11,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -22,10 +24,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fasaldrishti.app.ui.theme.PrimaryGradientEnd
-import com.fasaldrishti.app.ui.theme.PrimaryGradientStart
+import com.fasaldrishti.app.ui.theme.EmeraldGradientEnd
+import com.fasaldrishti.app.ui.theme.EmeraldGradientStart
 
 @Composable
 fun GradientButton(
@@ -33,26 +36,27 @@ fun GradientButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
-    gradientColors: List<Color> = listOf(PrimaryGradientStart, PrimaryGradientEnd),
+    gradientColors: List<Color> = listOf(EmeraldGradientStart, EmeraldGradientEnd),
     isLoading: Boolean = false,
     enabled: Boolean = true
 ) {
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.96f else 1f,
-        animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f),
+        animationSpec = spring(dampingRatio = 0.65f, stiffness = 450f),
         label = "ButtonScale"
     )
 
     Box(
         modifier = modifier
             .scale(scale)
-            .shadow(if (enabled) 6.dp else 0.dp, RoundedCornerShape(28.dp))
-            .clip(RoundedCornerShape(28.dp))
+            .shadow(if (enabled) 12.dp else 0.dp, RoundedCornerShape(30.dp), spotColor = gradientColors.first().copy(alpha = 0.5f))
+            .clip(RoundedCornerShape(30.dp))
             .background(
                 brush = if (enabled) Brush.horizontalGradient(gradientColors)
-                else Brush.horizontalGradient(listOf(Color.Gray.copy(alpha = 0.5f), Color.Gray.copy(alpha = 0.5f)))
+                else Brush.horizontalGradient(listOf(Color.Gray.copy(alpha = 0.35f), Color.Gray.copy(alpha = 0.35f)))
             )
+            .border(1.2.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(30.dp))
             .pointerInput(enabled) {
                 if (!enabled || isLoading) return@pointerInput
                 while (true) {
@@ -71,7 +75,7 @@ fun GradientButton(
             ) {
                 onClick()
             }
-            .padding(horizontal = 24.dp, vertical = 14.dp),
+            .padding(horizontal = 24.dp, vertical = 15.dp),
         contentAlignment = Alignment.Center
     ) {
         if (isLoading) {
@@ -86,7 +90,7 @@ fun GradientButton(
                 horizontalArrangement = Arrangement.Center
             ) {
                 if (icon != null) {
-                    androidx.compose.material3.Icon(
+                    Icon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = Color.White,
@@ -99,7 +103,9 @@ fun GradientButton(
                     text = text,
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = Color.White,
-                        fontSize = 16.sp
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        letterSpacing = 0.4.sp
                     )
                 )
             }

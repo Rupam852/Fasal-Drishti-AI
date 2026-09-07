@@ -11,12 +11,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,7 +27,9 @@ import com.fasaldrishti.app.domain.model.DiseaseInfo
 import com.fasaldrishti.app.domain.repository.DiseaseRepository
 import com.fasaldrishti.app.ui.components.AccordionCard
 import com.fasaldrishti.app.ui.components.SeverityBadge
-import kotlinx.coroutines.launch
+import com.fasaldrishti.app.ui.theme.CrimsonCoral
+import com.fasaldrishti.app.ui.theme.EmeraldPrimary
+import com.fasaldrishti.app.ui.theme.SolarGold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,14 +42,13 @@ fun CropLibraryScreen(
     var diseases by remember { mutableStateOf<List<DiseaseInfo>>(emptyList()) }
     var selectedDiseaseForSheet by remember { mutableStateOf<DiseaseInfo?>(null) }
     val sheetState = rememberModalBottomSheetState()
-    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         val res = diseaseRepository.getAllDiseases()
         diseases = res.getOrDefault(emptyList())
     }
 
-    val categories = listOf("All", "Tomato", "Potato", "Apple", "Corn", "Grape")
+    val categories = listOf("All", "Tomato", "Potato", "Apple", "Corn", "Grape", "Pepper", "Rice")
 
     val filteredDiseases = diseases.filter { d ->
         val matchesSearch = searchQuery.isBlank() ||
@@ -63,54 +66,81 @@ fun CropLibraryScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Crop Disease Library",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        text = "Crop Pathology Library",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 20.sp
+                        )
                     )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search disease or crop...") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    modifier = Modifier.fillMaxWidth(),
+                Surface(
                     shape = RoundedCornerShape(22.dp),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    color = MaterialTheme.colorScheme.surface,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                    shadowElevation = 2.dp
+                ) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = { Text("Search disease or crop...") },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(22.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
+                        )
                     )
-                )
+                }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(categories) { cat ->
-                        FilterChip(
-                            selected = selectedCategory == cat,
-                            onClick = { selectedCategory = cat },
-                            label = { Text(cat) },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                selectedLabelColor = Color.White
+                    items(categories) { category ->
+                        val isSelected = selectedCategory == category
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                            ),
+                            modifier = Modifier.clickable { selectedCategory = category }
+                        ) {
+                            Text(
+                                text = category,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
@@ -121,22 +151,21 @@ fun CropLibraryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(horizontal = 20.dp),
+            contentPadding = PaddingValues(top = 10.dp, bottom = 40.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            items(filteredDiseases) { item ->
+            items(filteredDiseases) { disease ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .clickable {
-                            selectedDiseaseForSheet = item
-                        },
-                    shape = RoundedCornerShape(20.dp),
+                        .shadow(4.dp, RoundedCornerShape(22.dp))
+                        .clip(RoundedCornerShape(22.dp))
+                        .clickable { selectedDiseaseForSheet = disease },
+                    shape = RoundedCornerShape(22.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
                         Row(
@@ -147,94 +176,110 @@ fun CropLibraryScreen(
                             Box(
                                 modifier = Modifier
                                     .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(EmeraldPrimary.copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Eco,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = EmeraldPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
-                            SeverityBadge(severity = item.severity)
+                            SeverityBadge(severity = disease.severity)
                         }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = item.diseaseName,
-                            style = MaterialTheme.typography.titleMedium.copy(
+                            text = disease.cropName.uppercase(),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.5.sp,
+                                letterSpacing = 0.6.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = disease.diseaseName,
+                            style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             ),
                             maxLines = 2
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = item.cropName,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                            )
                         )
                     }
                 }
             }
         }
 
-        // Detail Bottom Sheet Modal
+        // Bottom Sheet Detailed Diagnostic Dossier
         if (selectedDiseaseForSheet != null) {
-            val d = selectedDiseaseForSheet!!
             ModalBottomSheet(
                 onDismissRequest = { selectedDiseaseForSheet = null },
                 sheetState = sheetState,
-                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+                containerColor = MaterialTheme.colorScheme.surface
             ) {
+                val d = selectedDiseaseForSheet!!
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .navigationBarsPadding()
-                        .padding(horizontal = 24.dp, vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = d.diseaseName,
-                                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                                text = d.cropName.uppercase(),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp
+                                )
                             )
                             Text(
-                                text = "Crop: ${d.cropName}",
-                                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                                text = d.diseaseName,
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 20.sp
+                                )
                             )
                         }
                         SeverityBadge(severity = d.severity)
                     }
 
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+
                     AccordionCard(
                         title = "Symptoms",
                         icon = Icons.Default.Coronavirus,
                         content = d.symptoms,
-                        initiallyExpanded = true
+                        initiallyExpanded = true,
+                        accentColor = CrimsonCoral
                     )
 
                     AccordionCard(
-                        title = "Treatment Guidelines",
-                        icon = Icons.Default.MedicalServices,
+                        title = "Chemical Treatment & Dosage",
+                        icon = Icons.Default.Science,
                         content = d.treatment,
-                        initiallyExpanded = true
+                        initiallyExpanded = true,
+                        accentColor = SolarGold
                     )
 
                     AccordionCard(
-                        title = "Prevention Measures",
+                        title = "Organic & Prevention",
                         icon = Icons.Default.Shield,
                         content = d.prevention,
-                        initiallyExpanded = false
+                        initiallyExpanded = false,
+                        accentColor = EmeraldPrimary
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))

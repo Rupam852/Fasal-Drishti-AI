@@ -1,13 +1,15 @@
 package com.fasaldrishti.app.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CenterFocusStrong
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
@@ -18,16 +20,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fasaldrishti.app.ui.navigation.Screen
-import com.fasaldrishti.app.ui.theme.GreenPrimary
-import com.fasaldrishti.app.ui.theme.PrimaryGradientEnd
-import com.fasaldrishti.app.ui.theme.PrimaryGradientStart
+import com.fasaldrishti.app.ui.theme.EmeraldPrimary
+import com.fasaldrishti.app.ui.theme.EmeraldGradientEnd
+import com.fasaldrishti.app.ui.theme.EmeraldGradientStart
 
 @Composable
 fun FasalBottomBar(
@@ -35,82 +39,106 @@ fun FasalBottomBar(
     onNavigate: (String) -> Unit,
     onScanClick: () -> Unit
 ) {
+    // Pulse animation for scan button
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "fabPulse"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .padding(horizontal = 18.dp, vertical = 10.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
-        // Bottom bar surface
+        // Floating Frosted Glass Capsule
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(68.dp),
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp,
-            shadowElevation = 16.dp
+                .height(68.dp)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                    shape = RoundedCornerShape(34.dp)
+                ),
+            shape = RoundedCornerShape(34.dp),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+            shadowElevation = 18.dp,
+            tonalElevation = 6.dp
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
+                    .padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 BottomNavItem(
                     icon = Icons.Default.Home,
                     label = "Home",
                     selected = currentRoute == Screen.Home.route,
-                    onClick = { onNavigate(Screen.Home.route) }
+                    onClick = { onNavigate(Screen.Home.route) },
+                    modifier = Modifier.weight(1f)
                 )
 
                 BottomNavItem(
                     icon = Icons.Default.History,
                     label = "History",
                     selected = currentRoute == Screen.History.route,
-                    onClick = { onNavigate(Screen.History.route) }
+                    onClick = { onNavigate(Screen.History.route) },
+                    modifier = Modifier.weight(1f)
                 )
 
-                // Spacer for Center elevated FAB
-                Spacer(modifier = Modifier.width(56.dp))
+                // Placeholder for Center Pulse FAB
+                Spacer(modifier = Modifier.width(68.dp))
 
                 BottomNavItem(
                     icon = Icons.Default.ChatBubbleOutline,
-                    label = "Fasal AI",
+                    label = "AI Salah",
                     selected = currentRoute == Screen.Chat.route,
-                    onClick = { onNavigate(Screen.Chat.route) }
+                    onClick = { onNavigate(Screen.Chat.route) },
+                    modifier = Modifier.weight(1f)
                 )
 
                 BottomNavItem(
                     icon = Icons.Default.Person,
                     label = "Profile",
                     selected = currentRoute == Screen.Profile.route,
-                    onClick = { onNavigate(Screen.Profile.route) }
+                    onClick = { onNavigate(Screen.Profile.route) },
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
 
-        // Center Elevated Scan FAB
+        // Center Floating Glowing Bio-Scan FAB
         Box(
             modifier = Modifier
-                .offset(y = (-20).dp)
-                .size(62.dp)
-                .shadow(12.dp, CircleShape)
+                .offset(y = (-14).dp)
+                .scale(pulseScale)
+                .size(64.dp)
+                .shadow(16.dp, CircleShape, spotColor = EmeraldPrimary)
                 .clip(CircleShape)
                 .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(PrimaryGradientStart, PrimaryGradientEnd)
+                    brush = Brush.radialGradient(
+                        colors = listOf(EmeraldGradientStart, EmeraldGradientEnd)
                     )
                 )
+                .border(2.5.dp, Color.White.copy(alpha = 0.85f), CircleShape)
                 .clickable { onScanClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.CameraAlt,
+                imageVector = Icons.Default.CenterFocusStrong,
                 contentDescription = "Scan Crop",
                 tint = Color.White,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(30.dp)
             )
         }
     }
@@ -121,32 +149,46 @@ private fun BottomNavItem(
     icon: ImageVector,
     label: String,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val animatedColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+    val animatedTint by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
         label = "NavColor"
     )
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
+        modifier = modifier
+            .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .padding(vertical = 6.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = animatedColor,
-            modifier = Modifier.size(24.dp)
-        )
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(14.dp))
+                .background(
+                    if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                    else Color.Transparent
+                )
+                .padding(horizontal = 14.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = animatedTint,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontSize = 11.sp,
-                color = animatedColor
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                color = animatedTint
             )
         )
     }

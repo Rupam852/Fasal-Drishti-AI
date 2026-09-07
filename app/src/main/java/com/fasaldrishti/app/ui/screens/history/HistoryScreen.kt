@@ -1,6 +1,7 @@
 package com.fasaldrishti.app.ui.screens.history
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,12 +13,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -27,10 +31,9 @@ import coil.compose.AsyncImage
 import com.fasaldrishti.app.domain.model.ScanRecord
 import com.fasaldrishti.app.ui.components.GradientButton
 import com.fasaldrishti.app.ui.components.SeverityBadge
-import java.text.SimpleDateFormat
-import java.util.*
+import com.fasaldrishti.app.ui.theme.EmeraldDark
+import com.fasaldrishti.app.ui.theme.EmeraldPrimary
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
@@ -58,58 +61,67 @@ fun HistoryScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Scan History",
+                        text = "Field Scan History",
                         style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp
                         )
                     )
 
                     IconButton(
                         onClick = { viewModel.toggleViewMode() },
                         modifier = Modifier
+                            .size(40.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Icon(
-                            imageVector = if (isGridView) Icons.Default.ViewList else Icons.Default.GridView,
-                            contentDescription = "Toggle View",
-                            tint = MaterialTheme.colorScheme.primary
+                            imageVector = if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
+                            contentDescription = "Toggle Layout",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Search Bar
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { viewModel.onSearchQueryChanged(it) },
-                    placeholder = { Text("Search by crop or disease...") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
-                    },
-                    trailingIcon = {
-                        if (searchQuery.isNotBlank()) {
-                            IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
-                                Icon(imageVector = Icons.Default.Close, contentDescription = "Clear")
+                // Modern Search Field
+                Surface(
+                    shape = RoundedCornerShape(22.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                    shadowElevation = 2.dp
+                ) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { viewModel.onSearchQueryChanged(it) },
+                        placeholder = { Text("Search crop or disease name...") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                        },
+                        trailingIcon = {
+                            if (searchQuery.isNotBlank()) {
+                                IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                                    Icon(imageVector = Icons.Default.Close, contentDescription = "Clear")
+                                }
                             }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    singleLine = true
-                )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(22.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
+                        ),
+                        singleLine = true
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -119,16 +131,24 @@ fun HistoryScreen(
                 ) {
                     items(filterOptions) { filter ->
                         val isSelected = selectedFilter == filter
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { viewModel.onFilterSelected(filter) },
-                            label = { Text(filter) },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                selectedLabelColor = Color.White
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.surfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                            ),
+                            modifier = Modifier.clickable { viewModel.onFilterSelected(filter) }
+                        ) {
+                            Text(
+                                text = filter,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
@@ -150,14 +170,14 @@ fun HistoryScreen(
                         modifier = Modifier
                             .size(90.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                            .background(EmeraldPrimary.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Eco,
+                            imageVector = Icons.Default.Spa,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(48.dp)
+                            tint = EmeraldPrimary,
+                            modifier = Modifier.size(46.dp)
                         )
                     }
 
@@ -173,7 +193,7 @@ fun HistoryScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Scan your plants to start monitoring your field health history.",
+                        text = "Scan your field crops to monitor health, disease spread, and yield.",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         ),
@@ -196,7 +216,7 @@ fun HistoryScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 20.dp),
-                contentPadding = PaddingValues(top = 12.dp, bottom = 90.dp),
+                contentPadding = PaddingValues(top = 10.dp, bottom = 100.dp),
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
@@ -213,7 +233,7 @@ fun HistoryScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 20.dp),
-                contentPadding = PaddingValues(top = 12.dp, bottom = 90.dp),
+                contentPadding = PaddingValues(top = 10.dp, bottom = 100.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(scans) { scan ->
@@ -235,30 +255,32 @@ private fun HistoryGridCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .shadow(4.dp, RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(22.dp))
             .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
     ) {
         Column {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .height(115.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                AsyncImage(
-                    model = scan.imageUrl,
-                    contentDescription = scan.diseaseName,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+                if (!scan.imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = scan.imageUrl,
+                        contentDescription = scan.diseaseName,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
                 Box(
                     modifier = Modifier
-                        .padding(6.dp)
+                        .padding(8.dp)
                         .align(Alignment.TopEnd)
                 ) {
                     SeverityBadge(severity = scan.severity)
@@ -267,25 +289,26 @@ private fun HistoryGridCard(
 
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
-                    text = scan.diseaseName,
-                    style = MaterialTheme.typography.titleMedium.copy(
+                    text = scan.cropName,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        fontSize = 11.sp
+                    )
+                )
+                Text(
+                    text = scan.diseaseName,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.5.sp
                     ),
                     maxLines = 1
                 )
-                Text(
-                    text = scan.cropName,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "${(scan.confidence * 100).toInt()}% Match",
                     style = MaterialTheme.typography.labelSmall.copy(
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                 )
             }
@@ -298,18 +321,15 @@ private fun HistoryListCard(
     scan: ScanRecord,
     onClick: () -> Unit
 ) {
-    val dateStr = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date(scan.timestamp))
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .shadow(4.dp, RoundedCornerShape(22.dp))
+            .clip(RoundedCornerShape(22.dp))
             .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
     ) {
         Row(
             modifier = Modifier
@@ -317,44 +337,68 @@ private fun HistoryListCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
-                model = scan.imageUrl,
-                contentDescription = scan.diseaseName,
+            Box(
                 modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(14.dp)),
-                contentScale = ContentScale.Crop
-            )
+                    .size(70.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                if (!scan.imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = scan.imageUrl,
+                        contentDescription = scan.diseaseName,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(imageVector = Icons.Default.Eco, contentDescription = null, tint = EmeraldDark)
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
+                    text = scan.cropName.uppercase(),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp,
+                        letterSpacing = 0.5.sp
+                    )
+                )
+                Text(
                     text = scan.diseaseName,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp
-                    )
+                    ),
+                    maxLines = 1
                 )
-                Text(
-                    text = "${scan.cropName} • $dateStr",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SeverityBadge(severity = scan.severity)
+                    Text(
+                        text = "${(scan.confidence * 100).toInt()}% Confidence",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                            fontSize = 11.sp
+                        )
                     )
-                )
+                }
             }
 
-            Column(horizontalAlignment = Alignment.End) {
-                SeverityBadge(severity = scan.severity)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "${(scan.confidence * 100).toInt()}%",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                )
-            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(18.dp)
+            )
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -105,7 +106,7 @@ fun AppNavHost(
             }
 
             composable(Screen.Login.route) {
-                val authViewModel = AuthViewModel(authRepository)
+                val authViewModel = remember { AuthViewModel(authRepository) }
                 LoginScreen(
                     viewModel = authViewModel,
                     onLoginSuccess = {
@@ -117,7 +118,7 @@ fun AppNavHost(
             }
 
             composable(Screen.Home.route) {
-                val homeViewModel = HomeViewModel(scanRepository, authRepository)
+                val homeViewModel = remember { HomeViewModel(scanRepository, authRepository) }
                 HomeScreen(
                     viewModel = homeViewModel,
                     onNavigateToScan = { navController.navigate(Screen.Scan.route) },
@@ -127,7 +128,7 @@ fun AppNavHost(
             }
 
             composable(Screen.Scan.route) {
-                val scanViewModel = ScanViewModel(scanRepository)
+                val scanViewModel = remember { ScanViewModel(scanRepository) }
                 ScanScreen(
                     viewModel = scanViewModel,
                     onNavigateBack = { navController.popBackStack() },
@@ -155,7 +156,7 @@ fun AppNavHost(
                 arguments = listOf(navArgument("scanId") { type = NavType.StringType })
             ) { backStackEntry ->
                 val scanId = backStackEntry.arguments?.getString("scanId") ?: ""
-                val resultViewModel = ResultViewModel(scanRepository, diseaseRepository)
+                val resultViewModel = remember(scanId) { ResultViewModel(scanRepository, diseaseRepository) }
                 ResultScreen(
                     scanId = scanId,
                     viewModel = resultViewModel,
@@ -172,7 +173,7 @@ fun AppNavHost(
             }
 
             composable(Screen.History.route) {
-                val historyViewModel = HistoryViewModel(scanRepository)
+                val historyViewModel = remember { HistoryViewModel(scanRepository) }
                 HistoryScreen(
                     viewModel = historyViewModel,
                     onNavigateToResult = { scanId -> navController.navigate(Screen.Result.createRoute(scanId)) },
@@ -191,7 +192,7 @@ fun AppNavHost(
                 val contextParam = backStackEntry.arguments?.getString("context")?.let {
                     java.net.URLDecoder.decode(it, "UTF-8")
                 }
-                val chatViewModel = ChatViewModel(diseaseRepository)
+                val chatViewModel = remember(contextParam) { ChatViewModel(diseaseRepository) }
                 ChatScreen(
                     contextInfo = contextParam,
                     viewModel = chatViewModel,
@@ -200,7 +201,7 @@ fun AppNavHost(
             }
 
             composable(Screen.Profile.route) {
-                val authViewModel = AuthViewModel(authRepository)
+                val authViewModel = remember { AuthViewModel(authRepository) }
                 ProfileScreen(
                     authViewModel = authViewModel,
                     updateManager = updateManager,
