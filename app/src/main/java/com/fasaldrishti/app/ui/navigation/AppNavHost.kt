@@ -62,6 +62,7 @@ fun AppNavHost(
     )
 
     Scaffold(
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (showBottomBar) {
                 FasalBottomBar(
@@ -86,7 +87,7 @@ fun AppNavHost(
             startDestination = Screen.Splash.route,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
             composable(Screen.Splash.route) {
                 val currentUser by authRepository.currentUser.collectAsState(initial = null)
