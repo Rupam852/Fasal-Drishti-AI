@@ -3,9 +3,14 @@ package com.fasaldrishti.app.data.remote
 import android.content.Context
 import android.net.Uri
 import com.fasaldrishti.app.BuildConfig
+import com.fasaldrishti.app.data.local.ScanDao
+import com.fasaldrishti.app.data.local.ScanEntity
+import com.fasaldrishti.app.domain.model.ScanRecord
+import com.fasaldrishti.app.domain.model.SyncStatus
 import com.fasaldrishti.app.domain.model.UserProfile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +23,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.util.UUID
 
 /**
  * Manages Supabase Auth (Google & GitHub OAuth + Deep Linking), Persistent Session, Remote Configs & Storage.
@@ -35,6 +41,9 @@ class SupabaseManager(private val context: Context) {
 
     private val _currentUser = MutableStateFlow<UserProfile?>(loadSavedUser())
     val currentUser: StateFlow<UserProfile?> = _currentUser.asStateFlow()
+
+    private val _syncStatus = MutableStateFlow(SyncStatus.IDLE)
+    val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
 
     private fun loadSavedUser(): UserProfile? {
         val id = prefs.getString("user_id", null) ?: return null
@@ -201,6 +210,7 @@ class SupabaseManager(private val context: Context) {
 
     suspend fun syncScanRecordToCloud(scan: com.fasaldrishti.app.domain.model.ScanRecord) = withContext(Dispatchers.IO) {
         try {
+            _syncStatus.value = SyncStatus.UPLOADING
             val userId = _currentUser.value?.id ?: prefs.getString("user_id", "guest")
             val json = JSONObject().apply {
                 put("id", scan.id)
@@ -224,7 +234,76 @@ class SupabaseManager(private val context: Context) {
                 .build()
 
             client.newCall(request).execute().close()
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        } finally {
+            delay(1200) // Keep indicator smoothly visible
+            _syncStatus.value = SyncStatus.IDLE
+        }
+    }
+
+    /**
+     * Downloads and restores past crop scans from Supabase into local Room DB seamlessly on sign-in / reinstall.
+     */
+    suspend fun fetchAndRestoreScansFromCloud(scanDao: ScanDao) = withContext(Dispatchers.IO) {
+        val userId = _currentUser.value?.id ?: prefs.getString("user_id", null) ?: return@withContext
+        try {
+            _syncStatus.value = SyncStatus.DOWNLOADING
+            val url = "$supabaseUrl/rest/v1/scans?user_id=eq.$userId&order=created_at.desc"
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("apikey", anonKey)
+                .addHeader("Authorization", "Bearer $anonKey")
+                .get()
+                .build()
+
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                val body = response.body?.string() ?: "[]"
+                val jsonArray = JSONArray(body)
+                for (i in 0 until jsonArray.length()) {
+                    val item = jsonArray.getJSONObject(i)
+                    val id = item.optString("id", UUID.randomUUID().toString())
+                    val cropName = item.optString("crop_name", "Crop")
+                    val diseaseName = item.optString("disease_name", "Disease")
+                    val predictedClass = item.optString("predicted_class", "Class")
+                    val confidence = item.optDouble("confidence", 0.95).toFloat()
+                    val severity = item.optString("severity", "Moderate")
+                    val symptoms = item.optString("symptoms", "")
+                    val treatment = item.optString("treatment", "")
+                    val createdAtStr = item.optString("created_at", "")
+
+                    var timestamp = System.currentTimeMillis()
+                    if (createdAtStr.isNotBlank()) {
+                        try {
+                            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US)
+                            val date = sdf.parse(createdAtStr.substringBefore("."))
+                            if (date != null) timestamp = date.time
+                        } catch (_: Exception) {}
+                    }
+
+                    val entity = ScanEntity(
+                        id = id,
+                        imageUrl = "",
+                        predictedClass = predictedClass,
+                        confidence = confidence,
+                        cropName = cropName,
+                        diseaseName = diseaseName,
+                        severity = severity,
+                        symptoms = symptoms,
+                        treatment = treatment,
+                        timestamp = timestamp
+                    )
+                    scanDao.insertScan(entity)
+                    delay(50) // Smooth asynchronous ingestion pacing
+                }
+            }
+            response.close()
+        } catch (_: Exception) {
+            // Safe execution
+        } finally {
+            delay(1200) // Smooth completion transition
+            _syncStatus.value = SyncStatus.IDLE
+        }
     }
 
     suspend fun deleteScanFromCloud(scanId: String) = withContext(Dispatchers.IO) {

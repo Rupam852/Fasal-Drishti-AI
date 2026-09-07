@@ -1,5 +1,6 @@
 package com.fasaldrishti.app.ui.screens.home
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,12 +23,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.fasaldrishti.app.domain.model.ScanRecord
+import com.fasaldrishti.app.domain.model.SyncStatus
 import com.fasaldrishti.app.ui.components.SeverityBadge
 import com.fasaldrishti.app.ui.theme.*
 
@@ -40,6 +43,7 @@ fun HomeScreen(
 ) {
     val user by viewModel.user.collectAsState()
     val recentScans by viewModel.recentScans.collectAsState()
+    val syncStatus by viewModel.syncStatus.collectAsState()
 
     val totalScans = recentScans.size
     val healthyCount = recentScans.count { it.severity.equals("none", ignoreCase = true) || it.diseaseName.contains("healthy", ignoreCase = true) }
@@ -129,20 +133,82 @@ fun HomeScreen(
                         }
                     }
 
-                    IconButton(
-                        onClick = onNavigateToLibrary,
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), CircleShape)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                            contentDescription = "Crop Library",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        // 🔄 Dynamic Cloud Sync Status Badge (Upload / Download Animation)
+                        AnimatedVisibility(
+                            visible = syncStatus != SyncStatus.IDLE,
+                            enter = fadeIn() + scaleIn(initialScale = 0.8f) + expandHorizontally(),
+                            exit = fadeOut() + scaleOut(targetScale = 0.8f) + shrinkHorizontally()
+                        ) {
+                            val syncTransition = rememberInfiniteTransition(label = "syncPulse")
+                            val syncBob by syncTransition.animateFloat(
+                                initialValue = -3f,
+                                targetValue = 3f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(700, easing = FastOutSlowInEasing),
+                                    repeatMode = RepeatMode.Reverse
+                                ),
+                                label = "syncBob"
+                            )
+                            val syncPulseScale by syncTransition.animateFloat(
+                                initialValue = 0.95f,
+                                targetValue = 1.06f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(800, easing = LinearOutSlowInEasing),
+                                    repeatMode = RepeatMode.Reverse
+                                ),
+                                label = "syncPulseScale"
+                            )
+
+                            val isUploading = syncStatus == SyncStatus.UPLOADING
+                            val badgeBg = if (isUploading) {
+                                Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
+                            } else {
+                                Brush.radialGradient(listOf(Color(0xFF38BDF8), Color(0xFF0284C7))) // Sky blue gradient
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .graphicsLayer {
+                                        scaleX = syncPulseScale
+                                        scaleY = syncPulseScale
+                                    }
+                                    .shadow(6.dp, CircleShape, spotColor = if (isUploading) EmeraldPrimary else Color(0xFF38BDF8))
+                                    .clip(CircleShape)
+                                    .background(badgeBg)
+                                    .border(1.5.dp, Color.White.copy(alpha = 0.8f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = if (isUploading) Icons.Default.CloudUpload else Icons.Default.CloudDownload,
+                                    contentDescription = if (isUploading) "Uploading to Cloud" else "Restoring from Cloud",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .offset(y = syncBob.dp)
+                                )
+                            }
+                        }
+
+                        IconButton(
+                            onClick = onNavigateToLibrary,
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                                contentDescription = "Crop Library",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }

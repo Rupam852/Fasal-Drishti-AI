@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.fasaldrishti.app.domain.model.SyncStatus
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -28,6 +29,23 @@ class ScanRepositoryImpl(
     private val onDeviceClassifier: TFLiteDiseaseClassifier,
     private val diseaseRepository: DiseaseRepository
 ) : ScanRepository {
+
+    override val syncStatus: Flow<SyncStatus> = supabaseManager.syncStatus
+
+    init {
+        // Automatically restore scans from Supabase whenever authenticated user connects or app launches
+        CoroutineScope(Dispatchers.IO).launch {
+            supabaseManager.currentUser.collect { user ->
+                if (user != null) {
+                    restoreScansFromCloud()
+                }
+            }
+        }
+    }
+
+    override suspend fun restoreScansFromCloud() {
+        supabaseManager.fetchAndRestoreScansFromCloud(scanDao)
+    }
 
     override fun getAllScans(): Flow<List<ScanRecord>> {
         return scanDao.getAllScans().map { entities ->

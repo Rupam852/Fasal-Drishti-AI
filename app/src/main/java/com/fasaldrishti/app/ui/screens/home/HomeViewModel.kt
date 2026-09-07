@@ -3,6 +3,7 @@ package com.fasaldrishti.app.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fasaldrishti.app.domain.model.ScanRecord
+import com.fasaldrishti.app.domain.model.SyncStatus
 import com.fasaldrishti.app.domain.model.UserProfile
 import com.fasaldrishti.app.domain.repository.AuthRepository
 import com.fasaldrishti.app.domain.repository.ScanRepository
@@ -20,4 +21,7 @@ class HomeViewModel(
 
     val recentScans: StateFlow<List<ScanRecord>> = scanRepository.getAllScans()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val syncStatus: StateFlow<SyncStatus> = scanRepository.syncStatus
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SyncStatus.IDLE)
 }
