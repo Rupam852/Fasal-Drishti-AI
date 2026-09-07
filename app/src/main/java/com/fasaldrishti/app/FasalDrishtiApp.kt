@@ -22,6 +22,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
+import com.fasaldrishti.app.data.remote.WeatherManager
+
 class FasalDrishtiApp : Application() {
 
     lateinit var scanRepository: ScanRepository
@@ -35,6 +37,8 @@ class FasalDrishtiApp : Application() {
     lateinit var updateManager: UpdateManager
         private set
     lateinit var supabaseManager: SupabaseManager
+        private set
+    lateinit var weatherManager: WeatherManager
         private set
 
     override fun onCreate() {
@@ -65,19 +69,25 @@ class FasalDrishtiApp : Application() {
         // 3. Initialize Supabase Manager (Handles remote configs, Auth, DB)
         supabaseManager = SupabaseManager(this)
 
-        // 4. Initialize On-Device TensorFlow Lite Classifier (Primary Neural Net)
+        // 4. Initialize Weather Manager for live agro-weather & spray condition
+        weatherManager = WeatherManager(this)
+        CoroutineScope(Dispatchers.IO).launch {
+            weatherManager.refreshWeather()
+        }
+
+        // 5. Initialize On-Device TensorFlow Lite Classifier (Primary Neural Net)
         onDeviceClassifier = TFLiteDiseaseClassifier(this)
 
-        // 5. Initialize Live NVIDIA Client backed by Supabase Dynamic Remote Config
+        // 6. Initialize Live NVIDIA Client backed by Supabase Dynamic Remote Config
         val nvidiaClient = NvidiaClient(supabaseManager = supabaseManager)
 
-        // 6. Initialize Disease Repository
+        // 7. Initialize Disease Repository
         diseaseRepository = DiseaseRepositoryImpl(
             predictApi = predictApi,
             nvidiaClient = nvidiaClient
         )
 
-        // 7. Initialize Scan Repository
+        // 8. Initialize Scan Repository
         scanRepository = ScanRepositoryImpl(
             scanDao = database.scanDao(),
             predictApi = predictApi,
@@ -88,7 +98,7 @@ class FasalDrishtiApp : Application() {
 
         authRepository = AuthRepositoryImpl(supabaseManager = supabaseManager)
 
-        // 8. Initialize In-App Update Manager & run auto-check on startup
+        // 9. Initialize In-App Update Manager & run auto-check on startup
         updateManager = UpdateManager(this)
         if (updateManager.autoCheckEnabled.value) {
             CoroutineScope(Dispatchers.IO).launch {

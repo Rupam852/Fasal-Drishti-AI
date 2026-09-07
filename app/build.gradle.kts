@@ -124,6 +124,8 @@ dependencies {
 
     // Google Play Services Native Sign-In (Direct Android Keystore/SHA-1 Account Picker)
     implementation("com.google.android.gms:play-services-auth:21.0.0")
+    // Google Play Services Location for dynamic Agro-Weather & Spray Index
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 
     // Chrome Custom Tabs for OAuth
     implementation("androidx.browser:browser:1.8.0")

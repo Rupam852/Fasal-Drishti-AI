@@ -30,9 +30,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.fasaldrishti.app.domain.model.ScanRecord
+import com.fasaldrishti.app.domain.model.SprayStatus
 import com.fasaldrishti.app.domain.model.SyncStatus
+import com.fasaldrishti.app.domain.model.WeatherData
 import com.fasaldrishti.app.ui.components.SeverityBadge
 import com.fasaldrishti.app.ui.theme.*
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
@@ -44,6 +47,7 @@ fun HomeScreen(
     val user by viewModel.user.collectAsState()
     val recentScans by viewModel.recentScans.collectAsState()
     val syncStatus by viewModel.syncStatus.collectAsState()
+    val weatherData by viewModel.weatherData.collectAsState()
 
     val totalScans = recentScans.size
     val healthyCount = recentScans.count { it.severity.equals("none", ignoreCase = true) || it.diseaseName.contains("healthy", ignoreCase = true) }
@@ -376,109 +380,318 @@ fun HomeScreen(
                 }
             }
 
-            // 📊 2. FARM HEALTH & SPRAY INDEX KPI ROW
+            // 🌦️ 2. LIVE AGRO-WEATHER & SMART SPRAY ADVISORY CARD
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = EmeraldPrimary.copy(alpha = 0.2f)),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.2.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                 ) {
-                    // Health Index Card
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .shadow(4.dp, RoundedCornerShape(22.dp)),
-                        shape = RoundedCornerShape(22.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(18.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        // Top Header: Location + Temperature + Refresh
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(EmeraldPrimary.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.LocationOn,
+                                        contentDescription = "Location",
+                                        tint = EmeraldPrimary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = weatherData.locationName,
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        ),
+                                        maxLines = 1
+                                    )
+                                    Text(
+                                        text = weatherData.weatherDescription,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                            fontSize = 12.sp
+                                        )
+                                    )
+                                }
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "Farm Health",
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                        fontWeight = FontWeight.SemiBold
+                                    text = "${weatherData.temperature.toInt()}°C",
+                                    style = MaterialTheme.typography.headlineMedium.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 24.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 )
+
+                                IconButton(
+                                    onClick = { viewModel.refreshWeather() },
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                ) {
+                                    val rotation by rememberInfiniteTransition(label = "refresh").animateFloat(
+                                        initialValue = 0f,
+                                        targetValue = 360f,
+                                        animationSpec = infiniteRepeatable(
+                                            animation = tween(1000, easing = LinearEasing),
+                                            repeatMode = RepeatMode.Restart
+                                        ),
+                                        label = "rot"
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = "Refresh Weather",
+                                        tint = EmeraldPrimary,
+                                        modifier = Modifier
+                                            .size(18.dp)
+                                            .graphicsLayer {
+                                                if (weatherData.isLoading) rotationZ = rotation
+                                            }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Weather Metric Pills: Humidity, Wind, Rain Chance
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            // Humidity
+                            Surface(
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "💧 Humidity",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 11.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "${weatherData.humidity}%",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                }
+                            }
+
+                            // Wind Speed
+                            Surface(
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "💨 Wind",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 11.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "${String.format(Locale.US, "%.1f", weatherData.windSpeed)} km/h",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                }
+                            }
+
+                            // Rain Chance
+                            Surface(
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "🌧️ Rain",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 11.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "${weatherData.rainProbability}%",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        // Smart Spray Advisory Banner
+                        val sprayColor = when (weatherData.sprayStatus) {
+                            SprayStatus.SAFE -> EmeraldPrimary
+                            SprayStatus.CAUTION -> SolarGold
+                            SprayStatus.UNSAFE -> Color(0xFFEF4444)
+                        }
+                        val sprayTitle = when (weatherData.sprayStatus) {
+                            SprayStatus.SAFE -> "छिड़काव के लिए उत्तम समय (Safe to Spray)"
+                            SprayStatus.CAUTION -> "सावधानी से छिड़काव करें (Spray with Caution)"
+                            SprayStatus.UNSAFE -> "आज छिड़काव न करें (Do Not Spray Today)"
+                        }
+                        val sprayIcon = when (weatherData.sprayStatus) {
+                            SprayStatus.SAFE -> Icons.Default.CheckCircle
+                            SprayStatus.CAUTION -> Icons.Default.Warning
+                            SprayStatus.UNSAFE -> Icons.Default.Cancel
+                        }
+
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(18.dp),
+                            color = sprayColor.copy(alpha = 0.12f),
+                            border = androidx.compose.foundation.BorderStroke(1.2.dp, sprayColor.copy(alpha = 0.45f))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(14.dp),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Icon(
+                                    imageVector = sprayIcon,
+                                    contentDescription = null,
+                                    tint = sprayColor,
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                        .padding(top = 1.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = sprayTitle,
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp,
+                                            color = sprayColor
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.height(3.dp))
+                                    Text(
+                                        text = weatherData.sprayAdvisory,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                            lineHeight = 16.sp
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 📊 3. FARM HEALTH MATRIX CARD
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(4.dp, RoundedCornerShape(22.dp)),
+                    shape = RoundedCornerShape(22.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.Spa,
                                     contentDescription = null,
                                     tint = EmeraldPrimaryVariant,
                                     modifier = Modifier.size(18.dp)
                                 )
-                            }
-                            Text(
-                                text = if (totalScans == 0) "0%" else "$healthPercentage%",
-                                style = MaterialTheme.typography.headlineMedium.copy(
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = if (totalScans == 0) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f) else EmeraldPrimaryVariant
-                                )
-                            )
-                            Text(
-                                text = if (totalScans == 0) "No Scans Recorded" else "$healthyCount of $totalScans Healthy",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                    fontSize = 11.sp
-                                )
-                            )
-                        }
-                    }
-
-                    // Spray Weather Index Card
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .shadow(4.dp, RoundedCornerShape(22.dp)),
-                        shape = RoundedCornerShape(22.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(18.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Spray Index",
+                                    text = "Farm Health Score",
                                     style = MaterialTheme.typography.labelMedium.copy(
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                        fontWeight = FontWeight.SemiBold
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp
                                     )
                                 )
-                                Icon(
-                                    imageVector = Icons.Default.WbSunny,
-                                    contentDescription = null,
-                                    tint = SolarGold,
-                                    modifier = Modifier.size(18.dp)
-                                )
                             }
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "Optimal",
-                                style = MaterialTheme.typography.headlineMedium.copy(
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 22.sp,
-                                    color = SolarGold
-                                )
-                            )
-                            Text(
-                                text = "Good time for fungicide",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                    fontSize = 11.sp
+                                text = if (totalScans == 0) "No Scans Yet" else "$healthyCount of $totalScans Crops Healthy",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                    fontSize = 12.sp
                                 )
                             )
                         }
+
+                        Text(
+                            text = if (totalScans == 0) "0%" else "$healthPercentage%",
+                            style = MaterialTheme.typography.headlineLarge.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 32.sp,
+                                color = if (totalScans == 0) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f) else EmeraldPrimaryVariant
+                            )
+                        )
                     }
                 }
             }

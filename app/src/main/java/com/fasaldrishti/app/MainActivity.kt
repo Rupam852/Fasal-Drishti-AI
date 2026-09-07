@@ -41,7 +41,8 @@ class MainActivity : ComponentActivity() {
                         scanRepository = app.scanRepository,
                         authRepository = app.authRepository,
                         diseaseRepository = app.diseaseRepository,
-                        updateManager = app.updateManager
+                        updateManager = app.updateManager,
+                        weatherManager = app.weatherManager
                     )
                 }
             }

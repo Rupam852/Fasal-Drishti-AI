@@ -43,12 +43,15 @@ import com.fasaldrishti.app.ui.screens.settings.SettingsScreen
 import com.fasaldrishti.app.ui.screens.splash.SplashScreen
 import com.fasaldrishti.app.ui.screens.updater.UpdaterScreen
 
+import com.fasaldrishti.app.data.remote.WeatherManager
+
 @Composable
 fun AppNavHost(
     scanRepository: ScanRepository,
     authRepository: AuthRepository,
     diseaseRepository: DiseaseRepository,
     updateManager: UpdateManager,
+    weatherManager: WeatherManager,
     navController: NavHostController = rememberNavController()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -129,7 +132,7 @@ fun AppNavHost(
             }
 
             composable(Screen.Home.route) {
-                val homeViewModel = remember { HomeViewModel(scanRepository, authRepository) }
+                val homeViewModel = remember { HomeViewModel(scanRepository, authRepository, weatherManager) }
                 HomeScreen(
                     viewModel = homeViewModel,
                     onNavigateToScan = { navController.navigate(Screen.Scan.route) },
