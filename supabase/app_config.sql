@@ -19,10 +19,11 @@ create policy "Allow read access to app_config"
   for select
   using (true);
 
--- Seed NVIDIA NIM API Key into Supabase
+-- Dynamic configuration values
 insert into public.app_config (key, value, description)
 values
   ('nvidia_nim_api_key', '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', 'NVIDIA NIM API Key for AI Agronomist Chat'),
+  ('nvidia_model_name', 'meta/llama-3.2-11b-vision-instruct', 'Best active Vision & Agronomy Model on NVIDIA NIM'),
   ('latest_app_version', '1.0.0', 'Latest available app version for updater'),
   ('app_download_url', 'https://github.com/Rupam852/Fasal-Drishti-AI/releases/latest', 'Direct APK download link')
 on conflict (key) do update set

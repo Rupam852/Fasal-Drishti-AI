@@ -18,7 +18,6 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
         .build()
 
     private val apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions"
-    private val modelName = "meta/llama-3.2-11b-vision-instruct"
 
     suspend fun getAgronomyAdvice(
         primaryClass: String,
@@ -27,8 +26,9 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
         language: String = "en"
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
-            // 1. Dynamically fetch the latest active key from Supabase app_config
+            // 1. Dynamically fetch the latest active key and model name from Supabase app_config
             val apiKey = supabaseManager?.getRemoteConfig("nvidia_nim_api_key") ?: ""
+            val modelName = supabaseManager?.getRemoteConfig("nvidia_model_name", "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
 
             if (apiKey.isBlank()) {
                 return@withContext Result.success(
