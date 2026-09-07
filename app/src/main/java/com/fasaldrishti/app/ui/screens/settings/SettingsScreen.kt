@@ -20,22 +20,24 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fasaldrishti.app.data.local.ThemeManager
+import com.fasaldrishti.app.data.local.ThemeMode
 import com.fasaldrishti.app.data.remote.UpdateManager
 import com.fasaldrishti.app.ui.theme.CrimsonCoral
 import com.fasaldrishti.app.ui.theme.EmeraldPrimary
 import com.fasaldrishti.app.ui.theme.SolarGold
 
-enum class ThemeOption { LIGHT, DARK, SYSTEM }
 enum class LanguageOption { ENGLISH, HINDI }
 
 @Composable
 fun SettingsScreen(
     updateManager: UpdateManager,
+    themeManager: ThemeManager,
     onNavigateBack: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToUpdater: () -> Unit
 ) {
-    var selectedTheme by remember { mutableStateOf(ThemeOption.SYSTEM) }
+    val selectedTheme by themeManager.themeMode.collectAsState()
     var selectedLanguage by remember { mutableStateOf(LanguageOption.ENGLISH) }
     var scanRemindersEnabled by remember { mutableStateOf(true) }
     var tipsEnabled by remember { mutableStateOf(true) }
@@ -104,22 +106,22 @@ fun SettingsScreen(
                             ThemeSegment(
                                 label = "Light",
                                 icon = Icons.Default.LightMode,
-                                isSelected = selectedTheme == ThemeOption.LIGHT,
-                                onClick = { selectedTheme = ThemeOption.LIGHT },
+                                isSelected = selectedTheme == ThemeMode.LIGHT,
+                                onClick = { themeManager.setThemeMode(ThemeMode.LIGHT) },
                                 modifier = Modifier.weight(1f)
                             )
                             ThemeSegment(
                                 label = "Dark",
                                 icon = Icons.Default.DarkMode,
-                                isSelected = selectedTheme == ThemeOption.DARK,
-                                onClick = { selectedTheme = ThemeOption.DARK },
+                                isSelected = selectedTheme == ThemeMode.DARK,
+                                onClick = { themeManager.setThemeMode(ThemeMode.DARK) },
                                 modifier = Modifier.weight(1f)
                             )
                             ThemeSegment(
                                 label = "System",
                                 icon = Icons.Default.SettingsBrightness,
-                                isSelected = selectedTheme == ThemeOption.SYSTEM,
-                                onClick = { selectedTheme = ThemeOption.SYSTEM },
+                                isSelected = selectedTheme == ThemeMode.SYSTEM,
+                                onClick = { themeManager.setThemeMode(ThemeMode.SYSTEM) },
                                 modifier = Modifier.weight(1f)
                             )
                         }

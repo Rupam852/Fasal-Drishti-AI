@@ -51,7 +51,7 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ObsidianVoid),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         // Glowing Ambient Radial Backdrop
@@ -86,7 +86,7 @@ fun SplashScreen(
             Text(
                 text = "Fasal Drishti AI",
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 32.sp,
                     letterSpacing = 1.sp

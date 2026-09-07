@@ -40,12 +40,15 @@ class FasalDrishtiApp : Application() {
         private set
     lateinit var weatherManager: WeatherManager
         private set
+    lateinit var themeManager: com.fasaldrishti.app.data.local.ThemeManager
+        private set
 
     override fun onCreate() {
         super.onCreate()
 
-        // 1. Initialize Local Database
+        // 1. Initialize Local Database & Theme
         val database = AppDatabase.getInstance(this)
+        themeManager = com.fasaldrishti.app.data.local.ThemeManager(this)
 
         // 2. Initialize Networking (Retrofit)
         val logging = HttpLoggingInterceptor().apply {
@@ -93,7 +96,8 @@ class FasalDrishtiApp : Application() {
             predictApi = predictApi,
             supabaseManager = supabaseManager,
             onDeviceClassifier = onDeviceClassifier,
-            diseaseRepository = diseaseRepository
+            diseaseRepository = diseaseRepository,
+            nvidiaClient = nvidiaClient
         )
 
         authRepository = AuthRepositoryImpl(supabaseManager = supabaseManager)

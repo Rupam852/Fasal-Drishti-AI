@@ -9,6 +9,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
@@ -32,7 +34,14 @@ class MainActivity : ComponentActivity() {
         handleAuthDeepLink(intent, app)
 
         setContent {
-            FasalDrishtiTheme {
+            val themeMode by app.themeManager.themeMode.collectAsState()
+            val isDarkTheme = when (themeMode) {
+                com.fasaldrishti.app.data.local.ThemeMode.LIGHT -> false
+                com.fasaldrishti.app.data.local.ThemeMode.DARK -> true
+                com.fasaldrishti.app.data.local.ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+            }
+
+            FasalDrishtiTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -42,7 +51,8 @@ class MainActivity : ComponentActivity() {
                         authRepository = app.authRepository,
                         diseaseRepository = app.diseaseRepository,
                         updateManager = app.updateManager,
-                        weatherManager = app.weatherManager
+                        weatherManager = app.weatherManager,
+                        themeManager = app.themeManager
                     )
                 }
             }

@@ -3,10 +3,12 @@ package com.fasaldrishti.app.data.repository
 import com.fasaldrishti.app.data.local.ScanDao
 import com.fasaldrishti.app.data.local.ScanEntity
 import com.fasaldrishti.app.data.ml.TFLiteDiseaseClassifier
+import com.fasaldrishti.app.data.remote.NvidiaClient
 import com.fasaldrishti.app.data.remote.PredictApi
 import com.fasaldrishti.app.data.remote.SupabaseManager
 import com.fasaldrishti.app.domain.model.DiseaseInfo
 import com.fasaldrishti.app.domain.model.ScanRecord
+import com.fasaldrishti.app.domain.model.SyncStatus
 import com.fasaldrishti.app.domain.repository.DiseaseRepository
 import com.fasaldrishti.app.domain.repository.ScanRepository
 import kotlinx.coroutines.CoroutineScope
@@ -15,10 +17,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.fasaldrishti.app.domain.model.SyncStatus
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.util.UUID
 
@@ -27,7 +25,8 @@ class ScanRepositoryImpl(
     private val predictApi: PredictApi,
     private val supabaseManager: SupabaseManager,
     private val onDeviceClassifier: TFLiteDiseaseClassifier,
-    private val diseaseRepository: DiseaseRepository
+    private val diseaseRepository: DiseaseRepository,
+    private val nvidiaClient: NvidiaClient? = null
 ) : ScanRepository {
 
     override val syncStatus: Flow<SyncStatus> = supabaseManager.syncStatus
@@ -59,28 +58,22 @@ class ScanRepositoryImpl(
 
     override suspend fun performScan(imageFile: File): Result<ScanRecord> = withContext(Dispatchers.IO) {
         try {
-            // 1. PRIMARY: On-Device MobileNetV2 Neural Network Inference directly on phone
+            // 1. PRIMARY: High-speed On-Device MobileNetV2 Neural Network Inference directly on phone (100% Offline)
             val onDeviceResult = onDeviceClassifier.classifyImage(imageFile)
             val predictedClass = onDeviceResult.predictedClass
-            val confidence = onDeviceResult.confidence
+            var confidence = onDeviceResult.confidence
 
-            // 2. Threshold Check: If confidence < 50%, classify as Non-Crop / Invalid Photo
-            val isInvalidCrop = confidence < 0.50f
+            var cropName: String
+            var diseaseName: String
+            var severity: String
+            var symptoms: String
+            var treatment: String
+            var isInvalidCrop = false
+            var finalPredictedClass = predictedClass
 
-            val cropName: String
-            val diseaseName: String
-            val severity: String
-            val symptoms: String
-            val treatment: String
-
-            if (isInvalidCrop) {
-                cropName = "Non-Crop Object"
-                diseaseName = "No Plant Leaf Detected (अमान्य फोटो)"
-                severity = "Invalid"
-                symptoms = "AI vision did not detect a recognized agricultural plant leaf. The photo may contain a non-crop object, person, animal, vehicle, or is too blurry/dark."
-                treatment = "Please align a clear, well-lit plant leaf inside the camera reticle and take a close-up photo."
-            } else {
-                // Fetch rich agronomic metadata
+            // 2. CHECK DATASET MATCH vs FALLBACK AI MODEL:
+            // If confidence >= 50%, the crop leaf matches our 38 on-device categories
+            if (confidence >= 0.50f) {
                 val diseaseInfoResult = diseaseRepository.getDiseaseInfo(predictedClass)
                 val diseaseInfo = diseaseInfoResult.getOrNull()
 
@@ -89,17 +82,48 @@ class ScanRepositoryImpl(
                 severity = diseaseInfo?.severity ?: if (diseaseName.contains("healthy", ignoreCase = true)) "None" else "Moderate"
                 symptoms = diseaseInfo?.symptoms ?: "Water-soaked lesions on leaf surfaces."
                 treatment = diseaseInfo?.treatment ?: "Apply recommended fungicide and maintain proper plant spacing."
+                finalPredictedClass = predictedClass
+            } else {
+                // 3. FALLBACK: Scanned photo is NOT in 38-class dataset or low confidence -> Shift to Fallback AI Vision Model
+                val fallbackResult = nvidiaClient?.diagnoseCropImage(imageFile)
+                val fallbackData = fallbackResult?.getOrNull()
+
+                if (fallbackData != null) {
+                    cropName = fallbackData.cropName
+                    diseaseName = fallbackData.diseaseName
+                    severity = fallbackData.severity
+                    confidence = fallbackData.confidence
+                    symptoms = fallbackData.symptoms
+                    treatment = fallbackData.treatment
+
+                    if (severity.equals("Invalid", ignoreCase = true) || cropName.contains("Non-Crop", ignoreCase = true)) {
+                        isInvalidCrop = true
+                        finalPredictedClass = "Invalid_Crop"
+                    } else {
+                        isInvalidCrop = false
+                        finalPredictedClass = "${cropName}___${diseaseName}".replace(" ", "_")
+                    }
+                } else {
+                    // If device is offline and cannot reach cloud fallback AI
+                    isInvalidCrop = false
+                    cropName = "Unclassified Plant / Crop"
+                    diseaseName = "Offline Analysis Inconclusive"
+                    severity = "Low"
+                    symptoms = "Leaf features did not match the 38 on-device offline models with high certainty."
+                    treatment = "Connect to mobile data/Wi-Fi to trigger deep AI multimodal vision diagnosis, or retake a close-up photo in good light."
+                    finalPredictedClass = "Unclassified_Crop"
+                }
             }
 
-            // 3. Upload image to Supabase Storage in background or save local path
+            // 4. Upload image to Supabase Storage in background or save local path
             val uploadResult = supabaseManager.uploadCropImage(imageFile)
             val storedImageUrl = uploadResult.getOrDefault(imageFile.absolutePath)
 
-            // 4. Save to Room database for instant offline history access
+            // 5. Save to Room database for instant offline history access
             val scanRecord = ScanRecord(
                 id = UUID.randomUUID().toString(),
                 imageUrl = storedImageUrl,
-                predictedClass = if (isInvalidCrop) "Invalid_Crop" else predictedClass,
+                predictedClass = finalPredictedClass,
                 confidence = confidence,
                 cropName = cropName,
                 diseaseName = diseaseName,
@@ -111,7 +135,7 @@ class ScanRepositoryImpl(
 
             scanDao.insertScan(ScanEntity.fromDomain(scanRecord))
 
-            // 5. Automatic background sync with Supabase Cloud
+            // 6. Automatic background sync with Supabase Cloud
             CoroutineScope(Dispatchers.IO).launch {
                 supabaseManager.syncScanRecordToCloud(scanRecord)
             }
@@ -126,10 +150,10 @@ class ScanRepositoryImpl(
         scanDao.insertScan(ScanEntity.fromDomain(scan))
     }
 
-    override suspend fun deleteScan(id: String) {
-        scanDao.deleteScan(id)
+    override suspend fun deleteScan(scanId: String) {
+        scanDao.deleteScan(scanId)
         CoroutineScope(Dispatchers.IO).launch {
-            supabaseManager.deleteScanFromCloud(id)
+            supabaseManager.deleteScanFromCloud(scanId)
         }
     }
 

@@ -2,12 +2,23 @@
 
 -keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
 
-# Keep data models and DTOs
+# Keep data models, DTOs, Room Entities
 -keep class com.fasaldrishti.app.data.remote.dto.** { *; }
 -keep class com.fasaldrishti.app.domain.model.** { *; }
 -keep class com.fasaldrishti.app.data.local.** { *; }
+-keep class com.fasaldrishti.app.data.remote.** { *; }
 
-# TensorFlow Lite & JNI
+# Gson serialization
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class com.google.gson.** { *; }
+
+# Retrofit
+-keep class retrofit2.** { *; }
+-dontwarn retrofit2.**
+
+# TensorFlow Lite & JNI Native delegates
 -dontwarn org.tensorflow.lite.**
 -dontwarn com.google.android.gms.tflite.**
 -keep class org.tensorflow.lite.** { *; }
@@ -25,6 +36,6 @@
 -keep class * extends androidx.room.RoomDatabase
 -dontwarn androidx.room.paging.**
 
-# Coroutines
+# Coroutines & AndroidX
 -dontwarn kotlinx.coroutines.**
 -dontwarn androidx.**

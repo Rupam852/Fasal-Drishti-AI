@@ -99,7 +99,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ObsidianVoid)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Glowing Ambient Light Beam Backdrop
         Box(
@@ -109,7 +109,7 @@ fun LoginScreen(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            EmeraldDark.copy(alpha = 0.35f),
+                            EmeraldDark.copy(alpha = 0.25f),
                             Color.Transparent
                         )
                     )
@@ -132,7 +132,7 @@ fun LoginScreen(
             Text(
                 text = "Fasal Drishti AI",
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 30.sp,
                     letterSpacing = 1.sp

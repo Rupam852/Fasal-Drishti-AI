@@ -52,6 +52,7 @@ fun AppNavHost(
     diseaseRepository: DiseaseRepository,
     updateManager: UpdateManager,
     weatherManager: WeatherManager,
+    themeManager: com.fasaldrishti.app.data.local.ThemeManager,
     navController: NavHostController = rememberNavController()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -246,6 +247,7 @@ fun AppNavHost(
             composable(Screen.Settings.route) {
                 SettingsScreen(
                     updateManager = updateManager,
+                    themeManager = themeManager,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
                     onNavigateToUpdater = { navController.navigate(Screen.Updater.route) }
