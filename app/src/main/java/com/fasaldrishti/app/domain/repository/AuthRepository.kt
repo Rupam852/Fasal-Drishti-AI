@@ -9,6 +9,6 @@ interface AuthRepository {
     fun getOAuthUrl(provider: String): String
     suspend fun handleAuthCallback(uri: Uri): Result<UserProfile>
     suspend fun signInWithGoogle(): Result<UserProfile>
-    suspend fun signInWithGitHub(): Result<UserProfile>
+    fun setAuthenticatedUser(user: UserProfile)
     suspend fun signOut()
 }

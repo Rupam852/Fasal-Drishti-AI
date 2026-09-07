@@ -38,6 +38,16 @@ class AuthViewModel(
         }
     }
 
+    fun setAuthenticatedUser(user: UserProfile, onSuccess: (() -> Unit)? = null) {
+        authRepository.setAuthenticatedUser(user)
+        _uiState.value = _uiState.value.copy(
+            isSuccess = true,
+            isLoading = false,
+            user = user
+        )
+        onSuccess?.invoke()
+    }
+
     fun getOAuthUrl(provider: String): String {
         return authRepository.getOAuthUrl(provider)
     }
@@ -59,19 +69,6 @@ class AuthViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             val result = authRepository.signInWithGoogle()
-            result.onSuccess { user ->
-                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true, user = user)
-                onSuccess?.invoke()
-            }.onFailure { error ->
-                _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = error.localizedMessage)
-            }
-        }
-    }
-
-    fun signInWithGitHub(onSuccess: (() -> Unit)? = null) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
-            val result = authRepository.signInWithGitHub()
             result.onSuccess { user ->
                 _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true, user = user)
                 onSuccess?.invoke()

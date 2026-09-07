@@ -24,8 +24,8 @@ class AuthRepositoryImpl(
         return supabaseManager.signInWithGoogle()
     }
 
-    override suspend fun signInWithGitHub(): Result<UserProfile> {
-        return supabaseManager.signInWithGitHub()
+    override fun setAuthenticatedUser(user: UserProfile) {
+        supabaseManager.setAuthenticatedUser(user)
     }
 
     override suspend fun signOut() {

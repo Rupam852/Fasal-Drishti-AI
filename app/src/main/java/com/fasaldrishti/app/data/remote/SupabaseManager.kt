@@ -61,6 +61,11 @@ class SupabaseManager(private val context: Context) {
             .apply()
     }
 
+    fun setAuthenticatedUser(user: UserProfile) {
+        saveUserToPrefs(user)
+        _currentUser.value = user
+    }
+
     fun getOAuthUrl(provider: String): String {
         return "$supabaseUrl/auth/v1/authorize?provider=$provider&redirect_to=fasaldrishti://auth"
     }
@@ -72,15 +77,6 @@ class SupabaseManager(private val context: Context) {
             Result.success(current)
         } else {
             Result.failure(Exception("Please complete Google sign-in"))
-        }
-    }
-
-    suspend fun signInWithGitHub(): Result<UserProfile> {
-        val current = _currentUser.value
-        return if (current != null) {
-            Result.success(current)
-        } else {
-            Result.failure(Exception("Please complete GitHub sign-in"))
         }
     }
 

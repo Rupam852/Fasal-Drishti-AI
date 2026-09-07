@@ -1,6 +1,8 @@
 package com.fasaldrishti.app.ui.screens.auth
 
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -26,10 +28,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fasaldrishti.app.domain.model.UserProfile
 import com.fasaldrishti.app.ui.components.AppLogo
 import com.fasaldrishti.app.ui.theme.EmeraldDark
 import com.fasaldrishti.app.ui.theme.EmeraldPrimary
 import com.fasaldrishti.app.ui.theme.ObsidianVoid
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import java.util.UUID
 
 @Composable
 fun LoginScreen(
@@ -45,21 +52,47 @@ fun LoginScreen(
         }
     }
 
-    fun launchCustomTabsOAuth(provider: String) {
+    // Native Google Play Services Account Chooser Launcher (Direct SHA-1 / Keystore)
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         try {
-            val url = viewModel.getOAuthUrl(provider)
-            val customTabsIntent = CustomTabsIntent.Builder()
-                .setShowTitle(true)
-                .setUrlBarHidingEnabled(true)
-                .build()
-            customTabsIntent.launchUrl(context, Uri.parse(url))
-        } catch (_: Exception) {
-            // Fallback to standard browser intent if Custom Tabs service is absent
-            val url = viewModel.getOAuthUrl(provider)
-            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            val account = task.getResult(ApiException::class.java)
+            if (account != null) {
+                val user = UserProfile(
+                    id = account.id ?: UUID.randomUUID().toString(),
+                    name = account.displayName ?: "Farmer",
+                    email = account.email ?: "",
+                    avatarUrl = account.photoUrl?.toString()
+                )
+                viewModel.setAuthenticatedUser(user, onSuccess = onLoginSuccess)
             }
-            context.startActivity(intent)
+        } catch (_: Exception) {
+            // If native Google Play Services is absent, fallback to Custom Tabs OAuth
+            try {
+                val url = viewModel.getOAuthUrl("google")
+                val customTabsIntent = CustomTabsIntent.Builder().setShowTitle(true).build()
+                customTabsIntent.launchUrl(context, Uri.parse(url))
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun launchGoogleSignIn() {
+        try {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestProfile()
+                .build()
+            val googleSignInClient = GoogleSignIn.getClient(context, gso)
+            googleSignInLauncher.launch(googleSignInClient.signInIntent)
+        } catch (_: Exception) {
+            // Fallback to custom tabs if Play Services unavailable
+            try {
+                val url = viewModel.getOAuthUrl("google")
+                val customTabsIntent = CustomTabsIntent.Builder().setShowTitle(true).build()
+                customTabsIntent.launchUrl(context, Uri.parse(url))
+            } catch (_: Exception) {}
         }
     }
 
@@ -160,23 +193,12 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(28.dp))
 
-                    // Google OAuth Button (Launches Chrome Custom Tabs with device Google accounts picker)
+                    // Google Native Sign-In Button (Opens Android Device Google Account Picker)
                     AuthButton(
                         text = "Continue with Google",
                         icon = Icons.Default.GTranslate,
                         iconTint = Color(0xFF4285F4),
-                        onClick = { launchCustomTabsOAuth("google") },
-                        isLoading = uiState.isLoading
-                    )
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // GitHub OAuth Button
-                    AuthButton(
-                        text = "Continue with GitHub",
-                        icon = Icons.Default.Code,
-                        iconTint = MaterialTheme.colorScheme.onSurface,
-                        onClick = { launchCustomTabsOAuth("github") },
+                        onClick = { launchGoogleSignIn() },
                         isLoading = uiState.isLoading
                     )
 

@@ -55,7 +55,7 @@ class FasalDrishtiApp : Application() {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(BuildConfig.BACKEND_BASE_URL)
+            .baseUrl("https://tajizxhfxewkelzrmgux.supabase.co/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
