@@ -15,7 +15,7 @@ data class ChatUiState(
     val messages: List<ChatMessage> = emptyList(),
     val isAiTyping: Boolean = false,
     val contextInfo: String? = null,
-    val selectedLanguage: String = "Hinglish"
+    val selectedLanguage: String = "English"
 )
 
 class ChatViewModel(
@@ -36,7 +36,7 @@ class ChatViewModel(
                 messages = listOf(
                     ChatMessage(
                         id = UUID.randomUUID().toString(),
-                        text = "Namaste! Main aapka AI Agronomist hoon 🌾. Maine aapke scan ($context) ka analysis dekha hai. Iske upchar, dava ke dosage, spray timing ya mitti ke baare me kuch bhi poochein!",
+                        text = "Namaste! I am your AI Agronomist 🌾. I have reviewed your scan diagnosis ($context). How can I assist you with treatment dosages, spray schedules, or soil management?",
                         isUser = false
                     )
                 )
@@ -46,7 +46,7 @@ class ChatViewModel(
                 messages = listOf(
                     ChatMessage(
                         id = UUID.randomUUID().toString(),
-                        text = "Namaste Kisan bhai! Main hoon Fasal Drishti ka AI Krishi Doctor 🌾. Aap kisi bhi bhasha me sawal pooch sakte hain. Upar language button se apni response bhasha (Hinglish/Hindi/Others) chun sakte hain!",
+                        text = "Namaste! I am Fasal Drishti's AI Agronomist 🌾. Ask me anything about crop diseases, pest controls, fertilizers, and organic treatments. You can also select your preferred response language from the top bar!",
                         isUser = false
                     )
                 )

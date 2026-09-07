@@ -122,9 +122,9 @@ fun ChatScreen(
 
                     var showLanguageMenu by remember { mutableStateOf(false) }
                     val supportedLanguages = listOf(
+                        "English",
                         "Hinglish",
                         "हिन्दी (Hindi)",
-                        "English",
                         "বাংলা (Bengali)",
                         "मराठी (Marathi)",
                         "ਪੰਜਾਬੀ (Punjabi)",
@@ -197,7 +197,7 @@ fun ChatScreen(
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
                                             Text(
-                                                text = if (lang == "Hinglish") "Hinglish (Default)" else lang,
+                                                text = if (lang == "English") "English (Default)" else lang,
                                                 style = MaterialTheme.typography.bodyMedium.copy(
                                                     fontWeight = if (uiState.selectedLanguage == lang) FontWeight.Bold else FontWeight.Normal,
                                                     color = if (uiState.selectedLanguage == lang) EmeraldPrimary else MaterialTheme.colorScheme.onSurface

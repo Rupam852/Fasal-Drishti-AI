@@ -14,9 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,18 +31,51 @@ import com.fasaldrishti.app.data.remote.UpdateManager
 import com.fasaldrishti.app.ui.screens.auth.AuthViewModel
 import com.fasaldrishti.app.ui.theme.*
 
+import com.fasaldrishti.app.domain.model.ScanRecord
+
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
     updateManager: UpdateManager,
+    scans: List<ScanRecord> = emptyList(),
     onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToAbout: () -> Unit,
+    onClearAllScans: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val authState by authViewModel.uiState.collectAsState()
     val user = authState.user
     val updateInfo by updateManager.updateInfo.collectAsState()
+    var showClearDialog by remember { mutableStateOf(false) }
+
+    val totalScans = scans.size
+    val healthyCount = scans.count { it.severity.equals("none", ignoreCase = true) || it.diseaseName.contains("healthy", ignoreCase = true) }
+    val treatedCount = scans.count { !it.severity.equals("none", ignoreCase = true) && !it.diseaseName.contains("healthy", ignoreCase = true) }
+
+    if (showClearDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearDialog = false },
+            title = { Text("Clear All Scan History?", fontWeight = FontWeight.Bold) },
+            text = { Text("Are you sure you want to permanently clear all crop scans from your phone and Supabase cloud? This action cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onClearAllScans()
+                        showClearDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Clear All Data", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -172,21 +203,21 @@ fun ProfileScreen(
                 ) {
                     StatCard(
                         title = "Scans",
-                        value = "${user?.totalScans ?: 0}",
+                        value = "$totalScans",
                         icon = Icons.Default.CameraAlt,
                         color = EmeraldPrimary,
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(
                         title = "Healthy",
-                        value = "${user?.healthyCount ?: 0}",
+                        value = "$healthyCount",
                         icon = Icons.Default.Spa,
                         color = NeonLime,
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(
                         title = "Treated",
-                        value = "${user?.diseasedCount ?: 0}",
+                        value = "$treatedCount",
                         icon = Icons.Default.MedicalServices,
                         color = SolarGold,
                         modifier = Modifier.weight(1f)
@@ -208,6 +239,14 @@ fun ProfileScreen(
                             title = "My Scan History",
                             subtitle = "View past diagnoses & prescriptions",
                             onClick = onNavigateToHistory
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(horizontal = 12.dp))
+                        ProfileTile(
+                            icon = Icons.Default.DeleteSweep,
+                            title = "Clear All Scan History",
+                            subtitle = "Permanently remove device & cloud records",
+                            onClick = { showClearDialog = true },
+                            tint = CrimsonCoral
                         )
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(horizontal = 12.dp))
                         ProfileTile(

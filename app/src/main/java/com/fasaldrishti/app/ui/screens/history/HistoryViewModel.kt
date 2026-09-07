@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.fasaldrishti.app.domain.model.ScanRecord
 import com.fasaldrishti.app.domain.repository.ScanRepository
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 class HistoryViewModel(
     private val scanRepository: ScanRepository
@@ -50,5 +51,17 @@ class HistoryViewModel(
 
     fun toggleViewMode() {
         _isGridView.value = !_isGridView.value
+    }
+
+    fun deleteScan(id: String) {
+        viewModelScope.launch {
+            scanRepository.deleteScan(id)
+        }
+    }
+
+    fun clearAllScans() {
+        viewModelScope.launch {
+            scanRepository.clearAllScans()
+        }
     }
 }

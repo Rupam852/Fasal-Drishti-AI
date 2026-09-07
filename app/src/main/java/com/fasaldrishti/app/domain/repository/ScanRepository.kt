@@ -10,4 +10,5 @@ interface ScanRepository {
     suspend fun performScan(imageFile: File): Result<ScanRecord>
     suspend fun saveScan(scan: ScanRecord)
     suspend fun deleteScan(id: String)
+    suspend fun clearAllScans()
 }

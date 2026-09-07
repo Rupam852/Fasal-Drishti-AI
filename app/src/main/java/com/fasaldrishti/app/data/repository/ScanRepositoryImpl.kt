@@ -9,9 +9,11 @@ import com.fasaldrishti.app.domain.model.DiseaseInfo
 import com.fasaldrishti.app.domain.model.ScanRecord
 import com.fasaldrishti.app.domain.repository.DiseaseRepository
 import com.fasaldrishti.app.domain.repository.ScanRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -91,12 +93,10 @@ class ScanRepositoryImpl(
 
             scanDao.insertScan(ScanEntity.fromDomain(scanRecord))
 
-            // 5. Optional online sync with Render backend
-            try {
-                val requestFile = imageFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                val body = MultipartBody.Part.createFormData("file", imageFile.name, requestFile)
-                predictApi.predictCropDisease(body)
-            } catch (_: Exception) {}
+            // 5. Automatic background sync with Supabase Cloud
+            CoroutineScope(Dispatchers.IO).launch {
+                supabaseManager.syncScanRecordToCloud(scanRecord)
+            }
 
             Result.success(scanRecord)
         } catch (e: Exception) {
@@ -110,5 +110,15 @@ class ScanRepositoryImpl(
 
     override suspend fun deleteScan(id: String) {
         scanDao.deleteScan(id)
+        CoroutineScope(Dispatchers.IO).launch {
+            supabaseManager.deleteScanFromCloud(id)
+        }
+    }
+
+    override suspend fun clearAllScans() {
+        scanDao.clearAll()
+        CoroutineScope(Dispatchers.IO).launch {
+            supabaseManager.clearAllScansFromCloud()
+        }
     }
 }

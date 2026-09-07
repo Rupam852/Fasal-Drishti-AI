@@ -20,6 +20,7 @@ import com.fasaldrishti.app.data.remote.UpdateManager
 import com.fasaldrishti.app.domain.repository.AuthRepository
 import com.fasaldrishti.app.domain.repository.DiseaseRepository
 import com.fasaldrishti.app.domain.repository.ScanRepository
+import kotlinx.coroutines.launch
 import com.fasaldrishti.app.ui.components.FasalBottomBar
 import com.fasaldrishti.app.ui.screens.about.AboutScreen
 import com.fasaldrishti.app.ui.screens.analyzing.AnalyzingScreen
@@ -211,9 +212,12 @@ fun AppNavHost(
 
             composable(Screen.Profile.route) {
                 val authViewModel = remember { AuthViewModel(authRepository) }
+                val scans by scanRepository.getAllScans().collectAsState(initial = emptyList())
+                val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
                 ProfileScreen(
                     authViewModel = authViewModel,
                     updateManager = updateManager,
+                    scans = scans,
                     onNavigateToHistory = {
                         navController.navigate(Screen.History.route) {
                             popUpTo(Screen.Home.route)
@@ -222,6 +226,11 @@ fun AppNavHost(
                     },
                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
+                    onClearAllScans = {
+                        coroutineScope.launch {
+                            scanRepository.clearAllScans()
+                        }
+                    },
                     onLogout = {
                         navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }

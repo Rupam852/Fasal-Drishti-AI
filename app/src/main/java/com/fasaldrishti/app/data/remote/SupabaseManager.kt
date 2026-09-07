@@ -4,13 +4,17 @@ import android.content.Context
 import android.net.Uri
 import com.fasaldrishti.app.BuildConfig
 import com.fasaldrishti.app.domain.model.UserProfile
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -84,6 +88,11 @@ class SupabaseManager(private val context: Context) {
         }
         saveUserToPrefs(finalUser)
         _currentUser.value = finalUser
+
+        // Background automatic sync to Supabase Cloud
+        CoroutineScope(Dispatchers.IO).launch {
+            syncUserProfileToCloud(finalUser)
+        }
     }
 
     fun getOAuthUrl(provider: String): String {
@@ -166,6 +175,82 @@ class SupabaseManager(private val context: Context) {
     suspend fun signOut() {
         prefs.edit().clear().apply()
         _currentUser.value = null
+    }
+
+    suspend fun syncUserProfileToCloud(user: UserProfile) = withContext(Dispatchers.IO) {
+        try {
+            val json = JSONObject().apply {
+                put("id", user.id)
+                put("name", user.name)
+                put("email", user.email)
+                put("avatar_url", user.avatarUrl ?: "")
+                put("updated_at", java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).format(java.util.Date()))
+            }
+            val request = Request.Builder()
+                .url("$supabaseUrl/rest/v1/profiles")
+                .addHeader("apikey", anonKey)
+                .addHeader("Authorization", "Bearer $anonKey")
+                .addHeader("Prefer", "resolution=merge-duplicates")
+                .addHeader("Content-Type", "application/json")
+                .post(json.toString().toRequestBody("application/json".toMediaType()))
+                .build()
+
+            client.newCall(request).execute().close()
+        } catch (_: Exception) {}
+    }
+
+    suspend fun syncScanRecordToCloud(scan: com.fasaldrishti.app.domain.model.ScanRecord) = withContext(Dispatchers.IO) {
+        try {
+            val userId = _currentUser.value?.id ?: prefs.getString("user_id", "guest")
+            val json = JSONObject().apply {
+                put("id", scan.id)
+                put("user_id", userId)
+                put("crop_name", scan.cropName)
+                put("disease_name", scan.diseaseName)
+                put("predicted_class", scan.predictedClass)
+                put("confidence", scan.confidence.toDouble())
+                put("severity", scan.severity)
+                put("symptoms", scan.symptoms)
+                put("treatment", scan.treatment)
+                put("created_at", java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).format(java.util.Date(scan.timestamp)))
+            }
+            val request = Request.Builder()
+                .url("$supabaseUrl/rest/v1/scans")
+                .addHeader("apikey", anonKey)
+                .addHeader("Authorization", "Bearer $anonKey")
+                .addHeader("Prefer", "resolution=merge-duplicates")
+                .addHeader("Content-Type", "application/json")
+                .post(json.toString().toRequestBody("application/json".toMediaType()))
+                .build()
+
+            client.newCall(request).execute().close()
+        } catch (_: Exception) {}
+    }
+
+    suspend fun deleteScanFromCloud(scanId: String) = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder()
+                .url("$supabaseUrl/rest/v1/scans?id=eq.$scanId")
+                .addHeader("apikey", anonKey)
+                .addHeader("Authorization", "Bearer $anonKey")
+                .delete()
+                .build()
+            client.newCall(request).execute().close()
+        } catch (_: Exception) {}
+    }
+
+    suspend fun clearAllScansFromCloud() = withContext(Dispatchers.IO) {
+        try {
+            val userId = _currentUser.value?.id ?: prefs.getString("user_id", null)
+            val url = if (userId != null) "$supabaseUrl/rest/v1/scans?user_id=eq.$userId" else "$supabaseUrl/rest/v1/scans?id=neq.0"
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("apikey", anonKey)
+                .addHeader("Authorization", "Bearer $anonKey")
+                .delete()
+                .build()
+            client.newCall(request).execute().close()
+        } catch (_: Exception) {}
     }
 
     suspend fun uploadCropImage(imageFile: File): Result<String> {

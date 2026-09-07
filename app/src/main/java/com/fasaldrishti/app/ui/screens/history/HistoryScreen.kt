@@ -46,6 +46,31 @@ fun HistoryScreen(
     val scans by viewModel.filteredScans.collectAsState()
 
     val filterOptions = listOf("All", "Healthy", "Diseased", "Tomato", "Potato", "Apple", "Corn", "Grape")
+    var scanToDelete by remember { mutableStateOf<ScanRecord?>(null) }
+
+    if (scanToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { scanToDelete = null },
+            title = { Text("Delete Scan Record?", fontWeight = FontWeight.Bold) },
+            text = { Text("Are you sure you want to permanently delete this scan record (${scanToDelete?.cropName} - ${scanToDelete?.diseaseName}) from your device and Supabase cloud?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scanToDelete?.let { viewModel.deleteScan(it.id) }
+                        scanToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { scanToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -223,7 +248,8 @@ fun HistoryScreen(
                 items(scans) { scan ->
                     HistoryGridCard(
                         scan = scan,
-                        onClick = { onNavigateToResult(scan.id) }
+                        onClick = { onNavigateToResult(scan.id) },
+                        onDelete = { scanToDelete = scan }
                     )
                 }
             }
@@ -239,7 +265,8 @@ fun HistoryScreen(
                 items(scans) { scan ->
                     HistoryListCard(
                         scan = scan,
-                        onClick = { onNavigateToResult(scan.id) }
+                        onClick = { onNavigateToResult(scan.id) },
+                        onDelete = { scanToDelete = scan }
                     )
                 }
             }
@@ -250,7 +277,8 @@ fun HistoryScreen(
 @Composable
 private fun HistoryGridCard(
     scan: ScanRecord,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -275,6 +303,23 @@ private fun HistoryGridCard(
                         contentDescription = scan.diseaseName,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier
+                        .padding(6.dp)
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .align(Alignment.TopStart)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DeleteOutline,
+                        contentDescription = "Delete",
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
@@ -319,7 +364,8 @@ private fun HistoryGridCard(
 @Composable
 private fun HistoryListCard(
     scan: ScanRecord,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -393,12 +439,17 @@ private fun HistoryListCard(
                 }
             }
 
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(18.dp)
-            )
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DeleteOutline,
+                    contentDescription = "Delete",
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.75f),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     }
 }

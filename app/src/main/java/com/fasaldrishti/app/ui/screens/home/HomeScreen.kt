@@ -41,9 +41,9 @@ fun HomeScreen(
     val user by viewModel.user.collectAsState()
     val recentScans by viewModel.recentScans.collectAsState()
 
-    val totalScans = recentScans.size.coerceAtLeast(user?.totalScans ?: 0)
+    val totalScans = recentScans.size
     val healthyCount = recentScans.count { it.severity.equals("none", ignoreCase = true) || it.diseaseName.contains("healthy", ignoreCase = true) }
-    val healthPercentage = if (totalScans > 0) ((healthyCount.toFloat() / totalScans) * 100).toInt() else 92
+    val healthPercentage = if (totalScans > 0) ((healthyCount.toFloat() / totalScans) * 100).toInt() else 0
 
     // Laser scan animation for hero scanner card
     val infiniteTransition = rememberInfiniteTransition(label = "laser")
@@ -349,14 +349,14 @@ fun HomeScreen(
                                 )
                             }
                             Text(
-                                text = "$healthPercentage%",
+                                text = if (totalScans == 0) "0%" else "$healthPercentage%",
                                 style = MaterialTheme.typography.headlineMedium.copy(
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = EmeraldPrimaryVariant
+                                    color = if (totalScans == 0) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f) else EmeraldPrimaryVariant
                                 )
                             )
                             Text(
-                                text = "$healthyCount Healthy Scans",
+                                text = if (totalScans == 0) "No Scans Recorded" else "$healthyCount of $totalScans Healthy",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                                     fontSize = 11.sp
