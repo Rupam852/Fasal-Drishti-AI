@@ -21,6 +21,7 @@ venv/
 ENV/
 *.egg-info/
 .pytest_cache/
+scratch/
 
 # OS
 Thumbs.db
