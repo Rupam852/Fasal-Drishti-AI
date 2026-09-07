@@ -1,5 +1,6 @@
 package com.fasaldrishti.app
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -10,8 +11,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
 import com.fasaldrishti.app.ui.navigation.AppNavHost
 import com.fasaldrishti.app.ui.theme.FasalDrishtiTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -26,6 +29,8 @@ class MainActivity : ComponentActivity() {
 
         val app = application as FasalDrishtiApp
 
+        handleAuthDeepLink(intent, app)
+
         setContent {
             FasalDrishtiTheme {
                 Surface(
@@ -39,6 +44,22 @@ class MainActivity : ComponentActivity() {
                         updateManager = app.updateManager
                     )
                 }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val app = application as FasalDrishtiApp
+        handleAuthDeepLink(intent, app)
+    }
+
+    private fun handleAuthDeepLink(intent: Intent?, app: FasalDrishtiApp) {
+        val uri = intent?.data ?: return
+        if (uri.scheme == "fasaldrishti" && uri.host == "auth") {
+            lifecycleScope.launch {
+                app.supabaseManager.handleAuthCallback(uri)
             }
         }
     }

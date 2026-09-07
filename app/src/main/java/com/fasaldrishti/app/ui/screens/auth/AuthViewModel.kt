@@ -23,6 +23,20 @@ class AuthViewModel(
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
+    init {
+        viewModelScope.launch {
+            authRepository.currentUser.collect { user ->
+                if (user != null) {
+                    _uiState.value = _uiState.value.copy(
+                        isSuccess = true,
+                        isLoading = false,
+                        user = user
+                    )
+                }
+            }
+        }
+    }
+
     fun signInWithGoogle(onSuccess: (() -> Unit)? = null) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
