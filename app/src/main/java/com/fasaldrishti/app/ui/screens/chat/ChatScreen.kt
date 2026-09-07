@@ -51,10 +51,12 @@ fun ChatScreen(
     }
 
     val suggestedChips = listOf(
-        "How to treat this chemical & organic?",
+        "🇮🇳 हिंदी में समझाएं",
+        "🌾 Desi/Organic Upchar?",
+        "🧪 Chemical & Dosage Spray",
+        "🌾 বাংলা ভাষায় বলুন",
         "Is it contagious to nearby crops?",
-        "What fungicide dosage should I spray?",
-        "How can I prevent this next season?"
+        "How to prevent in next season?"
     )
 
     Scaffold(

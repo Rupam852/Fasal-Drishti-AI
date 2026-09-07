@@ -61,7 +61,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.8"
     }
-    aaptOptions {
+    androidResources {
         noCompress += listOf("tflite", "keras")
     }
     packaging {

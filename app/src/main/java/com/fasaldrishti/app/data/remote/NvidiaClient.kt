@@ -36,8 +36,24 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
                 )
             }
 
-            val isHindi = (language.lowercase() == "hi")
-            val prompt = "You are Fasal Drishti's Senior Crop Agronomist AI. A farmer's crop photo was diagnosed as: $primaryClass (${(confidence * 100).toInt()}% confidence). User query: $query. Respond in clear ${if (isHindi) "Hindi (Devanagari)" else "English"} with actionable chemical dosages, organic remedies, and prevention tips."
+            val prompt = """
+                You are 'Fasal Drishti' (फसल दृष्टि) Senior Crop Agronomist and Plant Pathologist AI.
+                Context:
+                - Crop / Disease: ${primaryClass.replace("___", " ")}
+                - AI Diagnostic Confidence: ${(confidence * 100).toInt()}%
+
+                User Message/Query: $query
+
+                CRITICAL INSTRUCTIONS:
+                1. RESPOND IN THE EXACT SAME LANGUAGE AND SCRIPT that the user wrote in or requested (e.g., Hindi, Hinglish, Bengali, Marathi, Punjabi, Gujarati, Tamil, Telugu, Kannada, Malayalam, Odia, English, etc.).
+                2. Be empathetic, practical, and clear.
+                3. Include actionable guidance:
+                   - 🔍 Problem & Cause
+                   - 🧪 Chemical Treatment (Exact medicine/fungicide name & dosage per liter)
+                   - 🌿 Organic / Bio / Desi Remedy
+                   - 🛡️ Preventive Care Tips
+                4. Keep the vocabulary easy for Indian farmers to understand.
+            """.trimIndent()
 
             val jsonBody = JSONObject().apply {
                 put("model", modelName)
