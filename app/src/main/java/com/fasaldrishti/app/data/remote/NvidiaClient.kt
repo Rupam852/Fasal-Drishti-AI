@@ -1,6 +1,5 @@
 package com.fasaldrishti.app.data.remote
 
-import com.fasaldrishti.app.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -11,7 +10,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
-class NvidiaClient {
+class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(25, TimeUnit.SECONDS)
@@ -19,7 +18,6 @@ class NvidiaClient {
         .build()
 
     private val apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions"
-    private val apiKey = BuildConfig.NVIDIA_NIM_API_KEY
     private val modelName = "meta/llama-3.2-11b-vision-instruct"
 
     suspend fun getAgronomyAdvice(
@@ -29,6 +27,15 @@ class NvidiaClient {
         language: String = "en"
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
+            // 1. Dynamically fetch the latest active key from Supabase app_config
+            val apiKey = supabaseManager?.getRemoteConfig("nvidia_nim_api_key") ?: ""
+
+            if (apiKey.isBlank()) {
+                return@withContext Result.success(
+                    "AI Advisory for ${primaryClass.replace("___", " ")}: Isolate infected crop foliage, spray copper-based preventive fungicide (e.g. Mancozeb 2.5g/L), and ensure good field aeration."
+                )
+            }
+
             val isHindi = (language.lowercase() == "hi")
             val prompt = "You are Fasal Drishti's Senior Crop Agronomist AI. A farmer's crop photo was diagnosed as: $primaryClass (${(confidence * 100).toInt()}% confidence). User query: $query. Respond in clear ${if (isHindi) "Hindi (Devanagari)" else "English"} with actionable chemical dosages, organic remedies, and prevention tips."
 

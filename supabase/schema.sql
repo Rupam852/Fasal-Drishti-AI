@@ -2,7 +2,32 @@
 -- Fasal Drishti — Supabase Database & Storage Schema
 -- ============================================================
 
--- 1. Scans Table (Stores all user disease scan records)
+-- 1. Dynamic App Configuration Table (for Remote API Keys like NVIDIA NIM)
+create table if not exists public.app_config (
+  key text primary key,
+  value text not null,
+  description text,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.app_config enable row level security;
+
+create policy "Allow read access to app_config"
+  on public.app_config
+  for select
+  using (true);
+
+-- Initial seed for NVIDIA NIM API Key & Updater configs
+insert into public.app_config (key, value, description)
+values
+  ('nvidia_nim_api_key', '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', 'NVIDIA NIM API Key for AI Agronomist Chat'),
+  ('latest_app_version', '1.0.0', 'Latest available app version for updater'),
+  ('app_download_url', 'https://github.com/Rupam852/Fasal-Drishti-AI/releases/latest', 'Direct APK download link')
+on conflict (key) do update set
+  value = excluded.value,
+  updated_at = now();
+
+-- 2. Scans Table (Stores all user disease scan records)
 create table if not exists public.scans (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null,
@@ -18,7 +43,7 @@ create table if not exists public.scans (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 2. Disease Info Table (Static knowledge library of 38 classes)
+-- 3. Disease Info Table (Static knowledge library of 38 classes)
 create table if not exists public.disease_info (
   class_id text primary key,
   crop_name text not null,
@@ -35,7 +60,7 @@ create table if not exists public.disease_info (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 3. Row Level Security (RLS) for Scans
+-- 4. Row Level Security (RLS) for Scans
 alter table public.scans enable row level security;
 
 create policy "Users can view their own scans"
@@ -58,7 +83,7 @@ create policy "Users can delete their own scans"
   for delete
   using (auth.uid() = user_id);
 
--- 4. RLS for Disease Info (Public Read-Only)
+-- 5. RLS for Disease Info (Public Read-Only)
 alter table public.disease_info enable row level security;
 
 create policy "Allow public read access to disease info"
@@ -66,8 +91,7 @@ create policy "Allow public read access to disease info"
   for select
   using (true);
 
--- 5. Storage Bucket Configuration (for Crop Scan Images)
--- Note: Run in Supabase SQL editor or create 'crop-scans' bucket in Storage dashboard
+-- 6. Storage Bucket Configuration (for Crop Scan Images)
 insert into storage.buckets (id, name, public)
 values ('crop-scans', 'crop-scans', true)
 on conflict (id) do nothing;

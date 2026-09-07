@@ -24,7 +24,6 @@ android {
         buildConfigField("String", "BACKEND_BASE_URL", "\"http://10.0.2.2:8000/\"")
         buildConfigField("String", "SUPABASE_URL", "\"https://tajizxhfxewkelzrmgux.supabase.co\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhaml6eGhmeGV3a2VsenJtZ3V4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODMxMjUsImV4cCI6MjEwNDM1OTEyNX0.l39iKsN8kWzuQt2-T0dISIokx9Ys8E1ITXQfZcTi3Zw\"")
-        buildConfigField("String", "NVIDIA_NIM_API_KEY", "\"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\"")
     }
 
     buildTypes {

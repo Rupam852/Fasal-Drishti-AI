@@ -3,6 +3,7 @@ package com.fasaldrishti.app
 import android.app.Application
 import com.fasaldrishti.app.data.local.AppDatabase
 import com.fasaldrishti.app.data.ml.TFLiteDiseaseClassifier
+import com.fasaldrishti.app.data.remote.NvidiaClient
 import com.fasaldrishti.app.data.remote.PredictApi
 import com.fasaldrishti.app.data.remote.SupabaseManager
 import com.fasaldrishti.app.data.remote.UpdateManager
@@ -33,6 +34,8 @@ class FasalDrishtiApp : Application() {
         private set
     lateinit var updateManager: UpdateManager
         private set
+    lateinit var supabaseManager: SupabaseManager
+        private set
 
     override fun onCreate() {
         super.onCreate()
@@ -59,16 +62,22 @@ class FasalDrishtiApp : Application() {
 
         val predictApi = retrofit.create(PredictApi::class.java)
 
-        // 3. Initialize Supabase Manager
-        val supabaseManager = SupabaseManager(this)
+        // 3. Initialize Supabase Manager (Handles remote configs, Auth, DB)
+        supabaseManager = SupabaseManager(this)
 
         // 4. Initialize On-Device TensorFlow Lite Classifier (Primary Neural Net)
         onDeviceClassifier = TFLiteDiseaseClassifier(this)
 
-        // 5. Initialize Disease Repository
-        diseaseRepository = DiseaseRepositoryImpl(predictApi = predictApi)
+        // 5. Initialize Live NVIDIA Client backed by Supabase Dynamic Remote Config
+        val nvidiaClient = NvidiaClient(supabaseManager = supabaseManager)
 
-        // 6. Initialize Scan Repository
+        // 6. Initialize Disease Repository
+        diseaseRepository = DiseaseRepositoryImpl(
+            predictApi = predictApi,
+            nvidiaClient = nvidiaClient
+        )
+
+        // 7. Initialize Scan Repository
         scanRepository = ScanRepositoryImpl(
             scanDao = database.scanDao(),
             predictApi = predictApi,
@@ -79,7 +88,7 @@ class FasalDrishtiApp : Application() {
 
         authRepository = AuthRepositoryImpl(supabaseManager = supabaseManager)
 
-        // 7. Initialize In-App Update Manager & run auto-check on startup
+        // 8. Initialize In-App Update Manager & run auto-check on startup
         updateManager = UpdateManager(this)
         if (updateManager.autoCheckEnabled.value) {
             CoroutineScope(Dispatchers.IO).launch {
