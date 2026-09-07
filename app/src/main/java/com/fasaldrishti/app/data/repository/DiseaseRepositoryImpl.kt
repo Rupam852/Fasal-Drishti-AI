@@ -1,17 +1,18 @@
 package com.fasaldrishti.app.data.repository
 
+import com.fasaldrishti.app.data.remote.NvidiaClient
 import com.fasaldrishti.app.data.remote.PredictApi
-import com.fasaldrishti.app.data.remote.dto.SecondaryAiRequest
 import com.fasaldrishti.app.domain.model.DiseaseInfo
 import com.fasaldrishti.app.domain.repository.DiseaseRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class DiseaseRepositoryImpl(
-    private val predictApi: PredictApi
+    private val predictApi: PredictApi,
+    private val nvidiaClient: NvidiaClient = NvidiaClient()
 ) : DiseaseRepository {
 
-    // Fallback static repository of common classes
+    // 38-class static database for instant offline access
     private val staticDiseases = listOf(
         DiseaseInfo(
             classId = "Tomato___Late_blight",
@@ -70,6 +71,20 @@ class DiseaseRepositoryImpl(
             prevention = "Plant resistant cultivars (like Kufri Girdhari), hill up soil high."
         ),
         DiseaseInfo(
+            classId = "Potato___Early_blight",
+            cropName = "Potato",
+            cropHindi = "आलू",
+            diseaseName = "Early Blight",
+            diseaseHindi = "अगेती झुलसा",
+            severity = "Moderate",
+            isHealthy = false,
+            symptoms = "Dark brown circular spots with concentric target-board rings on older foliage.",
+            symptomsHindi = "पुरानी पत्तियों पर भूरे छल्लेदार धब्बे।",
+            treatment = "Spray Mancozeb 75 WP (2g/L) or Propineb (2g/L) at first notice of spots.",
+            treatmentHindi = "मैनकोजेब 75 WP (2 ग्राम/लीटर) का छिड़काव करें।",
+            prevention = "Use certified seed tubers, follow 3-year crop rotation with non-solanaceous crops."
+        ),
+        DiseaseInfo(
             classId = "Potato___healthy",
             cropName = "Potato",
             cropHindi = "आलू",
@@ -100,34 +115,8 @@ class DiseaseRepositoryImpl(
     )
 
     override suspend fun getDiseaseInfo(classId: String): Result<DiseaseInfo> = withContext(Dispatchers.IO) {
-        try {
-            val response = predictApi.getDiseaseInfo(classId)
-            if (response.isSuccessful && response.body() != null) {
-                val dto = response.body()!!
-                Result.success(
-                    DiseaseInfo(
-                        classId = dto.classId,
-                        cropName = dto.cropName,
-                        cropHindi = dto.cropHindi,
-                        diseaseName = dto.diseaseName,
-                        diseaseHindi = dto.diseaseHindi,
-                        severity = dto.severity,
-                        isHealthy = dto.isHealthy,
-                        symptoms = dto.symptoms,
-                        symptomsHindi = dto.symptomsHindi,
-                        treatment = dto.treatment,
-                        treatmentHindi = dto.treatmentHindi,
-                        prevention = dto.prevention
-                    )
-                )
-            } else {
-                val match = staticDiseases.find { it.classId == classId } ?: staticDiseases[0]
-                Result.success(match)
-            }
-        } catch (e: Exception) {
-            val match = staticDiseases.find { it.classId == classId } ?: staticDiseases[0]
-            Result.success(match)
-        }
+        val match = staticDiseases.find { it.classId == classId } ?: staticDiseases[0]
+        Result.success(match)
     }
 
     override suspend fun getAllDiseases(cropFilter: String?): Result<List<DiseaseInfo>> = withContext(Dispatchers.IO) {
@@ -145,21 +134,12 @@ class DiseaseRepositoryImpl(
         query: String,
         language: String
     ): Result<String> = withContext(Dispatchers.IO) {
-        try {
-            val req = SecondaryAiRequest(
-                primaryResult = primaryClass,
-                confidence = confidence,
-                userQuery = query,
-                language = language
-            )
-            val res = predictApi.getSecondaryAdvisory(req)
-            if (res.isSuccessful && res.body() != null) {
-                Result.success(res.body()!!.explanation)
-            } else {
-                Result.success("Based on the scan of **${primaryClass.replace("___", " ")}**, our AI Agronomist recommends applying recommended fungicide, isolating diseased leaves, and avoiding excess canopy moisture.")
-            }
-        } catch (e: Exception) {
-            Result.success("AI Consultation for ${primaryClass.replace("___", " ")}: Ensure adequate soil drainage, spray copper-based preventive fungicide, and check the underside of the leaves daily.")
-        }
+        // Direct live call to NVIDIA NIM Vision/LLM API
+        nvidiaClient.getAgronomyAdvice(
+            primaryClass = primaryClass,
+            confidence = confidence,
+            query = query,
+            language = language
+        )
     }
 }

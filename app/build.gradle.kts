@@ -11,7 +11,6 @@ android {
 
     defaultConfig {
         applicationId = "com.fasaldrishti.app"
-        // Targeted strictly for modern Android 13+ devices (API 33+)
         minSdk = 33
         targetSdk = 34
         versionCode = 1
@@ -23,8 +22,9 @@ android {
         }
 
         buildConfigField("String", "BACKEND_BASE_URL", "\"http://10.0.2.2:8000/\"")
-        buildConfigField("String", "SUPABASE_URL", "\"https://your-project.supabase.co\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"your-supabase-anon-key\"")
+        buildConfigField("String", "SUPABASE_URL", "\"https://tajizxhfxewkelzrmgux.supabase.co\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhaml6eGhmeGV3a2VsenJtZ3V4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODMxMjUsImV4cCI6MjEwNDM1OTEyNX0.l39iKsN8kWzuQt2-T0dISIokx9Ys8E1ITXQfZcTi3Zw\"")
+        buildConfigField("String", "NVIDIA_NIM_API_KEY", "\"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\"")
     }
 
     buildTypes {
@@ -75,7 +75,7 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
 
-    // On-Device AI: TensorFlow Lite Model Inference
+    // On-Device AI: TensorFlow Lite
     implementation(libs.tensorflow.lite)
     implementation(libs.tensorflow.lite.support)
     implementation(libs.tensorflow.lite.gpu)
