@@ -144,7 +144,7 @@ fun LoginScreen(
                         text = "Continue with Google",
                         icon = Icons.Default.GTranslate,
                         iconTint = Color(0xFF4285F4),
-                        onClick = { viewModel.signInWithGoogle() },
+                        onClick = { viewModel.signInWithGoogle(onSuccess = onLoginSuccess) },
                         isLoading = uiState.isLoading
                     )
 
@@ -155,7 +155,7 @@ fun LoginScreen(
                         text = "Continue with GitHub",
                         icon = Icons.Default.Code,
                         iconTint = MaterialTheme.colorScheme.onSurface,
-                        onClick = { viewModel.signInWithGitHub() },
+                        onClick = { viewModel.signInWithGitHub(onSuccess = onLoginSuccess) },
                         isLoading = uiState.isLoading
                     )
 

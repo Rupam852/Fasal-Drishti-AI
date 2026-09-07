@@ -23,24 +23,26 @@ class AuthViewModel(
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    fun signInWithGoogle() {
+    fun signInWithGoogle(onSuccess: (() -> Unit)? = null) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             val result = authRepository.signInWithGoogle()
             result.onSuccess { user ->
                 _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true, user = user)
+                onSuccess?.invoke()
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = error.localizedMessage)
             }
         }
     }
 
-    fun signInWithGitHub() {
+    fun signInWithGitHub(onSuccess: (() -> Unit)? = null) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             val result = authRepository.signInWithGitHub()
             result.onSuccess { user ->
                 _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true, user = user)
+                onSuccess?.invoke()
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = error.localizedMessage)
             }
