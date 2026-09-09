@@ -134,7 +134,7 @@ val EnglishStrings = Strings(
     chatClearHistoryButton = "Clear Chat",
     chatCancelButton = "Cancel",
 
-    profileTitle = "Farmer Profile & Field Data",
+    profileTitle = "Profile",
     profileScansCount = "Total Scans",
     profileAccuracy = "AI Accuracy",
     profileSettingsTitle = "Settings & Preferences",
@@ -212,7 +212,7 @@ val HindiStrings = Strings(
     chatClearHistoryButton = "चैट हटाएं",
     chatCancelButton = "रद्द करें",
 
-    profileTitle = "किसान प्रोफ़ाइल एवं डेटा",
+    profileTitle = "प्रोफ़ाइल",
     profileScansCount = "कुल स्कैन",
     profileAccuracy = "AI सटीकता",
     profileSettingsTitle = "सेटिंग्स एवं प्राथमिकताएँ",
@@ -290,7 +290,7 @@ val BengaliStrings = Strings(
     chatClearHistoryButton = "মুছে ফেলুন",
     chatCancelButton = "বাতিল",
 
-    profileTitle = "কৃষক প্রোফাইল ও তথ্য",
+    profileTitle = "প্রোফাইল",
     profileScansCount = "মোট স্ক্যান",
     profileAccuracy = "AI নির্ভুলতা",
     profileSettingsTitle = "সেটিংস ও পছন্দসমূহ",
@@ -368,7 +368,7 @@ val PunjabiStrings = Strings(
     chatClearHistoryButton = "ਮਿਟਾਓ",
     chatCancelButton = "ਰੱਦ ਕਰੋ",
 
-    profileTitle = "ਕਿਸਾਨ ਪ੍ਰੋਫਾਈਲ ਅਤੇ ਡੇਟਾ",
+    profileTitle = "ਪ੍ਰੋਫਾਈਲ",
     profileScansCount = "ਕੁੱਲ ਸਕੈਨ",
     profileAccuracy = "AI ਸ਼ੁੱਧਤਾ",
     profileSettingsTitle = "ਸੈਟਿੰਗਾਂ",
@@ -446,7 +446,7 @@ val MarathiStrings = Strings(
     chatClearHistoryButton = "हटवा",
     chatCancelButton = "रद्द करा",
 
-    profileTitle = "शेतकरी प्रोफाइल व डेटा",
+    profileTitle = "प्रोफाइल",
     profileScansCount = "एकूण स्कॅन",
     profileAccuracy = "AI अचूकता",
     profileSettingsTitle = "सेटिंग्ज आणि प्राधान्ये",
@@ -524,7 +524,7 @@ val TeluguStrings = Strings(
     chatClearHistoryButton = "తొలగించు",
     chatCancelButton = "రద్దు చేయి",
 
-    profileTitle = "రైతు ప్రొఫైల్ & వివరాలు",
+    profileTitle = "ప్రొఫైల్",
     profileScansCount = "మొత్తం స్కాన్లు",
     profileAccuracy = "AI ఖచ్చితత్వం",
     profileSettingsTitle = "సెట్టింగ్‌లు & ప్రాధాన్యతలు",
@@ -602,7 +602,7 @@ val TamilStrings = Strings(
     chatClearHistoryButton = "அழி",
     chatCancelButton = "ரத்து",
 
-    profileTitle = "விவசாயி சுயவிவரம் & தரவு",
+    profileTitle = "சுயவிவரம்",
     profileScansCount = "மொத்த ஸ்கேன்கள்",
     profileAccuracy = "AI துல்லியம்",
     profileSettingsTitle = "அமைப்புகள் & விருப்பங்கள்",
@@ -680,7 +680,7 @@ val GujaratiStrings = Strings(
     chatClearHistoryButton = "સાફ કરો",
     chatCancelButton = "રદ કરો",
 
-    profileTitle = "ખેડૂત પ્રોફાઇલ અને ડેટા",
+    profileTitle = "પ્રોફાઇલ",
     profileScansCount = "કુલ સ્કૅન",
     profileAccuracy = "AI ચોકસાઈ",
     profileSettingsTitle = "સેટિંગ્સ અને પસંદગીઓ",
@@ -758,7 +758,7 @@ val KannadaStrings = Strings(
     chatClearHistoryButton = "ಅಳಿಸಿ",
     chatCancelButton = "ರದ್ದುಮಾಡಿ",
 
-    profileTitle = "ರೈತ ಪ್ರೊಫೈಲ್ ಮತ್ತು ಮಾಹಿತಿ",
+    profileTitle = "ಪ್ರೊಫೈಲ್",
     profileScansCount = "ಒಟ್ಟು ಸ್ಕ್ಯಾನ್‌ಗಳು",
     profileAccuracy = "AI ನಿಖರತೆ",
     profileSettingsTitle = "ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಆದ್ಯತೆಗಳು",
@@ -836,7 +836,7 @@ val OdiaStrings = Strings(
     chatClearHistoryButton = "ଲିଭାନ୍ତୁ",
     chatCancelButton = "ବାତିଲ",
 
-    profileTitle = "କୃଷକ ପ୍ରୋଫାଇଲ୍ ଓ ତଥ୍ୟ",
+    profileTitle = "ପ୍ରୋଫାଇଲ୍",
     profileScansCount = "ମୋଟ ସ୍କାନ୍",
     profileAccuracy = "AI ସଠିକତା",
     profileSettingsTitle = "ସେଟିଂସ୍ ଓ ପସନ୍ଦ",
