@@ -23,8 +23,9 @@ import kotlin.math.max
 class GeminiClient(private val supabaseManager: SupabaseManager? = null) {
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(20, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .writeTimeout(15, TimeUnit.SECONDS)
         .build()
 
     private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models"
@@ -161,8 +162,15 @@ class GeminiClient(private val supabaseManager: SupabaseManager? = null) {
                 })
             }
 
-            // Try primary model then fallback models
-            val modelsToTry = listOf(primaryModel, "gemini-3.7-flash", "gemini-3.8-flash", "gemini-flash-latest").distinct()
+            // Cascading fallback across tested active Gemini models
+            val modelsToTry = listOf(
+                primaryModel,
+                "gemini-3.7-flash",
+                "gemini-3.5-flash",
+                "gemini-flash-lite-latest",
+                "gemini-3.1-flash-lite",
+                "gemini-3.8-flash"
+            ).distinct()
 
             for (model in modelsToTry) {
                 try {
@@ -190,7 +198,7 @@ class GeminiClient(private val supabaseManager: SupabaseManager? = null) {
                         }
                     }
                 } catch (_: Exception) {
-                    // Try next model in sequence
+                    // Seamlessly try next model in fallback cascade
                 }
             }
 
@@ -252,7 +260,14 @@ class GeminiClient(private val supabaseManager: SupabaseManager? = null) {
                 })
             }
 
-            val modelsToTry = listOf(primaryModel, "gemini-3.7-flash", "gemini-3.8-flash", "gemini-flash-latest").distinct()
+            val modelsToTry = listOf(
+                primaryModel,
+                "gemini-3.7-flash",
+                "gemini-3.5-flash",
+                "gemini-flash-lite-latest",
+                "gemini-3.1-flash-lite",
+                "gemini-3.8-flash"
+            ).distinct()
 
             for (model in modelsToTry) {
                 try {
