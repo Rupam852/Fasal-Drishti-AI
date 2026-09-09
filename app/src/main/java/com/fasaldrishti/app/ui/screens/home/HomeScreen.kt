@@ -42,7 +42,11 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     onNavigateToScan: () -> Unit,
     onNavigateToResult: (String) -> Unit,
-    onNavigateToLibrary: () -> Unit
+    onNavigateToLibrary: () -> Unit,
+    onNavigateToMandi: () -> Unit = {},
+    onNavigateToFertilizer: () -> Unit = {},
+    onNavigateToSchemes: () -> Unit = {},
+    onNavigateToSoilHealth: () -> Unit = {}
 ) {
     val user by viewModel.user.collectAsState()
     val recentScans by viewModel.recentScans.collectAsState()
@@ -697,7 +701,287 @@ fun HomeScreen(
                 }
             }
 
-            // 📑 3. RECENT DIAGNOSTICS SECTION
+            // 🌾 4. KISAN AGRO TOOLS HUB
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "🌾 Kisan Agro Tools",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = EmeraldPrimary.copy(alpha = 0.15f)
+                            ) {
+                                Text(
+                                    text = "AI Powered",
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = EmeraldPrimary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 10.sp
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    // 2x2 Grid of Agro Tools
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Card 1: Mandi Bhav
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(115.dp)
+                                .shadow(4.dp, RoundedCornerShape(20.dp))
+                                .clickable { onNavigateToMandi() },
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, SolarGold.copy(alpha = 0.35f))
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(CircleShape)
+                                            .background(SolarGold.copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = "🌾", fontSize = 18.sp)
+                                    }
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = null,
+                                        tint = SolarGold,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = "Mandi Bhav",
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
+                                    )
+                                    Text(
+                                        text = "Live APMC & AI Advice",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        ),
+                                        maxLines = 1
+                                    )
+                                }
+                            }
+                        }
+
+                        // Card 2: Fertilizer Calculator
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(115.dp)
+                                .shadow(4.dp, RoundedCornerShape(20.dp))
+                                .clickable { onNavigateToFertilizer() },
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.35f))
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFF38BDF8).copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = "🧪", fontSize = 18.sp)
+                                    }
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = null,
+                                        tint = Color(0xFF0284C7),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = "Khad Calculator",
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
+                                    )
+                                    Text(
+                                        text = "NPK & Water Dosage",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        ),
+                                        maxLines = 1
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Row 2
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Card 3: Govt Schemes
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(115.dp)
+                                .shadow(4.dp, RoundedCornerShape(20.dp))
+                                .clickable { onNavigateToSchemes() },
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF59E0B).copy(alpha = 0.35f))
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFFF59E0B).copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = "🏛️", fontSize = 18.sp)
+                                    }
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = null,
+                                        tint = Color(0xFFD97706),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = "Sarkari Yojanaen",
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
+                                    )
+                                    Text(
+                                        text = "PM-Kisan, KCC & Bima",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        ),
+                                        maxLines = 1
+                                    )
+                                }
+                            }
+                        }
+
+                        // Card 4: Soil Health AI
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(115.dp)
+                                .shadow(4.dp, RoundedCornerShape(20.dp))
+                                .clickable { onNavigateToSoilHealth() },
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.35f))
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(CircleShape)
+                                            .background(EmeraldPrimary.copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = "🌱", fontSize = 18.sp)
+                                    }
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = null,
+                                        tint = EmeraldPrimary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = "Mitti & Fasal AI",
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
+                                    )
+                                    Text(
+                                        text = "Soil Health & Crop Guide",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        ),
+                                        maxLines = 1
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 📑 5. RECENT DIAGNOSTICS SECTION
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

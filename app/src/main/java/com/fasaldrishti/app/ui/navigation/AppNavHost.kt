@@ -42,6 +42,10 @@ import com.fasaldrishti.app.ui.screens.scan.ScanViewModel
 import com.fasaldrishti.app.ui.screens.settings.SettingsScreen
 import com.fasaldrishti.app.ui.screens.splash.SplashScreen
 import com.fasaldrishti.app.ui.screens.updater.UpdaterScreen
+import com.fasaldrishti.app.ui.screens.tools.FertilizerCalculatorScreen
+import com.fasaldrishti.app.ui.screens.tools.GovtSchemesScreen
+import com.fasaldrishti.app.ui.screens.tools.MandiBhavScreen
+import com.fasaldrishti.app.ui.screens.tools.SoilHealthScreen
 
 import com.fasaldrishti.app.data.remote.WeatherManager
 
@@ -139,7 +143,11 @@ fun AppNavHost(
                     viewModel = homeViewModel,
                     onNavigateToScan = { navController.navigate(Screen.Scan.route) },
                     onNavigateToResult = { scanId -> navController.navigate(Screen.Result.createRoute(scanId)) },
-                    onNavigateToLibrary = { navController.navigate(Screen.CropLibrary.route) }
+                    onNavigateToLibrary = { navController.navigate(Screen.CropLibrary.route) },
+                    onNavigateToMandi = { navController.navigate(Screen.MandiBhav.route) },
+                    onNavigateToFertilizer = { navController.navigate(Screen.FertilizerCalculator.route) },
+                    onNavigateToSchemes = { navController.navigate(Screen.GovtSchemes.route) },
+                    onNavigateToSoilHealth = { navController.navigate(Screen.SoilHealth.route) }
                 )
             }
 
@@ -307,6 +315,33 @@ fun AppNavHost(
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToChat = { contextMsg ->
                         navController.navigate(Screen.Chat.createRoute(contextMsg))
+                    }
+                )
+            }
+
+            composable(Screen.MandiBhav.route) {
+                MandiBhavScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.FertilizerCalculator.route) {
+                FertilizerCalculatorScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.GovtSchemes.route) {
+                GovtSchemesScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.SoilHealth.route) {
+                SoilHealthScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToChat = { cropName ->
+                        navController.navigate(Screen.Chat.createRoute("I want to know complete farming guide and fertilizer schedule for $cropName in my soil type."))
                     }
                 )
             }

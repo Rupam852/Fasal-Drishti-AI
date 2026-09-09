@@ -463,6 +463,100 @@ fun ResultScreen(
                         }
                     }
 
+                    // 3.5 ONE-TAP PDF PRESCRIPTION & WHATSAPP SHARE CARD
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .clip(RoundedCornerShape(22.dp))
+                                .clickable {
+                                    val pdfFile = com.fasaldrishti.app.util.PdfPrescriptionGenerator.generatePrescriptionPdf(context, scan)
+                                    if (pdfFile != null) {
+                                        com.fasaldrishti.app.util.PdfPrescriptionGenerator.sharePrescription(context, pdfFile)
+                                    } else {
+                                        android.widget.Toast.makeText(context, "Failed to generate PDF", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                            shape = RoundedCornerShape(22.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = androidx.compose.foundation.BorderStroke(1.2.dp, EmeraldPrimary.copy(alpha = 0.5f)),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(46.dp)
+                                            .clip(RoundedCornerShape(14.dp))
+                                            .background(EmeraldPrimary.copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.PictureAsPdf,
+                                            contentDescription = null,
+                                            tint = EmeraldPrimary,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(14.dp))
+                                    Column {
+                                        Text(
+                                            text = "Download PDF Prescription 📄",
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 15.sp,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        )
+                                        Text(
+                                            text = "Share with Agri Shop or on WhatsApp",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                                                fontSize = 12.sp
+                                            )
+                                        )
+                                    }
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = EmeraldPrimary
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Share,
+                                            contentDescription = null,
+                                            tint = Color.Black,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Share",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.Black,
+                                                fontSize = 12.sp
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // 4. ACTIONABLE ACCORDION DOSSIERS
                     item {
                         Column(

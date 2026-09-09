@@ -46,6 +46,8 @@ class FasalDrishtiApp : Application() {
         private set
     lateinit var networkMonitor: com.fasaldrishti.app.util.NetworkMonitor
         private set
+    lateinit var geminiClient: com.fasaldrishti.app.data.remote.GeminiClient
+        private set
 
     override fun onCreate() {
         super.onCreate()
@@ -91,6 +93,7 @@ class FasalDrishtiApp : Application() {
 
         // 6. Initialize Gemini (Primary) and NVIDIA NIM (Secondary Fallback) AI Clients
         val geminiClient = com.fasaldrishti.app.data.remote.GeminiClient(supabaseManager = supabaseManager)
+        this.geminiClient = geminiClient
         val nvidiaClient = NvidiaClient(supabaseManager = supabaseManager)
 
         // 7. Initialize Disease Repository

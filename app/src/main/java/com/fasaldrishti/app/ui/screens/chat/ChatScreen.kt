@@ -1,5 +1,9 @@
 package com.fasaldrishti.app.ui.screens.chat
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
@@ -17,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -33,11 +39,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.compose.ui.graphics.graphicsLayer
 import com.fasaldrishti.app.domain.model.ChatMessage
+import com.fasaldrishti.app.ui.theme.CrimsonCoral
 import com.fasaldrishti.app.ui.theme.EmeraldDark
 import com.fasaldrishti.app.ui.theme.EmeraldPrimary
 import com.fasaldrishti.app.ui.theme.ObsidianVoid
 import com.fasaldrishti.app.ui.theme.SolarGold
+import com.fasaldrishti.app.util.VoiceAssistantManager
 
 @Composable
 fun ChatScreen(
@@ -45,9 +55,31 @@ fun ChatScreen(
     viewModel: ChatViewModel,
     onNavigateBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
+
+    val voiceAssistant = remember { VoiceAssistantManager(context) }
+    val isListening by voiceAssistant.isListening.collectAsState()
+    val isSpeaking by voiceAssistant.isSpeaking.collectAsState()
+    val currentlySpeakingId by voiceAssistant.currentlySpeakingId.collectAsState()
+
+    DisposableEffect(Unit) {
+        onDispose {
+            voiceAssistant.destroy()
+        }
+    }
+
+    val audioPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            voiceAssistant.startListening(languageCode = uiState.selectedLanguage) { recognized ->
+                inputText = recognized
+            }
+        }
+    }
 
     LaunchedEffect(contextInfo) {
         viewModel.initContext(contextInfo)
@@ -322,7 +354,9 @@ fun ChatScreen(
                         OutlinedTextField(
                             value = inputText,
                             onValueChange = { inputText = it },
-                            placeholder = { Text(strings.chatTypePlaceholder) },
+                            placeholder = {
+                                Text(if (isListening) "🎙️ Listening... (बोलिए...)" else strings.chatTypePlaceholder)
+                            },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(24.dp),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -334,6 +368,56 @@ fun ChatScreen(
                             maxLines = 3
                         )
 
+                        // Voice Mic Button
+                        val micTransition = rememberInfiniteTransition(label = "micPulse")
+                        val micScale by micTransition.animateFloat(
+                            initialValue = 1.0f,
+                            targetValue = 1.25f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(600, easing = FastOutSlowInEasing),
+                                repeatMode = RepeatMode.Reverse
+                            ),
+                            label = "micScale"
+                        )
+
+                        IconButton(
+                            onClick = {
+                                if (isListening) {
+                                    voiceAssistant.stopListening()
+                                } else {
+                                    val hasPermission = ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.RECORD_AUDIO
+                                    ) == PackageManager.PERMISSION_GRANTED
+
+                                    if (hasPermission) {
+                                        voiceAssistant.startListening(languageCode = uiState.selectedLanguage) { recognized ->
+                                            inputText = recognized
+                                        }
+                                    } else {
+                                        audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .then(if (isListening) Modifier.graphicsLayer(scaleX = micScale, scaleY = micScale) else Modifier)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isListening) CrimsonCoral.copy(alpha = 0.2f)
+                                    else EmeraldPrimary.copy(alpha = 0.12f)
+                                )
+                        ) {
+                            Icon(
+                                imageVector = if (isListening) Icons.Default.MicOff else Icons.Default.Mic,
+                                contentDescription = "Voice Input",
+                                tint = if (isListening) CrimsonCoral else EmeraldPrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(4.dp))
+
                         IconButton(
                             onClick = {
                                 if (inputText.isNotBlank()) {
@@ -342,7 +426,7 @@ fun ChatScreen(
                                 }
                             },
                             modifier = Modifier
-                                .size(44.dp)
+                                .size(42.dp)
                                 .clip(CircleShape)
                                 .background(
                                     if (inputText.isNotBlank()) EmeraldPrimary
@@ -353,7 +437,7 @@ fun ChatScreen(
                                 imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = "Send",
                                 tint = if (inputText.isNotBlank()) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(19.dp)
                             )
                         }
                     }
@@ -405,7 +489,13 @@ fun ChatScreen(
 
             // Message List
             items(uiState.messages) { message ->
-                ChatMessageBubble(message = message)
+                ChatMessageBubble(
+                    message = message,
+                    isSpeaking = isSpeaking && currentlySpeakingId == message.id,
+                    onToggleSpeak = { text, id ->
+                        voiceAssistant.speak(text, id, uiState.selectedLanguage)
+                    }
+                )
             }
 
             // Typing Indicator
@@ -445,7 +535,11 @@ fun ChatScreen(
 }
 
 @Composable
-private fun ChatMessageBubble(message: ChatMessage) {
+private fun ChatMessageBubble(
+    message: ChatMessage,
+    isSpeaking: Boolean = false,
+    onToggleSpeak: (String, String) -> Unit = { _, _ -> }
+) {
     val isUser = message.isUser
     val formattedText = remember(message.text) {
         if (isUser) AnnotatedString(message.text)
@@ -496,6 +590,47 @@ private fun ChatMessageBubble(message: ChatMessage) {
                         fontSize = 14.5.sp
                     )
                 )
+
+                // Speaker / Audio Playback Button for AI responses
+                if (!isUser) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            onClick = { onToggleSpeak(message.text, message.id) },
+                            shape = RoundedCornerShape(10.dp),
+                            color = if (isSpeaking) EmeraldPrimary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (isSpeaking) EmeraldPrimary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = if (isSpeaking) Icons.Default.Stop else Icons.AutoMirrored.Filled.VolumeUp,
+                                    contentDescription = if (isSpeaking) "Stop Audio" else "Listen Audio",
+                                    tint = if (isSpeaking) EmeraldPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (isSpeaking) "Speaking..." else "Listen",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 10.5.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (isSpeaking) EmeraldPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
