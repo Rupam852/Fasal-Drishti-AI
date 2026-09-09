@@ -42,9 +42,14 @@ class FasalDrishtiApp : Application() {
         private set
     lateinit var themeManager: com.fasaldrishti.app.data.local.ThemeManager
         private set
+    lateinit var networkMonitor: com.fasaldrishti.app.util.NetworkMonitor
+        private set
 
     override fun onCreate() {
         super.onCreate()
+
+        // 0. Initialize Network Monitor
+        networkMonitor = com.fasaldrishti.app.util.NetworkMonitor(this)
 
         // 1. Initialize Local Database & Theme
         val database = AppDatabase.getInstance(this)

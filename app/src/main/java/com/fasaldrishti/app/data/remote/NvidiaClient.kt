@@ -31,9 +31,16 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
     private val apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions"
 
     /**
-     * Multimodal AI Fallback Vision diagnosis when the scanned crop is not in on-device dataset
+     * Mandatory Multimodal AI Dual-Layer Verification:
+     * Cross-examines the user's photo against the initial on-device vision detection,
+     * validates plant authenticity, eliminates false positives, and refines exact dosages.
      */
-    suspend fun diagnoseCropImage(imageFile: File): Result<FallbackScanDiagnosis> = withContext(Dispatchers.IO) {
+    suspend fun verifyCropDiagnosis(
+        imageFile: File,
+        initialCropName: String? = null,
+        initialDiseaseName: String? = null,
+        initialConfidence: Float? = null
+    ): Result<FallbackScanDiagnosis> = withContext(Dispatchers.IO) {
         try {
             val apiKey = supabaseManager?.getRemoteConfig("nvidia_nim_api_key") ?: ""
             val modelName = supabaseManager?.getRemoteConfig("nvidia_model_name", "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
@@ -45,28 +52,48 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
             val imageBytes = imageFile.readBytes()
             val base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP)
 
+            val initialContext = if (!initialCropName.isNullOrBlank()) {
+                """
+                Initial On-Device Vision Scan:
+                - Preliminary Crop: $initialCropName
+                - Preliminary Disease: ${initialDiseaseName ?: "Unknown"}
+                - Preliminary Confidence: ${((initialConfidence ?: 0.5f) * 100).toInt()}%
+                """.trimIndent()
+            } else {
+                "No preliminary on-device diagnosis available."
+            }
+
             val prompt = """
-                You are 'Fasal Drishti AI' Senior Plant Pathologist & Agronomist.
-                Carefully analyze this uploaded image:
-                1. Check if the image contains an agricultural crop leaf, plant, fruit, or farm vegetable.
-                2. If it is NOT a plant or crop leaf (e.g. human, furniture, vehicle, pet, random object, or unreadable blur):
-                   Return JSON with:
-                   "crop_name": "Non-Crop Object",
-                   "disease_name": "No Plant Leaf Detected",
-                   "severity": "Invalid",
-                   "confidence": 0.15,
-                   "symptoms": "AI vision did not find a recognized agricultural plant leaf. The image may be of a non-crop object, person, animal, or too blurry.",
-                   "treatment": "Please align a clear, well-lit crop leaf inside the camera reticle and take a close-up photo."
+                You are 'Fasal Drishti AI' Senior Multimodal Agronomist & Plant Pathologist.
+                Perform Deep Cross-Verification on this uploaded farm photo.
 
-                3. If it IS an agricultural crop/plant (even if uncommon like Mango, Mustard, Sugarcane, Rose, Papaya, Chilli, Banana, Guava, Cotton, Wheat, Rice, etc.):
-                   Identify the exact Crop Name, Disease Name (or 'Healthy Plant' if no disease), Severity ('None', 'Low', 'Moderate', or 'Severe'), Confidence (0.75 - 0.98), Key Symptoms, and practical Organic & Chemical Treatment advice with dosage per litre.
+                $initialContext
 
-                Respond ONLY in valid JSON format:
+                Verification Tasks:
+                1. VALIDATE SUBJECT: Check if the photo is a genuine agricultural plant leaf, crop, fruit, or farm vegetable.
+                   - If it is NOT a crop/plant (e.g. human face/body, furniture, room wall, car, pet, electronic device, book, or completely blurred object):
+                     Return JSON:
+                     {
+                       "crop_name": "Non-Crop Object",
+                       "disease_name": "No Plant Leaf Detected",
+                       "severity": "Invalid",
+                       "confidence": 0.10,
+                       "symptoms": "AI vision could not identify a real agricultural crop leaf or plant. The image contains a non-crop object, person, or unreadable background.",
+                       "treatment": "Please align a clear, well-lit crop leaf inside the camera reticle and click again."
+                     }
+                2. CROSS-EXAMINE DIAGNOSIS: If it IS an agricultural plant leaf:
+                   - Verify if the preliminary detection (${initialCropName ?: "Unknown"} - ${initialDiseaseName ?: "Unknown"}) is correct, or if it is a different crop or disease, or healthy foliage.
+                   - Determine accurate severity ('None' for healthy, 'Low', 'Moderate', or 'Severe').
+                   - Calibrated confidence between 0.75 and 0.99.
+                   - Detailed visual symptoms.
+                   - Actionable organic & chemical spray treatment with exact dosage per litre (e.g. Mancozeb 2.5g/L, Neem Oil 5ml/L).
+
+                Respond ONLY in strictly valid JSON format:
                 {
                   "crop_name": "Tomato",
                   "disease_name": "Early Blight",
                   "severity": "Moderate",
-                  "confidence": 0.88,
+                  "confidence": 0.94,
                   "symptoms": "...",
                   "treatment": "..."
                 }
@@ -118,11 +145,17 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
                 }
             }
 
-            Result.failure(Exception("Could not obtain vision diagnosis response"))
+            Result.failure(Exception("Could not obtain vision verification response"))
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
+    /**
+     * Backward-compatible helper for fallback diagnosis
+     */
+    suspend fun diagnoseCropImage(imageFile: File): Result<FallbackScanDiagnosis> =
+        verifyCropDiagnosis(imageFile = imageFile)
 
     private fun parseDiagnosisJson(rawText: String): FallbackScanDiagnosis? {
         return try {

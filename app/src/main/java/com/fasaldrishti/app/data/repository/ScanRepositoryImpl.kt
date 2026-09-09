@@ -58,60 +58,48 @@ class ScanRepositoryImpl(
 
     override suspend fun performScan(imageFile: File): Result<ScanRecord> = withContext(Dispatchers.IO) {
         try {
-            // 1. PRIMARY: High-speed On-Device MobileNetV2 Neural Network Inference directly on phone (100% Offline)
+            // 1. LAYER 1: Fast On-Device Neural Vision Model Inference (Crop & Disease preliminary classification)
             val onDeviceResult = onDeviceClassifier.classifyImage(imageFile)
-            val predictedClass = onDeviceResult.predictedClass
-            var confidence = onDeviceResult.confidence
+            val preliminaryClass = onDeviceResult.predictedClass
+            val preliminaryConfidence = onDeviceResult.confidence
 
-            var cropName: String
-            var diseaseName: String
-            var severity: String
-            var symptoms: String
-            var treatment: String
-            var isInvalidCrop = false
-            var finalPredictedClass = predictedClass
+            val diseaseInfoResult = diseaseRepository.getDiseaseInfo(preliminaryClass)
+            val localDiseaseInfo = diseaseInfoResult.getOrNull()
 
-            // 2. CHECK DATASET MATCH vs FALLBACK AI MODEL:
-            // If confidence >= 50%, the crop leaf matches our 38 on-device categories
-            if (confidence >= 0.50f) {
-                val diseaseInfoResult = diseaseRepository.getDiseaseInfo(predictedClass)
-                val diseaseInfo = diseaseInfoResult.getOrNull()
+            val preliminaryCrop = localDiseaseInfo?.cropName ?: preliminaryClass.substringBefore("___").replace("_", " ")
+            val preliminaryDisease = localDiseaseInfo?.diseaseName ?: preliminaryClass.substringAfter("___").replace("_", " ")
 
-                cropName = diseaseInfo?.cropName ?: predictedClass.substringBefore("___").replace("_", " ")
-                diseaseName = diseaseInfo?.diseaseName ?: predictedClass.substringAfter("___").replace("_", " ")
-                severity = diseaseInfo?.severity ?: if (diseaseName.contains("healthy", ignoreCase = true)) "None" else "Moderate"
-                symptoms = diseaseInfo?.symptoms ?: "Water-soaked lesions on leaf surfaces."
-                treatment = diseaseInfo?.treatment ?: "Apply recommended fungicide and maintain proper plant spacing."
-                finalPredictedClass = predictedClass
-            } else {
-                // 3. FALLBACK: Scanned photo is NOT in 38-class dataset or low confidence -> Shift to Fallback AI Vision Model
-                val fallbackResult = nvidiaClient?.diagnoseCropImage(imageFile)
-                val fallbackData = fallbackResult?.getOrNull()
+            var cropName = preliminaryCrop
+            var diseaseName = preliminaryDisease
+            var severity = localDiseaseInfo?.severity ?: if (diseaseName.contains("healthy", ignoreCase = true)) "None" else "Moderate"
+            var confidence = preliminaryConfidence
+            var symptoms = localDiseaseInfo?.symptoms ?: "Visual foliar lesions or discoloration observed on crop leaf surface."
+            var treatment = localDiseaseInfo?.treatment ?: "Apply recommended fungicide and maintain proper plant spacing."
+            var finalPredictedClass = preliminaryClass
 
-                if (fallbackData != null) {
-                    cropName = fallbackData.cropName
-                    diseaseName = fallbackData.diseaseName
-                    severity = fallbackData.severity
-                    confidence = fallbackData.confidence
-                    symptoms = fallbackData.symptoms
-                    treatment = fallbackData.treatment
+            // 2. LAYER 2: MANDATORY NVIDIA NIM Multimodal AI Vision Verification
+            // Cross-checks the uploaded farm photo with NVIDIA NIM Vision LLM to validate plant authenticity,
+            // eliminate false positives (non-crop objects), and generate precise spray dosages.
+            val verificationResult = nvidiaClient?.verifyCropDiagnosis(
+                imageFile = imageFile,
+                initialCropName = preliminaryCrop,
+                initialDiseaseName = preliminaryDisease,
+                initialConfidence = preliminaryConfidence
+            )
+            val verifiedData = verificationResult?.getOrNull()
 
-                    if (severity.equals("Invalid", ignoreCase = true) || cropName.contains("Non-Crop", ignoreCase = true)) {
-                        isInvalidCrop = true
-                        finalPredictedClass = "Invalid_Crop"
-                    } else {
-                        isInvalidCrop = false
-                        finalPredictedClass = "${cropName}___${diseaseName}".replace(" ", "_")
-                    }
+            if (verifiedData != null) {
+                cropName = verifiedData.cropName
+                diseaseName = verifiedData.diseaseName
+                severity = verifiedData.severity
+                confidence = verifiedData.confidence
+                symptoms = verifiedData.symptoms
+                treatment = verifiedData.treatment
+
+                if (severity.equals("Invalid", ignoreCase = true) || cropName.contains("Non-Crop", ignoreCase = true)) {
+                    finalPredictedClass = "Invalid_Crop"
                 } else {
-                    // If device is offline and cannot reach cloud fallback AI
-                    isInvalidCrop = false
-                    cropName = "Unclassified Plant / Crop"
-                    diseaseName = "Offline Analysis Inconclusive"
-                    severity = "Low"
-                    symptoms = "Leaf features did not match the 38 on-device offline models with high certainty."
-                    treatment = "Connect to mobile data/Wi-Fi to trigger deep AI multimodal vision diagnosis, or retake a close-up photo in good light."
-                    finalPredictedClass = "Unclassified_Crop"
+                    finalPredictedClass = "${cropName}___${diseaseName}".replace(" ", "_")
                 }
             }
 

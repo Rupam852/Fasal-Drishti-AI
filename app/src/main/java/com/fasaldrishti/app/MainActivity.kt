@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
         handleAuthDeepLink(intent, app)
 
         setContent {
+            val isConnected by app.networkMonitor.isConnected.collectAsState()
             val themeMode by app.themeManager.themeMode.collectAsState()
             val isDarkTheme = when (themeMode) {
                 com.fasaldrishti.app.data.local.ThemeMode.LIGHT -> false
@@ -54,6 +55,14 @@ class MainActivity : ComponentActivity() {
                         weatherManager = app.weatherManager,
                         themeManager = app.themeManager
                     )
+
+                    if (!isConnected) {
+                        com.fasaldrishti.app.ui.components.NoInternetDialog(
+                            onRetry = {
+                                app.networkMonitor.verifyConnection()
+                            }
+                        )
+                    }
                 }
             }
         }
