@@ -34,8 +34,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun NoInternetDialog(
-    onRetry: suspend () -> Boolean,
-    onDismiss: () -> Unit = {}
+    onRetry: suspend () -> Boolean
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -55,10 +54,10 @@ fun NoInternetDialog(
     )
 
     Dialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {},
         properties = DialogProperties(
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true,
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
             usePlatformDefaultWidth = false
         )
     ) {
@@ -120,7 +119,7 @@ fun NoInternetDialog(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Fasal Drishti AI requires internet for live AI consultation, mandi rates, and weather sync.\n\nYou can connect to data/Wi-Fi or continue in offline mode.",
+                        text = "Fasal Drishti AI requires an active internet connection for live crop diagnosis, mandi bhav, and real-time weather updates.",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                             lineHeight = 20.sp,
@@ -130,14 +129,14 @@ fun NoInternetDialog(
                     )
 
                     if (showErrorMessage) {
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = CrimsonCoral.copy(alpha = 0.12f),
                             border = BorderStroke(1.dp, CrimsonCoral.copy(alpha = 0.35f))
                         ) {
                             Text(
-                                text = "⚠️ Still offline. Please check your data/Wi-Fi connection.",
+                                text = "⚠️ Still offline. Please enable Wi-Fi or Mobile Data and try again.",
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = CrimsonCoral,
@@ -149,7 +148,7 @@ fun NoInternetDialog(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(18.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     // Retry Button
                     Button(
@@ -203,22 +202,7 @@ fun NoInternetDialog(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Continue Offline Button
-                    TextButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Continue Offline",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                fontSize = 13.sp
-                            )
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // Open Settings Button
                     OutlinedButton(
@@ -235,7 +219,7 @@ fun NoInternetDialog(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(44.dp),
+                            .height(46.dp),
                         shape = RoundedCornerShape(14.dp),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                     ) {
@@ -251,7 +235,7 @@ fun NoInternetDialog(
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                fontSize = 12.sp
+                                fontSize = 12.5.sp
                             )
                         )
                     }

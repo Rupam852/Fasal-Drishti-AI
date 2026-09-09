@@ -59,13 +59,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val isConnected by app.networkMonitor.isConnected.collectAsState()
-            var isOfflineDismissed by remember { mutableStateOf(false) }
-
-            LaunchedEffect(isConnected) {
-                if (isConnected) {
-                    isOfflineDismissed = false
-                }
-            }
 
             val themeMode by app.themeManager.themeMode.collectAsState()
             val currentLanguage by app.languageManager.currentLanguage.collectAsState()
@@ -96,13 +89,10 @@ class MainActivity : ComponentActivity() {
                             onClearPendingDestination = { pendingDestinationState.value = null }
                         )
 
-                        if (!isConnected && !isOfflineDismissed) {
+                        if (!isConnected) {
                             com.fasaldrishti.app.ui.components.NoInternetDialog(
                                 onRetry = {
                                     app.networkMonitor.verifyConnection()
-                                },
-                                onDismiss = {
-                                    isOfflineDismissed = true
                                 }
                             )
                         }
