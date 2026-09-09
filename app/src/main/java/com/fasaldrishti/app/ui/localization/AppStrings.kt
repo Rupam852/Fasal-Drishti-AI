@@ -96,7 +96,7 @@ val EnglishStrings = Strings(
     navHistory = "History",
     navProfile = "Profile",
 
-    homeGreeting = "Namaste Kisan Bhai",
+    homeGreeting = "Namaste",
     homeSubtitle = "AI Precision Agronomy & Crop Vision",
     homeWeatherTitle = "Agri-Weather & Spray Advisory",
     homeQuickScanTitle = "Diagnose Crop Disease",
@@ -174,7 +174,7 @@ val HindiStrings = Strings(
     navHistory = "इतिहास",
     navProfile = "प्रोफ़ाइल",
 
-    homeGreeting = "नमस्ते किसान भाई",
+    homeGreeting = "नमस्ते",
     homeSubtitle = "AI फसल सुरक्षा एवं रोग निदान",
     homeWeatherTitle = "कृषि-मौसम एवं स्प्रे सलाह",
     homeQuickScanTitle = "फसल रोग की जांच करें",
@@ -252,7 +252,7 @@ val BengaliStrings = Strings(
     navHistory = "ইতিহাস",
     navProfile = "প্রোফাইল",
 
-    homeGreeting = "নমস্কার কৃষক ভাই",
+    homeGreeting = "নমস্কার",
     homeSubtitle = "AI নির্ভুল কৃষি ও ফসল সুরক্ষা",
     homeWeatherTitle = "আবহাওয়া ও স্প্রে পরামর্শ",
     homeQuickScanTitle = "ফসলের রোগ নির্ণয় করুন",
@@ -330,7 +330,7 @@ val PunjabiStrings = Strings(
     navHistory = "ਇਤਿਹਾਸ",
     navProfile = "ਪ੍ਰੋਫਾਈਲ",
 
-    homeGreeting = "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ ਕਿਸਾਨ ਵੀਰੋ",
+    homeGreeting = "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ",
     homeSubtitle = "AI ਫਸਲ ਸੁਰੱਖਿਆ ਅਤੇ ਰੋਗ ਜਾਂਚ",
     homeWeatherTitle = "ਮੌਸਮ ਅਤੇ ਸਪਰੇਅ ਸਲਾਹ",
     homeQuickScanTitle = "ਫਸਲ ਦੇ ਰੋਗ ਦੀ ਜਾਂਚ ਕਰੋ",
@@ -408,7 +408,7 @@ val MarathiStrings = Strings(
     navHistory = "इतिहास",
     navProfile = "प्रोफाइल",
 
-    homeGreeting = "नमस्कार शेतकरी मित्र",
+    homeGreeting = "नमस्कार",
     homeSubtitle = "AI अचूक कृषी व पीक संरक्षण",
     homeWeatherTitle = "कृषी-हवामान व फवारणी सल्ला",
     homeQuickScanTitle = "पीक रोगाचे निदान करा",
@@ -486,7 +486,7 @@ val TeluguStrings = Strings(
     navHistory = "చరిత్ర",
     navProfile = "ప్రొఫైల్",
 
-    homeGreeting = "నమస్కారం రైతు సోదరులారా",
+    homeGreeting = "నమస్కారం",
     homeSubtitle = "AI పంట సంరక్షణ & తెగుళ్ల నిర్ధారణ",
     homeWeatherTitle = "వ్యవసాయ వాతావరణం & పిచికారీ సలహా",
     homeQuickScanTitle = "పంట తెగులును గుర్తించండి",
@@ -564,7 +564,7 @@ val TamilStrings = Strings(
     navHistory = "வரலாறு",
     navProfile = "சுயவிவரம்",
 
-    homeGreeting = "வணக்கம் விவசாய தோழரே",
+    homeGreeting = "வணக்கம்",
     homeSubtitle = "AI துல்லிய வேளாண்மை & பயிர் பாதுகாப்பு",
     homeWeatherTitle = "வானிலை & தெளிப்பு ஆலோசனை",
     homeQuickScanTitle = "பயிர் நோயைக் கண்டறியவும்",
@@ -642,7 +642,7 @@ val GujaratiStrings = Strings(
     navHistory = "ઇતિહાસ",
     navProfile = "પ્રોફાઇલ",
 
-    homeGreeting = "નમસ્તે ખેડૂત મિત્ર",
+    homeGreeting = "નમસ્તે",
     homeSubtitle = "AI પાક સંરક્ષણ અને રોગ નિદાન",
     homeWeatherTitle = "કૃષિ-હવામાન અને છંટકાવ સલાહ",
     homeQuickScanTitle = "પાકના રોગની તપાસ કરો",
@@ -720,7 +720,7 @@ val KannadaStrings = Strings(
     navHistory = "ಇತಿಹಾಸ",
     navProfile = "ಪ್ರೊಫೈಲ್",
 
-    homeGreeting = "ನಮಸ್ಕಾರ ರೈತ ಬಾಂಧವರೇ",
+    homeGreeting = "ನಮಸ್ಕಾರ",
     homeSubtitle = "AI ಬೆಳೆ ಸಂರಕ್ಷಣೆ ಮತ್ತು ರೋಗ ನಿರ್ಣಯ",
     homeWeatherTitle = "ಕೃಷಿ ಹವಾಮಾನ ಮತ್ತು ಸಿಂಪರಣೆ ಸಲಹೆ",
     homeQuickScanTitle = "ಬೆಳೆ ರೋಗ ಪರೀಕ್ಷಿಸಿ",
@@ -798,7 +798,7 @@ val OdiaStrings = Strings(
     navHistory = "ଇତିହାସ",
     navProfile = "ପ୍ରୋଫାଇଲ୍",
 
-    homeGreeting = "ନମସ୍କାର କୃଷକ ଭାଇ",
+    homeGreeting = "ନମସ୍କାର",
     homeSubtitle = "AI ଫସଲ ସୁରକ୍ଷା ଓ ରୋଗ ନିଦାନ",
     homeWeatherTitle = "କୃଷି-ପାଣିପାଗ ଓ ସ୍ପ୍ରେ ପରାମର୍ଶ",
     homeQuickScanTitle = "ଫସଲ ରୋଗ ଚିହ୍ନଟ କରନ୍ତୁ",
