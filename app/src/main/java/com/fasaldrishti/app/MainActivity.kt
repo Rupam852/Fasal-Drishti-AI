@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
 import com.fasaldrishti.app.ui.navigation.AppNavHost
 import com.fasaldrishti.app.ui.theme.FasalDrishtiTheme
 import kotlinx.coroutines.launch
