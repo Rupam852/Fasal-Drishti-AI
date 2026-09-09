@@ -38,8 +38,8 @@ class UpdateManager(private val context: Context) {
             latestVersion = "v1.0.4",
             hasUpdate = false,
             releaseNotes = """
-• 🎙️ Multilingual Voice Assistant (बोलकर पूछें और आवाज में सुनें)
-• 📄 One-Tap PDF Prescription & WhatsApp Share (दवाई का पर्चा)
+• 🎙️ Multilingual Voice Assistant (Speech-to-Text & Audio Playback)
+• 📄 One-Tap PDF Prescription & Direct WhatsApp Share
 • 🧪 Fertilizer & NPK Dosage Calculator (Acre, Bigha, Hectare)
 • 🌾 Live Mandi Bhav & APMC Rates with Smart AI Advice
 • 🏛️ Sarkari Krishi Yojanaen & PM-Kisan Portal Guide
@@ -124,8 +124,8 @@ class UpdateManager(private val context: Context) {
 
                     val customNotes = json.optString("release_notes").ifBlank { json.optString("changelog") }
                     val v104Highlights = """
-• 🎙️ Multilingual Voice Assistant (बोलकर पूछें और आवाज में सुनें)
-• 📄 One-Tap PDF Prescription & WhatsApp Share (दवाई का पर्चा)
+• 🎙️ Multilingual Voice Assistant (Speech-to-Text & Audio Playback)
+• 📄 One-Tap PDF Prescription & Direct WhatsApp Share
 • 🧪 Fertilizer & NPK Dosage Calculator (Acre, Bigha, Hectare)
 • 🌾 Live Mandi Bhav & APMC Rates with Smart AI Advice
 • 🏛️ Sarkari Krishi Yojanaen & PM-Kisan Portal Guide
