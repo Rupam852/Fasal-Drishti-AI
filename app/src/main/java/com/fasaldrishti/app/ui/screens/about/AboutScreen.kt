@@ -256,7 +256,65 @@ fun AboutScreen(
                 }
             }
 
-            // 3. TEAM & CONTRIBUTORS HEADER
+            // 3. OFFICIAL DATA SOURCES & GOVERNMENT PORTALS TRANSPARENCY
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+                ) {
+                    Column(modifier = Modifier.padding(22.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Verified,
+                                contentDescription = null,
+                                tint = EmeraldPrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "📊 Official Data Sources & Portals",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 18.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        TechSpecRow(
+                            icon = Icons.Default.Storefront,
+                            title = "Live Mandi Bhav & APMC Rates",
+                            subtitle = "Source: AGMARKNET (agmarknet.gov.in) & Ministry of Agriculture & Farmers Welfare, Govt. of India (data.gov.in)"
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
+
+                        TechSpecRow(
+                            icon = Icons.Default.AccountBalance,
+                            title = "Sarkari Yojanaen & PM-Kisan",
+                            subtitle = "Source: Official Portals (pmkisan.gov.in, pmfby.gov.in, pmkusum.mnre.gov.in, agricoop.gov.in)"
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
+
+                        TechSpecRow(
+                            icon = Icons.Default.Science,
+                            title = "Fertilizer & Soil Health Norms",
+                            subtitle = "Source: ICAR (Indian Council of Agricultural Research) & Soil Health Card Portal (soilhealth.dac.gov.in)"
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
+
+                        TechSpecRow(
+                            icon = Icons.Default.WbSunny,
+                            title = "Agro-Weather & Spray Forecast",
+                            subtitle = "Source: IMD (India Meteorological Department) & Open-Meteo Agro-Climate Data"
+                        )
+                    }
+                }
+            }
+
+            // 4. TEAM & CONTRIBUTORS HEADER
             item {
                 Row(
                     modifier = Modifier
