@@ -355,7 +355,7 @@ fun ChatScreen(
                             value = inputText,
                             onValueChange = { inputText = it },
                             placeholder = {
-                                Text(if (isListening) "🎙️ Listening... (बोलिए...)" else strings.chatTypePlaceholder)
+                                Text(if (isListening) "🎙️ Listening..." else strings.chatTypePlaceholder)
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(24.dp),

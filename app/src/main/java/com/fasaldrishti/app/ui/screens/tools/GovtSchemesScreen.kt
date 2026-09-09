@@ -38,7 +38,7 @@ import com.fasaldrishti.app.ui.theme.*
 
 data class GovtScheme(
     val title: String,
-    val hindiTitle: String,
+    val ministryInfo: String,
     val tag: String,
     val benefitHighlight: String,
     val description: String,
@@ -61,7 +61,7 @@ fun GovtSchemesScreen(
         listOf(
             GovtScheme(
                 title = "PM-Kisan Samman Nidhi",
-                hindiTitle = "प्रधानमंत्री किसान सम्मान निधि योजना",
+                ministryInfo = "Ministry of Agriculture & Farmers Welfare, GoI",
                 tag = "Financial Aid",
                 benefitHighlight = "₹6,000 / Year DBT (3 equal installments of ₹2,000 directly in bank account)",
                 description = "Central Sector Scheme providing income support to all landholding farmer families across India for purchasing agricultural inputs and domestic needs.",
@@ -77,7 +77,7 @@ fun GovtSchemesScreen(
             ),
             GovtScheme(
                 title = "PM Fasal Bima Yojana (PMFBY)",
-                hindiTitle = "प्रधानमंत्री फसल बीमा योजना",
+                ministryInfo = "Department of Agriculture & Farmers Welfare",
                 tag = "Insurance",
                 benefitHighlight = "Comprehensive crop loss protection with only 1.5% - 2% farmer premium",
                 description = "Provides financial support to farmers suffering crop loss/damage arising out of unforeseen natural calamities, pest attacks, hail, drought, and post-harvest unseasonal rains.",
@@ -93,7 +93,7 @@ fun GovtSchemesScreen(
             ),
             GovtScheme(
                 title = "PM-KUSUM Solar Pump Scheme",
-                hindiTitle = "पीएम कुसुम सौर ऊर्जा पंप योजना",
+                ministryInfo = "Ministry of New and Renewable Energy (MNRE)",
                 tag = "Solar & Energy",
                 benefitHighlight = "Up to 60% Govt Subsidy on standalone Solar Irrigation Pumps",
                 description = "Enables farmers to install off-grid solar agriculture pumps for zero-electricity diesel-free day-time irrigation and earn extra income by selling surplus solar power to the grid.",
@@ -109,7 +109,7 @@ fun GovtSchemesScreen(
             ),
             GovtScheme(
                 title = "Kisan Credit Card (KCC)",
-                hindiTitle = "किसान क्रेडिट कार्ड (सस्ती ब्याज दर ऋण)",
+                ministryInfo = "Reserve Bank of India (RBI) & NABARD",
                 tag = "Loans & Subsidies",
                 benefitHighlight = "Loans up to ₹3 Lakh at effectively 4% interest per annum with prompt repayment",
                 description = "Simplifies access to short-term formal institutional credit for cultivation, post-harvest expenses, farm asset maintenance, and dairy/fisheries activities.",
@@ -124,7 +124,7 @@ fun GovtSchemesScreen(
             ),
             GovtScheme(
                 title = "Soil Health Card Scheme",
-                hindiTitle = "मृदा स्वास्थ्य कार्ड योजना",
+                ministryInfo = "Department of Agriculture & Cooperation",
                 tag = "Soil & Seeds",
                 benefitHighlight = "Free scientific 12-parameter soil testing & customized fertilizer advice",
                 description = "Provides farmers with crop-wise nutrient status (N, P, K, pH, Zinc, Iron, Organic Carbon) and dosage recommendations to stop overuse of chemical fertilizers.",
@@ -137,8 +137,8 @@ fun GovtSchemesScreen(
                 color = NeonLime
             ),
             GovtScheme(
-                title = "SMAM (Tractor & Agri Machinery Subsidy)",
-                hindiTitle = "कृषि यंत्रीकरण सब-मिशन (ट्रैक्टर व यंत्र सब्सिडी)",
+                title = "SMAM (Agri Machinery Subsidy)",
+                ministryInfo = "Mechanization & Technology Division, MoA&FW",
                 tag = "Loans & Subsidies",
                 benefitHighlight = "40% to 50% subsidy on Tractors, Power Tillers, Rotavators & Sprayers",
                 description = "Promotes farm mechanization among small and marginal farmers with direct subsidy disbursement through DBT portals of state agriculture departments.",
@@ -194,7 +194,7 @@ fun GovtSchemesScreen(
                         )
                     )
                     Text(
-                        text = "सरकारी योजनाएं व पीएम-किसान पोर्टल गाइड",
+                        text = "Direct Benefits, Subsidies & Official Portals Guide",
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontSize = 11.5.sp
@@ -209,9 +209,69 @@ fun GovtSchemesScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Category Filter Pills
+            // 1. BANNER CARD
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(22.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.3f))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(
+                                        EmeraldPrimary.copy(alpha = 0.18f),
+                                        Color(0xFF00E5FF).copy(alpha = 0.08f)
+                                    )
+                                )
+                            )
+                            .padding(18.dp)
+                    ) {
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = EmeraldPrimary,
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = null,
+                                            tint = Color.Black,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Direct Benefit Schemes (DBT)",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 16.sp
+                                    )
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Explore verified government agricultural programs, subsidy calculation, required paperwork, and navigate directly to official portals.",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                                    fontSize = 12.sp,
+                                    lineHeight = 17.sp
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 2. CATEGORY FILTER CHIPS
             item {
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -240,21 +300,27 @@ fun GovtSchemesScreen(
                 }
             }
 
-            // Schemes List
+            // 3. SCHEMES LIST
             items(filteredSchemes) { scheme ->
-                SchemeCard(scheme = scheme, onOpenUrl = { url ->
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                SchemeCard(
+                    scheme = scheme,
+                    onOpenUrl = { url ->
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            context.startActivity(intent)
+                        } catch (_: Exception) {}
                     }
-                    context.startActivity(intent)
-                })
+                )
             }
         }
     }
 }
 
 @Composable
-private fun SchemeCard(scheme: GovtScheme, onOpenUrl: (String) -> Unit) {
+private fun SchemeCard(
+    scheme: GovtScheme,
+    onOpenUrl: (String) -> Unit
+) {
     var isExpanded by remember { mutableStateOf(false) }
 
     Card(
@@ -264,29 +330,50 @@ private fun SchemeCard(scheme: GovtScheme, onOpenUrl: (String) -> Unit) {
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Header Row
+            // Header Row: Icon + Title + Category Tag
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(13.dp))
-                        .background(scheme.color.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = scheme.color.copy(alpha = 0.15f),
+                    modifier = Modifier.size(46.dp)
                 ) {
-                    Icon(
-                        imageVector = scheme.icon,
-                        contentDescription = null,
-                        tint = scheme.color,
-                        modifier = Modifier.size(22.dp)
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = scheme.icon,
+                            contentDescription = null,
+                            tint = scheme.color,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = scheme.color.copy(alpha = 0.12f)
+                        ) {
+                            Text(
+                                text = scheme.tag,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = scheme.color,
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = scheme.title,
                         style = MaterialTheme.typography.titleMedium.copy(
@@ -295,7 +382,7 @@ private fun SchemeCard(scheme: GovtScheme, onOpenUrl: (String) -> Unit) {
                         )
                     )
                     Text(
-                        text = scheme.hindiTitle,
+                        text = scheme.ministryInfo,
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontSize = 11.5.sp
@@ -359,7 +446,7 @@ private fun SchemeCard(scheme: GovtScheme, onOpenUrl: (String) -> Unit) {
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "📋 Eligibility (पात्रता):",
+                        text = "📋 Key Eligibility Criteria:",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -377,7 +464,7 @@ private fun SchemeCard(scheme: GovtScheme, onOpenUrl: (String) -> Unit) {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "📑 Required Documents (जरूरी दस्तावेज):",
+                        text = "📑 Required Documents:",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                     )
                     Spacer(modifier = Modifier.height(4.dp))

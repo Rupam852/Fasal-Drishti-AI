@@ -34,7 +34,7 @@ import com.fasaldrishti.app.ui.theme.*
 
 data class CropNutrientProfile(
     val name: String,
-    val hindiName: String,
+    val category: String,
     val icon: String,
     val ureaPerAcre: Double,
     val dapPerAcre: Double,
@@ -45,10 +45,10 @@ data class CropNutrientProfile(
 )
 
 enum class LandUnit(val label: String, val toAcreFactor: Double) {
-    ACRE("Acre (एकड़)", 1.0),
-    BIGHA("Bigha (बीघा)", 0.33), // Standard North/East average
-    HECTARE("Hectare (हेक्टेयर)", 2.47),
-    GUNTHA("Guntha (गुंठा)", 0.025)
+    ACRE("Acre", 1.0),
+    BIGHA("Bigha", 0.33), // Standard regional average
+    HECTARE("Hectare", 2.47),
+    GUNTHA("Guntha", 0.025)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,16 +58,16 @@ fun FertilizerCalculatorScreen(
 ) {
     val crops = remember {
         listOf(
-            CropNutrientProfile("Paddy (Rice)", "धान / चावल", "🌾", 55.0, 35.0, 20.0, 5.0, 150.0, 2.0),
-            CropNutrientProfile("Wheat", "गेहूं", "🌾", 60.0, 40.0, 20.0, 5.0, 140.0, 2.0),
-            CropNutrientProfile("Potato", "आलू", "🥔", 75.0, 50.0, 45.0, 6.0, 180.0, 3.5),
-            CropNutrientProfile("Tomato", "टमाटर", "🍅", 65.0, 45.0, 35.0, 5.0, 160.0, 3.0),
-            CropNutrientProfile("Cotton", "कपास", "🌱", 50.0, 30.0, 25.0, 5.0, 150.0, 2.0),
-            CropNutrientProfile("Mustard", "सरसों", "🌼", 45.0, 30.0, 15.0, 8.0, 120.0, 1.5),
-            CropNutrientProfile("Sugarcane", "गन्ना", "🎋", 110.0, 60.0, 50.0, 10.0, 250.0, 5.0),
-            CropNutrientProfile("Maize (Corn)", "मक्का", "🌽", 60.0, 35.0, 25.0, 5.0, 150.0, 2.0),
-            CropNutrientProfile("Onion", "प्याज", "🧅", 50.0, 40.0, 35.0, 4.0, 140.0, 2.5),
-            CropNutrientProfile("Chilli", "मिर्च", "🌶️", 55.0, 40.0, 30.0, 5.0, 150.0, 2.0)
+            CropNutrientProfile("Paddy (Rice)", "Cereal Crop", "🌾", 55.0, 35.0, 20.0, 5.0, 150.0, 2.0),
+            CropNutrientProfile("Wheat", "Cereal Grain", "🌾", 60.0, 40.0, 20.0, 5.0, 140.0, 2.0),
+            CropNutrientProfile("Potato", "Tuber Vegetable", "🥔", 75.0, 50.0, 45.0, 6.0, 180.0, 3.5),
+            CropNutrientProfile("Tomato", "Solanaceous", "🍅", 65.0, 45.0, 35.0, 5.0, 160.0, 3.0),
+            CropNutrientProfile("Cotton", "Commercial Fiber", "🌱", 50.0, 30.0, 25.0, 5.0, 150.0, 2.0),
+            CropNutrientProfile("Mustard", "Oilseed Crop", "🌼", 45.0, 30.0, 15.0, 8.0, 120.0, 1.5),
+            CropNutrientProfile("Sugarcane", "Cash Crop", "🎋", 110.0, 60.0, 50.0, 10.0, 250.0, 5.0),
+            CropNutrientProfile("Maize (Corn)", "Coarse Grain", "🌽", 60.0, 35.0, 25.0, 5.0, 150.0, 2.0),
+            CropNutrientProfile("Onion", "Bulb Crop", "🧅", 50.0, 40.0, 35.0, 4.0, 140.0, 2.5),
+            CropNutrientProfile("Chilli", "Spice & Vegetable", "🌶️", 55.0, 40.0, 30.0, 5.0, 150.0, 2.0)
         )
     }
 
@@ -119,7 +119,7 @@ fun FertilizerCalculatorScreen(
                         )
                     )
                     Text(
-                        text = "खाद व उर्वरक मात्रा कैलकुलेटर",
+                        text = "Accurate ICAR Nutrient & Dosage Formulation",
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontSize = 11.5.sp
@@ -139,7 +139,7 @@ fun FertilizerCalculatorScreen(
             // 1. SELECT CROP CHIPS
             item {
                 Text(
-                    text = "1. Select Target Crop (फसल चुनें)",
+                    text = "1. Select Target Crop",
                     style = MaterialTheme.typography.labelLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -176,7 +176,7 @@ fun FertilizerCalculatorScreen(
                                         )
                                     )
                                     Text(
-                                        text = crop.hindiName,
+                                        text = crop.category,
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontSize = 10.sp,
                                             color = if (isSelected) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -199,7 +199,7 @@ fun FertilizerCalculatorScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "2. Enter Farm Land Size (खेत का क्षेत्रफल)",
+                            text = "2. Enter Farm Land Size",
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -279,7 +279,7 @@ fun FertilizerCalculatorScreen(
             // 3. CALCULATED DOSAGE OUTPUT CARDS
             item {
                 Text(
-                    text = "3. Recommended Nutrient Dosages (उर्वरक की सही मात्रा)",
+                    text = "3. Recommended Nutrient Dosages",
                     style = MaterialTheme.typography.labelLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -293,7 +293,7 @@ fun FertilizerCalculatorScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         DosageCard(
-                            title = "Urea (यूरिया)",
+                            title = "Urea",
                             value = "$calculatedUrea kg",
                             subtitle = "Nitrogen (46% N)",
                             icon = Icons.Default.Science,
@@ -301,9 +301,9 @@ fun FertilizerCalculatorScreen(
                             modifier = Modifier.weight(1f)
                         )
                         DosageCard(
-                            title = "DAP (डीएपी)",
+                            title = "DAP",
                             value = "$calculatedDap kg",
-                            subtitle = "Phosphate (18:46)",
+                            subtitle = "Phosphate (18:46:0)",
                             icon = Icons.Default.Grain,
                             color = EmeraldPrimary,
                             modifier = Modifier.weight(1f)
@@ -315,9 +315,9 @@ fun FertilizerCalculatorScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         DosageCard(
-                            title = "MOP / Potash (पोटाश)",
+                            title = "MOP / Potash",
                             value = "$calculatedMop kg",
-                            subtitle = "Potassium (60% K)",
+                            subtitle = "Potassium (60% K2O)",
                             icon = Icons.Default.Spa,
                             color = SolarGold,
                             modifier = Modifier.weight(1f)
@@ -347,7 +347,7 @@ fun FertilizerCalculatorScreen(
                         DosageCard(
                             title = "Organic FYM",
                             value = "$calculatedFym Tons",
-                            subtitle = "Gobar Khad / Compost",
+                            subtitle = "Compost / Bio-Manure",
                             icon = Icons.Default.Forest,
                             color = Color(0xFF10B981),
                             modifier = Modifier.weight(1f)
@@ -374,13 +374,13 @@ fun FertilizerCalculatorScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Application Schedule (खुराक देने का समय)",
+                                text = "Application Schedule",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                             )
                         }
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "• Basal (बुवाई के समय): 100% DAP + 100% Potash + 33% Urea khet me milayein.\n• Tillering (20-25 din baad): 33% Urea ka pehla top-dressing karein.\n• Flowering / Booting Stage: Bacha hua 34% Urea daalein. Zameen me nami (moisture) honi zaroori hai.",
+                            text = "• Basal (At Sowing/Planting): Apply 100% DAP + 100% Potash + 33% Urea.\n• Tillering / Vegetative Stage (20-25 days): Apply 1st top-dressing with 33% Urea.\n• Flowering / Booting Stage: Apply remaining 34% Urea in moist soil conditions.",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                                 fontSize = 12.sp,

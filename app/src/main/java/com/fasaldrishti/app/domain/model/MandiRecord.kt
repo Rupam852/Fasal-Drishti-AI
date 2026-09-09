@@ -2,7 +2,7 @@ package com.fasaldrishti.app.domain.model
 
 data class MandiRecord(
     val commodity: String,
-    val hindiName: String,
+    val varietyDetail: String,
     val variety: String,
     val market: String,
     val district: String,

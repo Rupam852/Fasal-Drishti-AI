@@ -701,7 +701,7 @@ fun HomeScreen(
                 }
             }
 
-            // 🌾 4. KISAN AGRO TOOLS HUB
+            // 🌾 4. AGRO TOOLS HUB
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Row(
@@ -711,7 +711,7 @@ fun HomeScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "🌾 Kisan Agro Tools",
+                                text = "🌾 Agro Tools Hub",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp
@@ -780,14 +780,14 @@ fun HomeScreen(
                                 }
                                 Column {
                                     Text(
-                                        text = "Mandi Bhav",
+                                        text = "Live Mandi Rates",
                                         style = MaterialTheme.typography.titleSmall.copy(
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp
                                         )
                                     )
                                     Text(
-                                        text = "Live APMC & AI Advice",
+                                        text = "APMC Prices & AI Advice",
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             fontSize = 10.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -838,7 +838,7 @@ fun HomeScreen(
                                 }
                                 Column {
                                     Text(
-                                        text = "Khad Calculator",
+                                        text = "Fertilizer Calculator",
                                         style = MaterialTheme.typography.titleSmall.copy(
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp
@@ -902,7 +902,7 @@ fun HomeScreen(
                                 }
                                 Column {
                                     Text(
-                                        text = "Sarkari Yojanaen",
+                                        text = "Govt Schemes",
                                         style = MaterialTheme.typography.titleSmall.copy(
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp
@@ -960,14 +960,14 @@ fun HomeScreen(
                                 }
                                 Column {
                                     Text(
-                                        text = "Mitti & Fasal AI",
+                                        text = "Soil & Crop Health",
                                         style = MaterialTheme.typography.titleSmall.copy(
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp
                                         )
                                     )
                                     Text(
-                                        text = "Soil Health & Crop Guide",
+                                        text = "NPK & AI Crop Guide",
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             fontSize = 10.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)

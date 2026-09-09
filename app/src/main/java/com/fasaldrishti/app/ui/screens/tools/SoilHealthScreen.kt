@@ -38,7 +38,7 @@ import java.util.Locale
 data class SoilTypeOption(
     val id: String,
     val name: String,
-    val hindiName: String,
+    val regionDesc: String,
     val defaultPh: Float,
     val bestCrops: List<String>
 )
@@ -66,11 +66,11 @@ fun SoilHealthScreen(
 
     val soilTypes = remember {
         listOf(
-            SoilTypeOption("alluvial", "Alluvial (जलोढ़ मिट्टी)", "गंगा-यमुना मैदान", 6.8f, listOf("Wheat", "Paddy", "Sugarcane", "Mustard")),
-            SoilTypeOption("black", "Black / Regur (काली मिट्टी)", "कपास व सोयाबीन", 7.5f, listOf("Cotton", "Soybean", "Wheat", "Gram")),
-            SoilTypeOption("red", "Red / Loamy (लाल मिट्टी)", "दलहन व तिलहन", 6.2f, listOf("Groundnut", "Pulses", "Millets", "Tobacco")),
-            SoilTypeOption("sandy", "Sandy Loam (बलुई दोमट)", "सब्जियां व आलू", 6.5f, listOf("Potato", "Tomato", "Melons", "Maize")),
-            SoilTypeOption("clay", "Clay Loam (मटियार दोमट)", "धान व गेहूं", 7.0f, listOf("Paddy", "Wheat", "Jute", "Mustard"))
+            SoilTypeOption("alluvial", "Alluvial Soil", "Indo-Gangetic Plains & River Basins", 6.8f, listOf("Wheat", "Paddy", "Sugarcane", "Mustard")),
+            SoilTypeOption("black", "Black / Regur Soil", "Deccan Plateau (Cotton & Soybean)", 7.5f, listOf("Cotton", "Soybean", "Wheat", "Gram")),
+            SoilTypeOption("red", "Red & Loamy Soil", "Southern & Eastern Tracts (Pulses & Oilseeds)", 6.2f, listOf("Groundnut", "Pulses", "Millets", "Tobacco")),
+            SoilTypeOption("sandy", "Sandy Loam Soil", "Semi-Arid & Riverine Beds (Vegetables & Melons)", 6.5f, listOf("Potato", "Tomato", "Melons", "Maize")),
+            SoilTypeOption("clay", "Clay Loam Soil", "Deltaic & Lowland Regions (Paddy & Jute)", 7.0f, listOf("Paddy", "Wheat", "Jute", "Mustard"))
         )
     }
 
@@ -95,7 +95,7 @@ fun SoilHealthScreen(
                     Available Potassium (K): ${potassiumLevel.toInt()} kg/ha
                     Soil pH: ${String.format(Locale.US, "%.1f", phLevel)}
                     
-                    Provide short, direct agricultural advisory for the farmer in Hindi/Hinglish:
+                    Provide short, direct agricultural advisory for the farmer:
                     1. Soil fertility condition (Good/Medium/Deficient)
                     2. Top 3 most profitable and suitable crops
                     3. Specific organic and chemical soil correction advice (Gypsum/Lime/FYM)
@@ -105,22 +105,22 @@ fun SoilHealthScreen(
                     primaryClass = "Soil Test: ${selectedSoil.name}",
                     confidence = 0.95f,
                     query = prompt,
-                    language = "Hindi"
+                    language = "English"
                 ).getOrNull() ?: ""
 
                 val phDesc = when {
-                    phLevel < 6.0f -> "Acidic (अम्लीय - चूना/Lime प्रयोग करें)"
-                    phLevel > 7.8f -> "Alkaline / Saline (क्षारीय - जिप्सम प्रयोग करें)"
-                    else -> "Optimal Neutral (उत्कृष्ट उपजाऊ)"
+                    phLevel < 6.0f -> "Acidic (Apply Agricultural Lime)"
+                    phLevel > 7.8f -> "Alkaline / Saline (Apply Gypsum)"
+                    else -> "Optimal Neutral (Highly Fertile)"
                 }
 
                 val fertility = when {
-                    nitrogenLevel < 200 || phosphorusLevel < 12 || potassiumLevel < 120 -> "Moderate to Low (खाद की आवश्यकता)"
-                    else -> "High Fertility (उत्तम उर्वरक स्तर)"
+                    nitrogenLevel < 200 || phosphorusLevel < 12 || potassiumLevel < 120 -> "Moderate to Low (Nutrient Deficiency)"
+                    else -> "High Fertility (Optimal Nutrient Level)"
                 }
 
                 val tips = mutableListOf<String>()
-                if (phLevel < 6.2f) tips.add("Add Agricultural Lime @ 200 kg/acre to neutralize acidity.")
+                if (phLevel < 6.2f) tips.add("Add Agricultural Lime @ 200 kg/acre to neutralize soil acidity.")
                 if (phLevel > 7.8f) tips.add("Apply Gypsum @ 300 kg/acre and green manure (Dhaincha) to reduce alkalinity.")
                 if (nitrogenLevel < 280f) tips.add("Incorporate Vermicompost / Well-rotted FYM @ 2 tons/acre.")
                 tips.add("Apply biofertilizers (Azotobacter & PSB culture) during seed treatment.")
@@ -130,7 +130,7 @@ fun SoilHealthScreen(
                     phStatus = phDesc,
                     recommendedCrops = selectedSoil.bestCrops,
                     soilHealthTips = tips,
-                    rawAiInsight = aiResponse.ifBlank { "मृदा विश्लेषण के अनुसार यह जमीन गेहूं, धान और दलहनी फसलों के लिए अति उत्तम है। फॉस्फोरस का स्तर संतुलित बनाए रखें।" }
+                    rawAiInsight = aiResponse.ifBlank { "According to the soil analysis, this land has excellent structural fertility for cereal and pulse cultivation. Maintain balanced phosphorus and organic matter levels." }
                 )
             } catch (_: Exception) {
                 analysisResult = SoilAnalysisResult(
@@ -138,10 +138,10 @@ fun SoilHealthScreen(
                     phStatus = "Normal Neutral (6.8 pH)",
                     recommendedCrops = selectedSoil.bestCrops,
                     soilHealthTips = listOf(
-                        "Apply 2 Tons FYM / Gobar Khad per acre before plowing.",
-                        "Use PSB (Phosphate Solubilizing Bacteria) for better root absorption."
+                        "Apply 2 Tons FYM / Organic Compost per acre before primary tillage.",
+                        "Use PSB (Phosphate Solubilizing Bacteria) for better root phosphorus uptake."
                     ),
-                    rawAiInsight = "आपकी मिट्टी में पोषक तत्व सामान्य हैं। जैविक खाद और हरी खाद (ढैंचा) का प्रयोग करके उत्पादन को 20% तक बढ़ाया जा सकता है।"
+                    rawAiInsight = "Nutrient levels in your soil profile are well-balanced. Supplementing with organic green manure (Dhaincha) can boost harvest yield by up to 20%."
                 )
             } finally {
                 isAnalyzing = false
@@ -183,7 +183,7 @@ fun SoilHealthScreen(
                         )
                     )
                     Text(
-                        text = "मृदा स्वास्थ्य व फसल चयन AI",
+                        text = "AI Soil Diagnostic & Crop Recommender",
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             fontSize = 11.5.sp
@@ -203,7 +203,7 @@ fun SoilHealthScreen(
             // 1. SELECT SOIL TYPE
             item {
                 Text(
-                    text = "1. Soil Type (मिट्टी का प्रकार)",
+                    text = "1. Select Soil Type",
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                 )
                 Spacer(modifier = Modifier.height(10.dp))
@@ -233,7 +233,7 @@ fun SoilHealthScreen(
                                     )
                                 )
                                 Text(
-                                    text = soil.hindiName,
+                                    text = soil.regionDesc,
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontSize = 10.sp,
                                         color = if (isSelected) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -255,7 +255,7 @@ fun SoilHealthScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "2. Soil Test Parameters (NPK & pH स्तर)",
+                            text = "2. Soil Test Parameters (NPK & pH)",
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -267,7 +267,7 @@ fun SoilHealthScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(text = "Soil pH Level", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold))
-                            Text(text = "${String.format("%.1f", phLevel)} pH", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EmeraldPrimary))
+                            Text(text = "${String.format(Locale.US, "%.1f", phLevel)} pH", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EmeraldPrimary))
                         }
                         Slider(
                             value = phLevel,
@@ -353,7 +353,7 @@ fun SoilHealthScreen(
                     } else {
                         Icon(imageVector = Icons.Default.Psychology, contentDescription = null, tint = Color.Black)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Analyze Soil Health (मिट्टी की जांच करें)", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Text(text = "Analyze Soil Health", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     }
                 }
             }
@@ -408,7 +408,7 @@ fun SoilHealthScreen(
 
                             Spacer(modifier = Modifier.height(14.dp))
 
-                            Text(text = "🌾 Best Recommended Crops (उपयुक्त फसलें):", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                            Text(text = "🌾 Best Recommended Crops:", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                             Spacer(modifier = Modifier.height(6.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 result.recommendedCrops.forEach { crop ->
@@ -432,7 +432,7 @@ fun SoilHealthScreen(
 
                             Spacer(modifier = Modifier.height(14.dp))
 
-                            Text(text = "💡 Soil Enrichment Advice (सुधार उपाय):", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                            Text(text = "💡 Soil Enrichment Advisory:", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                             Spacer(modifier = Modifier.height(6.dp))
                             result.soilHealthTips.forEach { tip ->
                                 Text(text = "• $tip", style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 17.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)))
@@ -459,3 +459,4 @@ fun SoilHealthScreen(
         }
     }
 }
+
