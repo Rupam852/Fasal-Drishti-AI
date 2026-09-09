@@ -295,7 +295,10 @@ fun AppNavHost(
             composable(Screen.CropLibrary.route) {
                 CropLibraryScreen(
                     diseaseRepository = diseaseRepository,
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToChat = { contextMsg ->
+                        navController.navigate(Screen.Chat.createRoute(contextMsg))
+                    }
                 )
             }
         }
