@@ -105,7 +105,8 @@ fun AboutScreen(
                 name = "Tiyasha Ghosh",
                 role = "Core Team Contributor",
                 githubUsername = null,
-                githubUrl = null
+                githubUrl = null,
+                localDrawableRes = com.fasaldrishti.app.R.drawable.avatar_tiyasha
             )
         )
     }
