@@ -24,10 +24,13 @@ class ChatViewModel(
     private val localChatManager: LocalChatManager
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ChatUiState())
+    private val _uiState = MutableStateFlow(
+        ChatUiState(selectedLanguage = localChatManager.getPreferredLanguage())
+    )
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
     fun setResponseLanguage(lang: String) {
+        localChatManager.savePreferredLanguage(lang)
         _uiState.value = _uiState.value.copy(selectedLanguage = lang)
     }
 

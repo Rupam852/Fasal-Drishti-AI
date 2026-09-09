@@ -46,10 +46,11 @@ data class TeamMember(
     val name: String,
     val role: String,
     val githubUsername: String? = null,
-    val githubUrl: String? = null
+    val githubUrl: String? = null,
+    val localDrawableRes: Int? = null
 ) {
-    val avatarUrl: String?
-        get() = githubUsername?.let { "https://github.com/$it.png" }
+    val avatarModel: Any?
+        get() = localDrawableRes ?: githubUsername?.let { "https://github.com/$it.png" }
 
     val initials: String
         get() = name.split(" ")
@@ -95,9 +96,10 @@ fun AboutScreen(
             ),
             TeamMember(
                 name = "Tiasa Neogi",
-                role = "Core Team Contributor",
-                githubUsername = null,
-                githubUrl = null
+                role = "Core Contributor & Developer",
+                githubUsername = "Katha04",
+                githubUrl = "https://github.com/Katha04",
+                localDrawableRes = com.fasaldrishti.app.R.drawable.avatar_tiasa
             ),
             TeamMember(
                 name = "Tiyasha Ghosh",
@@ -357,9 +359,9 @@ fun AboutScreen(
                         Spacer(modifier = Modifier.height(20.dp))
 
                         // Large Preview Image or Initials Box
-                        if (member.avatarUrl != null) {
+                        if (member.avatarModel != null) {
                             SubcomposeAsyncImage(
-                                model = member.avatarUrl,
+                                model = member.avatarModel,
                                 contentDescription = member.name,
                                 modifier = Modifier
                                     .size(210.dp)
@@ -459,7 +461,7 @@ private fun ContributorCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.22f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -467,24 +469,24 @@ private fun ContributorCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp),
+                .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Clickable Avatar with Zoom Icon Hint
             Box(
                 modifier = Modifier
-                    .size(68.dp)
+                    .size(54.dp)
                     .clip(CircleShape)
                     .clickable { onAvatarClick() }
             ) {
-                if (member.avatarUrl != null) {
+                if (member.avatarModel != null) {
                     SubcomposeAsyncImage(
-                        model = member.avatarUrl,
+                        model = member.avatarModel,
                         contentDescription = member.name,
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
-                            .border(2.5.dp, EmeraldPrimary.copy(alpha = 0.85f), CircleShape),
+                            .border(2.dp, EmeraldPrimary.copy(alpha = 0.85f), CircleShape),
                         contentScale = ContentScale.Crop,
                         loading = {
                             Box(
@@ -494,7 +496,7 @@ private fun ContributorCard(
                                 contentAlignment = Alignment.Center
                             ) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(18.dp),
                                     strokeWidth = 2.dp,
                                     color = EmeraldPrimary
                                 )
@@ -503,25 +505,25 @@ private fun ContributorCard(
                         error = {
                             MemberInitialsBox(
                                 initials = member.initials,
-                                size = 68.dp,
-                                cornerRadius = 34.dp,
-                                fontSize = 20.sp
+                                size = 54.dp,
+                                cornerRadius = 27.dp,
+                                fontSize = 17.sp
                             )
                         }
                     )
                 } else {
                     MemberInitialsBox(
                         initials = member.initials,
-                        size = 68.dp,
-                        cornerRadius = 34.dp,
-                        fontSize = 20.sp
+                        size = 54.dp,
+                        cornerRadius = 27.dp,
+                        fontSize = 17.sp
                     )
                 }
 
                 // Small zoom badge indicator
                 Box(
                     modifier = Modifier
-                        .size(22.dp)
+                        .size(18.dp)
                         .align(Alignment.BottomEnd)
                         .clip(CircleShape)
                         .background(EmeraldPrimary)
@@ -532,12 +534,12 @@ private fun ContributorCard(
                         imageVector = Icons.Default.ZoomIn,
                         contentDescription = "View Photo",
                         tint = Color.Black,
-                        modifier = Modifier.size(13.dp)
+                        modifier = Modifier.size(11.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
             // Member Info & GitHub Link
             Column(
@@ -547,7 +549,7 @@ private fun ContributorCard(
                     text = member.name,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
+                        fontSize = 15.5.sp
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -559,72 +561,72 @@ private fun ContributorCard(
                     text = member.role,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-                        fontSize = 13.5.sp
+                        fontSize = 12.5.sp
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 if (member.githubUrl != null && member.githubUsername != null) {
                     Surface(
                         onClick = { onGithubClick(member.githubUrl) },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(10.dp),
                         color = EmeraldPrimary.copy(alpha = 0.12f),
                         border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Code,
                                 contentDescription = "GitHub",
                                 tint = EmeraldPrimary,
-                                modifier = Modifier.size(15.dp)
+                                modifier = Modifier.size(13.dp)
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "@${member.githubUsername}",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 12.5.sp
+                                    fontSize = 11.5.sp
                                 )
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                                 contentDescription = null,
                                 tint = EmeraldPrimary,
-                                modifier = Modifier.size(13.dp)
+                                modifier = Modifier.size(11.dp)
                             )
                         }
                     }
                 } else {
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(10.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                modifier = Modifier.size(15.dp)
+                                modifier = Modifier.size(13.dp)
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Team Contributor",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    fontSize = 12.5.sp
+                                    fontSize = 11.5.sp
                                 )
                             )
                         }

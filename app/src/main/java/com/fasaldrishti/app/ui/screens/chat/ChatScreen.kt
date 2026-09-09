@@ -62,24 +62,28 @@ fun ChatScreen(
         }
     }
 
-    if (showClearConfirmDialog) {
+    val strings = com.fasaldrishti.app.ui.localization.LocalAppStrings.current
+    var showClearDialog by remember { mutableStateOf(false) }
+
+    if (showClearDialog) {
         AlertDialog(
-            onDismissRequest = { showClearConfirmDialog = false },
-            title = { Text("Clear Chat History?", fontWeight = FontWeight.Bold) },
-            text = { Text("All local conversation messages with AI Krishi Doctor will be deleted from your phone.") },
+            onDismissRequest = { showClearDialog = false },
+            title = { Text(strings.chatClearHistoryTitle, fontWeight = FontWeight.Bold) },
+            text = { Text(strings.chatClearHistoryConfirm) },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         viewModel.clearChat()
-                        showClearConfirmDialog = false
-                    }
+                        showClearDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Clear", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                    Text(strings.chatClearHistoryButton, color = Color.White)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showClearConfirmDialog = false }) {
-                    Text("Cancel")
+                TextButton(onClick = { showClearDialog = false }) {
+                    Text(strings.chatCancelButton)
                 }
             }
         )
@@ -115,7 +119,7 @@ fun ChatScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
+                                contentDescription = strings.backButton
                             )
                         }
                     }
@@ -141,7 +145,7 @@ fun ChatScreen(
                     Spacer(modifier = Modifier.width(10.dp))
 
                     Text(
-                        text = "AI Krishi Doctor",
+                        text = strings.chatTitle,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 17.sp
@@ -318,7 +322,7 @@ fun ChatScreen(
                         OutlinedTextField(
                             value = inputText,
                             onValueChange = { inputText = it },
-                            placeholder = { Text("Apna sawal yahan likhein (Hindi, English, etc.)...") },
+                            placeholder = { Text(strings.chatTypePlaceholder) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(24.dp),
                             colors = OutlinedTextFieldDefaults.colors(

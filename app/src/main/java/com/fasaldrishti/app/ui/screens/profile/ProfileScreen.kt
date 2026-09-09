@@ -45,6 +45,7 @@ fun ProfileScreen(
     onClearChatHistory: () -> Unit = {},
     onLogout: () -> Unit
 ) {
+    val strings = com.fasaldrishti.app.ui.localization.LocalAppStrings.current
     val authState by authViewModel.uiState.collectAsState()
     val user = authState.user
     val updateInfo by updateManager.updateInfo.collectAsState()
@@ -58,7 +59,7 @@ fun ProfileScreen(
     if (showClearDialog) {
         AlertDialog(
             onDismissRequest = { showClearDialog = false },
-            title = { Text("Clear All Scan History?", fontWeight = FontWeight.Bold) },
+            title = { Text(strings.profileClearScansTitle, fontWeight = FontWeight.Bold) },
             text = { Text("Are you sure you want to permanently clear all crop scans from your phone and Supabase cloud? This action cannot be undone.") },
             confirmButton = {
                 Button(
@@ -68,12 +69,12 @@ fun ProfileScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Clear All Data", color = Color.White)
+                    Text(strings.applyButton, color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearDialog = false }) {
-                    Text("Cancel")
+                    Text(strings.chatCancelButton)
                 }
             }
         )
@@ -82,8 +83,8 @@ fun ProfileScreen(
     if (showClearChatDialog) {
         AlertDialog(
             onDismissRequest = { showClearChatDialog = false },
-            title = { Text("Clear AI Chat History?", fontWeight = FontWeight.Bold) },
-            text = { Text("Are you sure you want to delete all local AI Krishi Doctor chat messages from this phone? (Chat messages are stored only locally and never uploaded to cloud).") },
+            title = { Text(strings.chatClearHistoryTitle, fontWeight = FontWeight.Bold) },
+            text = { Text(strings.chatClearHistoryConfirm) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -92,12 +93,12 @@ fun ProfileScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Clear Chat", color = Color.White)
+                    Text(strings.chatClearHistoryButton, color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearChatDialog = false }) {
-                    Text("Cancel")
+                    Text(strings.chatCancelButton)
                 }
             }
         )
@@ -114,7 +115,7 @@ fun ProfileScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Farmer Profile",
+                    text = strings.profileTitle,
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 22.sp

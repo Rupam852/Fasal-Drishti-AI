@@ -58,4 +58,12 @@ class LocalChatManager(context: Context) {
     fun clearChat() {
         prefs.edit().remove("chat_messages").apply()
     }
+
+    fun getPreferredLanguage(): String {
+        return prefs.getString("chat_response_language", "English") ?: "English"
+    }
+
+    fun savePreferredLanguage(language: String) {
+        prefs.edit().putString("chat_response_language", language).apply()
+    }
 }

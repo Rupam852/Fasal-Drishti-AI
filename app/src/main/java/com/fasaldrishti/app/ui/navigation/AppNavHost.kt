@@ -53,6 +53,7 @@ fun AppNavHost(
     updateManager: UpdateManager,
     weatherManager: WeatherManager,
     themeManager: com.fasaldrishti.app.data.local.ThemeManager,
+    languageManager: com.fasaldrishti.app.data.local.LanguageManager,
     navController: NavHostController = rememberNavController()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -282,6 +283,7 @@ fun AppNavHost(
                 SettingsScreen(
                     updateManager = updateManager,
                     themeManager = themeManager,
+                    languageManager = languageManager,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
                     onNavigateToUpdater = { navController.navigate(Screen.Updater.route) }

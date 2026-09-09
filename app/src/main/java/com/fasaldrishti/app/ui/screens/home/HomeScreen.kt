@@ -49,6 +49,7 @@ fun HomeScreen(
     val syncStatus by viewModel.syncStatus.collectAsState()
     val weatherData by viewModel.weatherData.collectAsState()
 
+    val strings = com.fasaldrishti.app.ui.localization.LocalAppStrings.current
     val totalScans = recentScans.size
     val healthyCount = recentScans.count { it.severity.equals("none", ignoreCase = true) || it.diseaseName.contains("healthy", ignoreCase = true) }
     val healthPercentage = if (totalScans > 0) ((healthyCount.toFloat() / totalScans) * 100).toInt() else 0
@@ -110,7 +111,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.width(14.dp))
                         Column {
                             Text(
-                                text = "Namaste, ${user?.name?.substringBefore(" ") ?: "Kisan"} 👋",
+                                text = "${strings.homeGreeting}, ${user?.name?.substringBefore(" ") ?: "Kisan"}",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 19.sp,
@@ -126,7 +127,7 @@ fun HomeScreen(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "AI Crop Vision Active",
+                                    text = strings.homeSubtitle,
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         color = EmeraldPrimaryVariant,
                                         fontWeight = FontWeight.SemiBold,
@@ -318,7 +319,7 @@ fun HomeScreen(
 
                             Column {
                                 Text(
-                                    text = "Instant Crop Vision Scan",
+                                    text = strings.homeQuickScanTitle,
                                     style = MaterialTheme.typography.titleLarge.copy(
                                         color = Color.White,
                                         fontWeight = FontWeight.ExtraBold,
@@ -327,7 +328,7 @@ fun HomeScreen(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Point camera at any diseased leaf to diagnose",
+                                    text = strings.homeQuickScanSubtitle,
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = Color.White.copy(alpha = 0.75f),
                                         fontSize = 13.sp
@@ -357,7 +358,7 @@ fun HomeScreen(
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            text = "Tap to Scan",
+                                            text = strings.homeScanNowButton,
                                             style = MaterialTheme.typography.labelLarge.copy(
                                                 color = ObsidianVoid,
                                                 fontWeight = FontWeight.Bold,
@@ -704,7 +705,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Recent Diagnostics",
+                        text = strings.homeRecentScansTitle,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
@@ -712,7 +713,7 @@ fun HomeScreen(
                     )
                     TextButton(onClick = onNavigateToLibrary) {
                         Text(
-                            text = "View Library",
+                            text = strings.homeViewAll,
                             style = MaterialTheme.typography.labelMedium.copy(
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
@@ -751,7 +752,7 @@ fun HomeScreen(
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "No Scans Recorded Yet",
+                                text = strings.homeNoScansYet,
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold
                                 )

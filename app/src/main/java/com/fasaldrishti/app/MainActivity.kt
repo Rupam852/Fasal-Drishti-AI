@@ -36,6 +36,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val isConnected by app.networkMonitor.isConnected.collectAsState()
             val themeMode by app.themeManager.themeMode.collectAsState()
+            val currentLanguage by app.languageManager.currentLanguage.collectAsState()
             val isDarkTheme = when (themeMode) {
                 com.fasaldrishti.app.data.local.ThemeMode.LIGHT -> false
                 com.fasaldrishti.app.data.local.ThemeMode.DARK -> true
@@ -43,25 +44,30 @@ class MainActivity : ComponentActivity() {
             }
 
             FasalDrishtiTheme(darkTheme = isDarkTheme) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                androidx.compose.runtime.CompositionLocalProvider(
+                    com.fasaldrishti.app.ui.localization.LocalAppStrings provides com.fasaldrishti.app.ui.localization.getAppStrings(currentLanguage)
                 ) {
-                    AppNavHost(
-                        scanRepository = app.scanRepository,
-                        authRepository = app.authRepository,
-                        diseaseRepository = app.diseaseRepository,
-                        updateManager = app.updateManager,
-                        weatherManager = app.weatherManager,
-                        themeManager = app.themeManager
-                    )
-
-                    if (!isConnected) {
-                        com.fasaldrishti.app.ui.components.NoInternetDialog(
-                            onRetry = {
-                                app.networkMonitor.verifyConnection()
-                            }
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        AppNavHost(
+                            scanRepository = app.scanRepository,
+                            authRepository = app.authRepository,
+                            diseaseRepository = app.diseaseRepository,
+                            updateManager = app.updateManager,
+                            weatherManager = app.weatherManager,
+                            themeManager = app.themeManager,
+                            languageManager = app.languageManager
                         )
+
+                        if (!isConnected) {
+                            com.fasaldrishti.app.ui.components.NoInternetDialog(
+                                onRetry = {
+                                    app.networkMonitor.verifyConnection()
+                                }
+                            )
+                        }
                     }
                 }
             }

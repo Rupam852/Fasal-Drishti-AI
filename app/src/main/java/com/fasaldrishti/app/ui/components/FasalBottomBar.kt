@@ -80,9 +80,10 @@ fun FasalBottomBar(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val strings = com.fasaldrishti.app.ui.localization.LocalAppStrings.current
                 BottomNavItem(
                     icon = Icons.Default.Home,
-                    label = "Home",
+                    label = strings.navHome,
                     selected = currentRoute == Screen.Home.route,
                     onClick = { onNavigate(Screen.Home.route) },
                     modifier = Modifier.weight(1f)
@@ -90,7 +91,7 @@ fun FasalBottomBar(
 
                 BottomNavItem(
                     icon = Icons.Default.History,
-                    label = "History",
+                    label = strings.navHistory,
                     selected = currentRoute == Screen.History.route,
                     onClick = { onNavigate(Screen.History.route) },
                     modifier = Modifier.weight(1f)
@@ -101,7 +102,7 @@ fun FasalBottomBar(
 
                 BottomNavItem(
                     icon = Icons.Default.ChatBubbleOutline,
-                    label = "AI Salah",
+                    label = strings.navDoctor,
                     selected = currentRoute == Screen.Chat.route || currentRoute.startsWith("chat"),
                     onClick = { onNavigate(Screen.Chat.createRoute()) },
                     modifier = Modifier.weight(1f)
@@ -109,7 +110,7 @@ fun FasalBottomBar(
 
                 BottomNavItem(
                     icon = Icons.Default.Person,
-                    label = "Profile",
+                    label = strings.navProfile,
                     selected = currentRoute == Screen.Profile.route,
                     onClick = { onNavigate(Screen.Profile.route) },
                     modifier = Modifier.weight(1f)
