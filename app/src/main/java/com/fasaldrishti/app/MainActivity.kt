@@ -28,8 +28,13 @@ class MainActivity : ComponentActivity() {
         // Permission result handled
     }
 
+    private val pendingDestinationState = androidx.compose.runtime.mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Capture notification deep link destination if present
+        pendingDestinationState.value = intent?.getStringExtra("navigate_to")
 
         // Request notification permission on Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -57,6 +62,7 @@ class MainActivity : ComponentActivity() {
                 com.fasaldrishti.app.data.local.ThemeMode.DARK -> true
                 com.fasaldrishti.app.data.local.ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
             }
+            val pendingDestination by pendingDestinationState
 
             FasalDrishtiTheme(darkTheme = isDarkTheme) {
                 androidx.compose.runtime.CompositionLocalProvider(
@@ -73,7 +79,9 @@ class MainActivity : ComponentActivity() {
                             updateManager = app.updateManager,
                             weatherManager = app.weatherManager,
                             themeManager = app.themeManager,
-                            languageManager = app.languageManager
+                            languageManager = app.languageManager,
+                            pendingDestination = pendingDestination,
+                            onClearPendingDestination = { pendingDestinationState.value = null }
                         )
 
                         if (!isConnected) {
@@ -92,6 +100,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        pendingDestinationState.value = intent.getStringExtra("navigate_to")
         val app = application as FasalDrishtiApp
         handleAuthDeepLink(intent, app)
     }

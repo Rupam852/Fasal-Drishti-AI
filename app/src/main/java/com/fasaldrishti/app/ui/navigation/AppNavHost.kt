@@ -58,10 +58,22 @@ fun AppNavHost(
     weatherManager: WeatherManager,
     themeManager: com.fasaldrishti.app.data.local.ThemeManager,
     languageManager: com.fasaldrishti.app.data.local.LanguageManager,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    pendingDestination: String? = null,
+    onClearPendingDestination: () -> Unit = {}
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Splash.route
+
+    // Direct deep-link navigation if notification tapped while app is running
+    androidx.compose.runtime.LaunchedEffect(pendingDestination) {
+        if (pendingDestination == "updater") {
+            navController.navigate(Screen.Updater.route) {
+                launchSingleTop = true
+            }
+            onClearPendingDestination()
+        }
+    }
 
     val showBottomBar = currentRoute in listOf(
         Screen.Home.route,
@@ -102,7 +114,12 @@ fun AppNavHost(
                 val currentUser by authRepository.currentUser.collectAsState(initial = null)
                 SplashScreen(
                     onTimeout = {
-                        if (currentUser != null) {
+                        if (pendingDestination == "updater") {
+                            onClearPendingDestination()
+                            navController.navigate(Screen.Updater.route) {
+                                popUpTo(Screen.Splash.route) { inclusive = true }
+                            }
+                        } else if (currentUser != null) {
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.Splash.route) { inclusive = true }
                             }
