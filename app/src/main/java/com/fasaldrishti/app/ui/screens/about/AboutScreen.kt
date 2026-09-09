@@ -117,14 +117,19 @@ fun AboutScreen(
                     .padding(horizontal = 20.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
+                Surface(
                     onClick = onNavigateBack,
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.size(38.dp)
                 ) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -159,7 +164,7 @@ fun AboutScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         AppLogo(
-                            size = 88.dp,
+                            size = 96.dp,
                             animated = true
                         )
 
@@ -169,26 +174,28 @@ fun AboutScreen(
                             text = "Fasal Drishti AI",
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.ExtraBold,
-                                fontSize = 22.sp
+                                fontSize = 24.sp
                             )
                         )
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "v1.0.1 • Precision Agronomy & Crop Disease Vision",
+                            text = "v1.0.1 • Precision Agronomy & Crop Vision AI",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 color = EmeraldPrimary,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 13.sp
                             )
                         )
 
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
-                            text = "Fasal Drishti is built to empower farmers with high-precision multimodal AI crop disease detection, cloud verification, and personalized agronomy care.",
+                            text = "Fasal Drishti empowers Indian farmers with high-precision Google Gemini & NVIDIA Multimodal AI for accurate crop disease diagnosis, real-time spray prescriptions, and smart weather advisories.",
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                                fontSize = 14.sp,
                                 lineHeight = 22.sp
                             ),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -205,31 +212,42 @@ fun AboutScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                 ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
+                    Column(modifier = Modifier.padding(22.dp)) {
                         Text(
-                            text = "Powered by Next-Gen AI",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            text = "⚡ Powered by Next-Gen AI",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 19.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         )
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         TechSpecRow(
-                            icon = Icons.Default.Memory,
-                            title = "On-Device MobileNetV2",
-                            subtitle = "TensorFlow Lite + Android NNAPI Acceleration"
+                            icon = Icons.Default.AutoAwesome,
+                            title = "Google Gemini 3.7 Vision & Flash",
+                            subtitle = "Multimodal Crop Pathology & Real-Time Diagnosis Verification"
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 10.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
 
                         TechSpecRow(
                             icon = Icons.Default.Psychology,
                             title = "NVIDIA NIM Agronomist",
-                            subtitle = "Multilingual Llama 3.2 11B Vision-Instruct"
+                            subtitle = "Multilingual Llama 3.2 11B Vision-Instruct Secondary Layer"
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 10.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
+
+                        TechSpecRow(
+                            icon = Icons.Default.Memory,
+                            title = "On-Device MobileNetV2 Engine",
+                            subtitle = "Offline TensorFlow Lite + Android NNAPI Acceleration"
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
 
                         TechSpecRow(
                             icon = Icons.Default.CloudQueue,
                             title = "Supabase Cloud & Storage",
-                            subtitle = "Auth, Remote Configs & Image Storage"
+                            subtitle = "Remote Dynamic Configs, Secure Auth & Image Storage"
                         )
                     }
                 }
@@ -240,21 +258,21 @@ fun AboutScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 6.dp, start = 4.dp, end = 4.dp),
+                        .padding(top = 8.dp, start = 4.dp, end = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.Groups,
                         contentDescription = null,
                         tint = EmeraldPrimary,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(26.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "Project Team & Contributors",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp
+                            fontSize = 19.sp
                         )
                     )
                 }
@@ -288,13 +306,13 @@ fun AboutScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.82f))
+                    .background(Color.Black.copy(alpha = 0.85f))
                     .clickable { selectedPhotoMember = null },
                 contentAlignment = Alignment.Center
             ) {
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth(0.88f)
+                        .fillMaxWidth(0.90f)
                         .clip(RoundedCornerShape(28.dp))
                         .clickable(enabled = false) { /* Prevent click through */ },
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -304,7 +322,7 @@ fun AboutScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(22.dp),
+                            .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // Dialog Header: Title & Close Button
@@ -316,26 +334,27 @@ fun AboutScreen(
                             Text(
                                 text = "Contributor Profile",
                                 style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.ExtraBold
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 18.sp
                                 )
                             )
                             IconButton(
                                 onClick = { selectedPhotoMember = null },
                                 modifier = Modifier
-                                    .size(34.dp)
+                                    .size(36.dp)
                                     .clip(CircleShape)
                                     .background(MaterialTheme.colorScheme.surfaceVariant)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = "Close",
-                                    modifier = Modifier.size(18.dp),
+                                    modifier = Modifier.size(20.dp),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(18.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
                         // Large Preview Image or Initials Box
                         if (member.avatarUrl != null) {
@@ -343,7 +362,7 @@ fun AboutScreen(
                                 model = member.avatarUrl,
                                 contentDescription = member.name,
                                 modifier = Modifier
-                                    .size(200.dp)
+                                    .size(210.dp)
                                     .clip(RoundedCornerShape(24.dp))
                                     .border(3.dp, EmeraldPrimary, RoundedCornerShape(24.dp)),
                                 contentScale = ContentScale.Crop,
@@ -361,41 +380,43 @@ fun AboutScreen(
                                 error = {
                                     MemberInitialsBox(
                                         initials = member.initials,
-                                        size = 200.dp,
+                                        size = 210.dp,
                                         cornerRadius = 24.dp,
-                                        fontSize = 54.sp
+                                        fontSize = 58.sp
                                     )
                                 }
                             )
                         } else {
                             MemberInitialsBox(
                                 initials = member.initials,
-                                size = 200.dp,
+                                size = 210.dp,
                                 cornerRadius = 24.dp,
-                                fontSize = 54.sp
+                                fontSize = 58.sp
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(18.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
                         Text(
                             text = member.name,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 19.sp
+                                fontSize = 21.sp
                             )
                         )
+
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
                             text = member.role,
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-                                fontSize = 13.5.sp
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                fontSize = 14.5.sp
                             )
                         )
 
                         if (member.githubUrl != null) {
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(18.dp))
                             Button(
                                 onClick = {
                                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(member.githubUrl))
@@ -403,20 +424,22 @@ fun AboutScreen(
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
                                 shape = RoundedCornerShape(14.dp),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                contentPadding = PaddingValues(vertical = 12.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                                     contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
+                                    modifier = Modifier.size(18.dp),
                                     tint = Color.Black
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = "Open GitHub (@${member.githubUsername})",
                                     color = Color.Black,
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = FontWeight.Bold
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp
                                     )
                                 )
                             }
@@ -436,7 +459,7 @@ private fun ContributorCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.22f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -444,13 +467,13 @@ private fun ContributorCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Clickable Avatar with Zoom Icon Hint
             Box(
                 modifier = Modifier
-                    .size(62.dp)
+                    .size(68.dp)
                     .clip(CircleShape)
                     .clickable { onAvatarClick() }
             ) {
@@ -461,7 +484,7 @@ private fun ContributorCard(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
-                            .border(2.dp, EmeraldPrimary.copy(alpha = 0.8f), CircleShape),
+                            .border(2.5.dp, EmeraldPrimary.copy(alpha = 0.85f), CircleShape),
                         contentScale = ContentScale.Crop,
                         loading = {
                             Box(
@@ -471,7 +494,7 @@ private fun ContributorCard(
                                 contentAlignment = Alignment.Center
                             ) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
+                                    modifier = Modifier.size(20.dp),
                                     strokeWidth = 2.dp,
                                     color = EmeraldPrimary
                                 )
@@ -480,25 +503,25 @@ private fun ContributorCard(
                         error = {
                             MemberInitialsBox(
                                 initials = member.initials,
-                                size = 62.dp,
-                                cornerRadius = 31.dp,
-                                fontSize = 18.sp
+                                size = 68.dp,
+                                cornerRadius = 34.dp,
+                                fontSize = 20.sp
                             )
                         }
                     )
                 } else {
                     MemberInitialsBox(
                         initials = member.initials,
-                        size = 62.dp,
-                        cornerRadius = 31.dp,
-                        fontSize = 18.sp
+                        size = 68.dp,
+                        cornerRadius = 34.dp,
+                        fontSize = 20.sp
                     )
                 }
 
                 // Small zoom badge indicator
                 Box(
                     modifier = Modifier
-                        .size(20.dp)
+                        .size(22.dp)
                         .align(Alignment.BottomEnd)
                         .clip(CircleShape)
                         .background(EmeraldPrimary)
@@ -509,12 +532,12 @@ private fun ContributorCard(
                         imageVector = Icons.Default.ZoomIn,
                         contentDescription = "View Photo",
                         tint = Color.Black,
-                        modifier = Modifier.size(12.dp)
+                        modifier = Modifier.size(13.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
             // Member Info & GitHub Link
             Column(
@@ -524,23 +547,25 @@ private fun ContributorCard(
                     text = member.name,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.5.sp
+                        fontSize = 17.sp
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
                     text = member.role,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                        fontSize = 12.sp
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                        fontSize = 13.5.sp
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 if (member.githubUrl != null && member.githubUsername != null) {
                     Surface(
@@ -550,30 +575,30 @@ private fun ContributorCard(
                         border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Code,
                                 contentDescription = "GitHub",
                                 tint = EmeraldPrimary,
-                                modifier = Modifier.size(13.dp)
+                                modifier = Modifier.size(15.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "@${member.githubUsername}",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 11.5.sp
+                                    fontSize = 12.5.sp
                                 )
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                                 contentDescription = null,
                                 tint = EmeraldPrimary,
-                                modifier = Modifier.size(11.dp)
+                                modifier = Modifier.size(13.dp)
                             )
                         }
                     }
@@ -584,22 +609,22 @@ private fun ContributorCard(
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                modifier = Modifier.size(13.dp)
+                                modifier = Modifier.size(15.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Team Contributor",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    fontSize = 11.5.sp
+                                    fontSize = 12.5.sp
                                 )
                             )
                         }
@@ -651,8 +676,8 @@ private fun TechSpecRow(
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .size(48.dp)
+                .clip(RoundedCornerShape(14.dp))
                 .background(EmeraldPrimary.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
@@ -660,22 +685,28 @@ private fun TechSpecRow(
                 imageVector = icon,
                 contentDescription = null,
                 tint = EmeraldPrimary,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, fontSize = 14.5.sp)
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.5.sp
+                )
             )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
-                    fontSize = 12.sp
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.70f),
+                    fontSize = 13.5.sp,
+                    lineHeight = 18.sp
                 )
             )
         }
     }
 }
+

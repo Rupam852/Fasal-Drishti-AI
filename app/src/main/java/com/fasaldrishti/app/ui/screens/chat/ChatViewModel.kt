@@ -2,6 +2,7 @@ package com.fasaldrishti.app.ui.screens.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fasaldrishti.app.data.local.LocalChatManager
 import com.fasaldrishti.app.domain.model.ChatMessage
 import com.fasaldrishti.app.domain.repository.DiseaseRepository
 import kotlinx.coroutines.delay
@@ -19,7 +20,8 @@ data class ChatUiState(
 )
 
 class ChatViewModel(
-    private val diseaseRepository: DiseaseRepository
+    private val diseaseRepository: DiseaseRepository,
+    private val localChatManager: LocalChatManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -30,27 +32,44 @@ class ChatViewModel(
     }
 
     fun initContext(context: String?) {
-        if (context != null && _uiState.value.contextInfo == null) {
+        val savedMessages = localChatManager.loadMessages()
+
+        if (savedMessages.isNotEmpty()) {
+            _uiState.value = _uiState.value.copy(
+                contextInfo = context ?: _uiState.value.contextInfo,
+                messages = savedMessages
+            )
+            // If new diagnosis context arrives that wasn't previously greeted, add greeting
+            if (context != null && savedMessages.none { it.text.contains(context) }) {
+                val contextGreeting = ChatMessage(
+                    id = UUID.randomUUID().toString(),
+                    text = "Namaste! I am your AI Agronomist 🌾. I see you just scanned: $context. Feel free to ask about chemical spray dosages, organic remedies, or prevention!",
+                    isUser = false
+                )
+                val updated = savedMessages + contextGreeting
+                _uiState.value = _uiState.value.copy(messages = updated)
+                localChatManager.saveMessages(updated)
+            }
+        } else {
+            val initialMessage = if (context != null) {
+                ChatMessage(
+                    id = UUID.randomUUID().toString(),
+                    text = "Namaste! I am your AI Agronomist 🌾. I have reviewed your scan diagnosis ($context). How can I assist you with treatment dosages, spray schedules, or soil management?",
+                    isUser = false
+                )
+            } else {
+                ChatMessage(
+                    id = UUID.randomUUID().toString(),
+                    text = "Namaste! I am Fasal Drishti's AI Agronomist 🌾. Ask me anything about crop diseases, pest controls, fertilizers, and organic treatments. You can also select your preferred response language from the top bar!",
+                    isUser = false
+                )
+            }
+            val initialList = listOf(initialMessage)
             _uiState.value = _uiState.value.copy(
                 contextInfo = context,
-                messages = listOf(
-                    ChatMessage(
-                        id = UUID.randomUUID().toString(),
-                        text = "Namaste! I am your AI Agronomist 🌾. I have reviewed your scan diagnosis ($context). How can I assist you with treatment dosages, spray schedules, or soil management?",
-                        isUser = false
-                    )
-                )
+                messages = initialList
             )
-        } else if (_uiState.value.messages.isEmpty()) {
-            _uiState.value = _uiState.value.copy(
-                messages = listOf(
-                    ChatMessage(
-                        id = UUID.randomUUID().toString(),
-                        text = "Namaste! I am Fasal Drishti's AI Agronomist 🌾. Ask me anything about crop diseases, pest controls, fertilizers, and organic treatments. You can also select your preferred response language from the top bar!",
-                        isUser = false
-                    )
-                )
-            )
+            localChatManager.saveMessages(initialList)
         }
     }
 
@@ -65,9 +84,10 @@ class ChatViewModel(
 
         val updatedMessages = _uiState.value.messages + userMessage
         _uiState.value = _uiState.value.copy(messages = updatedMessages, isAiTyping = true)
+        localChatManager.saveMessages(updatedMessages)
 
         viewModelScope.launch {
-            delay(800)
+            delay(500)
             val primaryClass = _uiState.value.contextInfo ?: "General Crop Query"
             val currentLang = _uiState.value.selectedLanguage
             val result = diseaseRepository.askAiAdvisory(
@@ -91,10 +111,24 @@ class ChatViewModel(
                 isUser = false
             )
 
+            val finalList = _uiState.value.messages + aiMessage
             _uiState.value = _uiState.value.copy(
-                messages = _uiState.value.messages + aiMessage,
+                messages = finalList,
                 isAiTyping = false
             )
+            localChatManager.saveMessages(finalList)
         }
+    }
+
+    fun clearChat() {
+        localChatManager.clearChat()
+        val defaultWelcome = ChatMessage(
+            id = UUID.randomUUID().toString(),
+            text = "Namaste! I am Fasal Drishti's AI Agronomist 🌾. How can I help you today?",
+            isUser = false
+        )
+        val initialList = listOf(defaultWelcome)
+        _uiState.value = _uiState.value.copy(messages = initialList)
+        localChatManager.saveMessages(initialList)
     }
 }

@@ -42,12 +42,14 @@ fun ProfileScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onClearAllScans: () -> Unit = {},
+    onClearChatHistory: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val authState by authViewModel.uiState.collectAsState()
     val user = authState.user
     val updateInfo by updateManager.updateInfo.collectAsState()
     var showClearDialog by remember { mutableStateOf(false) }
+    var showClearChatDialog by remember { mutableStateOf(false) }
 
     val totalScans = scans.size
     val healthyCount = scans.count { it.severity.equals("none", ignoreCase = true) || it.diseaseName.contains("healthy", ignoreCase = true) }
@@ -71,6 +73,30 @@ fun ProfileScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showClearDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showClearChatDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearChatDialog = false },
+            title = { Text("Clear AI Chat History?", fontWeight = FontWeight.Bold) },
+            text = { Text("Are you sure you want to delete all local AI Krishi Doctor chat messages from this phone? (Chat messages are stored only locally and never uploaded to cloud).") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onClearChatHistory()
+                        showClearChatDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Clear Chat", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearChatDialog = false }) {
                     Text("Cancel")
                 }
             }
@@ -250,6 +276,14 @@ fun ProfileScreen(
                         )
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(horizontal = 12.dp))
                         ProfileTile(
+                            icon = Icons.Default.ChatBubbleOutline,
+                            title = "Clear AI Chat History",
+                            subtitle = "Delete local conversation messages from this device",
+                            onClick = { showClearChatDialog = true },
+                            tint = CrimsonCoral
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(horizontal = 12.dp))
+                        ProfileTile(
                             icon = Icons.Default.Info,
                             title = "About Fasal Drishti",
                             subtitle = "Version, developer vision & contributors",
@@ -325,47 +359,51 @@ private fun ProfileTile(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(18.dp))
             .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+            .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(tint.copy(alpha = 0.12f)),
+                .size(52.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(tint.copy(alpha = 0.14f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = tint,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(26.dp)
             )
         }
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.5.sp
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.5.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
-                    fontSize = 12.sp
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
                 )
             )
         }
+        Spacer(modifier = Modifier.width(8.dp))
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
-            modifier = Modifier.size(16.dp)
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
+            modifier = Modifier.size(20.dp)
         )
     }
 }

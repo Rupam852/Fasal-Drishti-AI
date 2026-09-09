@@ -222,6 +222,8 @@ fun AppNavHost(
                     defaultValue = null
                 })
             ) { backStackEntry ->
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val localChatManager = remember { com.fasaldrishti.app.data.local.LocalChatManager(context) }
                 val rawContext = backStackEntry.arguments?.getString("context")
                 val contextParam = rawContext?.let {
                     try {
@@ -234,7 +236,7 @@ fun AppNavHost(
                         it
                     }
                 }
-                val chatViewModel = remember(contextParam) { ChatViewModel(diseaseRepository) }
+                val chatViewModel = remember(contextParam) { ChatViewModel(diseaseRepository, localChatManager) }
                 ChatScreen(
                     contextInfo = contextParam,
                     viewModel = chatViewModel,
@@ -243,6 +245,8 @@ fun AppNavHost(
             }
 
             composable(Screen.Profile.route) {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val localChatManager = remember { com.fasaldrishti.app.data.local.LocalChatManager(context) }
                 val authViewModel = remember { AuthViewModel(authRepository) }
                 val scans by scanRepository.getAllScans().collectAsState(initial = emptyList())
                 val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
@@ -262,6 +266,9 @@ fun AppNavHost(
                         coroutineScope.launch {
                             scanRepository.clearAllScans()
                         }
+                    },
+                    onClearChatHistory = {
+                        localChatManager.clearChat()
                     },
                     onLogout = {
                         navController.navigate(Screen.Login.route) {

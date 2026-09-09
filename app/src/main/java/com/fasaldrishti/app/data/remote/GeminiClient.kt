@@ -235,11 +235,12 @@ class GeminiClient(private val supabaseManager: SupabaseManager? = null) {
                 Preferred Response Language: $language
 
                 Guidelines:
-                1. Give practical, farmer-friendly advice formatted cleanly with bullet points and emojis.
+                1. Give practical, farmer-friendly advice formatted cleanly with bullet points (•) and emojis.
                 2. If disease is present: State exact chemical fungicide/pesticide dosage (e.g. grams/ml per Litre of water and per 15L backpack pump tank).
                 3. Provide safe, low-cost organic / bio-control remedies (e.g. Neem oil, Trichoderma viride, Cow urine/Jeevamrutha, Crop rotation).
                 4. Give preventive cultural tips (irrigation timing, balanced NPK, avoiding water stagnation).
                 5. Keep language natural, encouraging, and easy to understand for Indian farmers.
+                6. Avoid raw asterisks/stars (no ** or *); use clear text and emojis for highlights.
             """.trimIndent()
 
             val jsonBody = JSONObject().apply {

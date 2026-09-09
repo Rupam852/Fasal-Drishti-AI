@@ -26,7 +26,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fasaldrishti.app.domain.model.ChatMessage
@@ -49,10 +53,36 @@ fun ChatScreen(
         viewModel.initContext(contextInfo)
     }
 
-    LaunchedEffect(uiState.messages.size) {
+    var showClearConfirmDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.messages.size, uiState.isAiTyping) {
         if (uiState.messages.isNotEmpty()) {
+            kotlinx.coroutines.delay(100)
             listState.animateScrollToItem(uiState.messages.size - 1)
         }
+    }
+
+    if (showClearConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirmDialog = false },
+            title = { Text("Clear Chat History?", fontWeight = FontWeight.Bold) },
+            text = { Text("All local conversation messages with AI Krishi Doctor will be deleted from your phone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearChat()
+                        showClearConfirmDialog = false
+                    }
+                ) {
+                    Text("Clear", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearConfirmDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     val suggestedChips = listOf(
@@ -96,7 +126,7 @@ fun ChatScreen(
                             .shadow(4.dp, CircleShape, spotColor = EmeraldPrimary)
                             .clip(CircleShape)
                             .background(
-                                brush = Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
+                                Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -221,6 +251,20 @@ fun ChatScreen(
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    IconButton(
+                        onClick = { showClearConfirmDialog = true },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DeleteOutline,
+                            contentDescription = "Clear Chat",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         },
@@ -228,8 +272,8 @@ fun ChatScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .imePadding()
+                    .padding(start = 14.dp, end = 14.dp, top = 2.dp, bottom = 4.dp)
             ) {
                 // Quick suggested reply chips
                 LazyRow(
@@ -399,6 +443,10 @@ fun ChatScreen(
 @Composable
 private fun ChatMessageBubble(message: ChatMessage) {
     val isUser = message.isUser
+    val formattedText = remember(message.text) {
+        if (isUser) AnnotatedString(message.text)
+        else parseMarkdownToAnnotatedString(message.text)
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -437,13 +485,76 @@ private fun ChatMessageBubble(message: ChatMessage) {
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Text(
-                    text = message.text,
+                    text = formattedText,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                         lineHeight = 22.sp,
                         fontSize = 14.5.sp
                     )
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Converts raw AI Markdown (bold **text**, bullets * or -, headers ###)
+ * into clean, formatted Jetpack Compose AnnotatedString without ugly asterisks.
+ */
+private fun parseMarkdownToAnnotatedString(rawText: String): AnnotatedString {
+    return buildAnnotatedString {
+        val lines = rawText.lines()
+        lines.forEachIndexed { lineIdx, line ->
+            var trimmedLine = line.trim()
+
+            // Header (# or ## or ###) -> Strip # and style as Bold
+            val isHeader = trimmedLine.startsWith("### ") || trimmedLine.startsWith("## ") || trimmedLine.startsWith("# ")
+            if (isHeader) {
+                trimmedLine = trimmedLine.replace(Regex("^#{1,6}\\s*"), "")
+            }
+
+            // Bullet (* Point or - Point) -> Replace with clean bullet dot
+            val isBullet = trimmedLine.startsWith("* ") || trimmedLine.startsWith("- ") || trimmedLine.startsWith("+ ")
+            if (isBullet) {
+                append("• ")
+                trimmedLine = trimmedLine.substring(2).trim()
+            }
+
+            // Bold pattern (**bold**)
+            val boldPattern = Regex("\\*\\*(.*?)\\*\\*")
+            val matches = boldPattern.findAll(trimmedLine).toList()
+
+            if (isHeader) {
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append(trimmedLine)
+                }
+            } else if (matches.isEmpty()) {
+                // Strip single stray asterisks e.g. *dosage* -> dosage
+                val cleaned = trimmedLine.replace(Regex("(?<!\\*)\\*(?!\\*)"), "")
+                append(cleaned)
+            } else {
+                var cursor = 0
+                for (match in matches) {
+                    if (match.range.first > cursor) {
+                        val beforeText = trimmedLine.substring(cursor, match.range.first)
+                        val cleanedBefore = beforeText.replace(Regex("(?<!\\*)\\*(?!\\*)"), "")
+                        append(cleanedBefore)
+                    }
+                    val boldText = match.groupValues[1]
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append(boldText)
+                    }
+                    cursor = match.range.last + 1
+                }
+                if (cursor < trimmedLine.length) {
+                    val remainingText = trimmedLine.substring(cursor)
+                    val cleanedRemaining = remainingText.replace(Regex("(?<!\\*)\\*(?!\\*)"), "")
+                    append(cleanedRemaining)
+                }
+            }
+
+            if (lineIdx < lines.size - 1) {
+                append("\n")
             }
         }
     }
