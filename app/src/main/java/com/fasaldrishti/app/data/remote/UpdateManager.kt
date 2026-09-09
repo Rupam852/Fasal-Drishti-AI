@@ -34,9 +34,18 @@ class UpdateManager(private val context: Context) {
 
     private val _updateInfo = MutableStateFlow(
         AppUpdateInfo(
-            currentVersion = "1.0.4",
-            latestVersion = "1.0.4",
-            hasUpdate = false
+            currentVersion = "v1.0.4",
+            latestVersion = "v1.0.4",
+            hasUpdate = false,
+            releaseNotes = """
+• 🎙️ Multilingual Voice Assistant (बोलकर पूछें और आवाज में सुनें)
+• 📄 One-Tap PDF Prescription & WhatsApp Share (दवाई का पर्चा)
+• 🧪 Fertilizer & NPK Dosage Calculator (Acre, Bigha, Hectare)
+• 🌾 Live Mandi Bhav & APMC Rates with Smart AI Advice
+• 🏛️ Sarkari Krishi Yojanaen & PM-Kisan Portal Guide
+• 🌱 Soil Health & Crop Advisor AI (NPK & pH Testing)
+• ⚡ 120Hz Ultra-Fluid UI & Precision Disease Detection
+            """.trimIndent()
         )
     )
     val updateInfo: StateFlow<AppUpdateInfo> = _updateInfo.asStateFlow()
@@ -113,13 +122,25 @@ class UpdateManager(private val context: Context) {
 
                     val isNewerAvailable = isVersionGreater(serverVer, normCurrentVer)
 
+                    val customNotes = json.optString("release_notes").ifBlank { json.optString("changelog") }
+                    val v104Highlights = """
+• 🎙️ Multilingual Voice Assistant (बोलकर पूछें और आवाज में सुनें)
+• 📄 One-Tap PDF Prescription & WhatsApp Share (दवाई का पर्चा)
+• 🧪 Fertilizer & NPK Dosage Calculator (Acre, Bigha, Hectare)
+• 🌾 Live Mandi Bhav & APMC Rates with Smart AI Advice
+• 🏛️ Sarkari Krishi Yojanaen & PM-Kisan Portal Guide
+• 🌱 Soil Health & Crop Advisor AI (NPK & pH Testing)
+• ⚡ 120Hz Ultra-Fluid UI & Precision Disease Detection
+                    """.trimIndent()
+                    val activeReleaseNotes = if (customNotes.isNotBlank()) customNotes else v104Highlights
+
                     val result = if (isNewerAvailable) {
                         AppUpdateInfo(
                             currentVersion = "v$normCurrentVer",
                             latestVersion = "v$serverVer",
                             hasUpdate = true,
                             downloadUrl = downloadUrl,
-                            releaseNotes = "• File: $fileName ($formattedSize)\n• Fast Cloudflare Edge Download CDN\n• PlantVillage Disease Vision & Multilingual NVIDIA NIM Agronomist\n• Bug fixes & 120Hz refresh rate stability",
+                            releaseNotes = activeReleaseNotes,
                             isChecking = false,
                             checkMessage = "New update available: v$serverVer"
                         )
@@ -129,7 +150,7 @@ class UpdateManager(private val context: Context) {
                             latestVersion = "v$serverVer",
                             hasUpdate = false,
                             downloadUrl = downloadUrl,
-                            releaseNotes = "You are on the latest version ($fileName)",
+                            releaseNotes = activeReleaseNotes,
                             isChecking = false,
                             checkMessage = "Your app is up to date!"
                         )

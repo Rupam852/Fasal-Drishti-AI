@@ -179,8 +179,8 @@ fun UpdaterScreen(
                 }
             }
 
-            // 2. RELEASE NOTES
-            if (updateInfo.hasUpdate && updateInfo.releaseNotes.isNotBlank()) {
+            // 2. RELEASE NOTES & VERSION HIGHLIGHTS
+            if (updateInfo.releaseNotes.isNotBlank()) {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -191,14 +191,14 @@ fun UpdaterScreen(
                         Column(modifier = Modifier.padding(20.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    imageVector = Icons.Default.NewReleases,
+                                    imageVector = if (updateInfo.hasUpdate) Icons.Default.NewReleases else Icons.Default.AutoAwesome,
                                     contentDescription = null,
-                                    tint = SolarGold,
+                                    tint = if (updateInfo.hasUpdate) SolarGold else EmeraldPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    text = "What's New in ${updateInfo.latestVersion}",
+                                    text = if (updateInfo.hasUpdate) "What's New in ${updateInfo.latestVersion}" else "Version ${updateInfo.currentVersion} Features & Capabilities",
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                                 )
                             }
