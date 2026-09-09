@@ -26,3 +26,8 @@ scratch/
 
 # OS
 Thumbs.db
+
+# Secrets
+supabase/insert_gemini_key.sql
+*.secret
+*.keystore

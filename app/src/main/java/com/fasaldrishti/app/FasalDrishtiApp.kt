@@ -86,12 +86,14 @@ class FasalDrishtiApp : Application() {
         // 5. Initialize On-Device TensorFlow Lite Classifier (Primary Neural Net)
         onDeviceClassifier = TFLiteDiseaseClassifier(this)
 
-        // 6. Initialize Live NVIDIA Client backed by Supabase Dynamic Remote Config
+        // 6. Initialize Gemini (Primary) and NVIDIA NIM (Secondary Fallback) AI Clients
+        val geminiClient = com.fasaldrishti.app.data.remote.GeminiClient(supabaseManager = supabaseManager)
         val nvidiaClient = NvidiaClient(supabaseManager = supabaseManager)
 
         // 7. Initialize Disease Repository
         diseaseRepository = DiseaseRepositoryImpl(
             predictApi = predictApi,
+            geminiClient = geminiClient,
             nvidiaClient = nvidiaClient
         )
 
@@ -102,6 +104,7 @@ class FasalDrishtiApp : Application() {
             supabaseManager = supabaseManager,
             onDeviceClassifier = onDeviceClassifier,
             diseaseRepository = diseaseRepository,
+            geminiClient = geminiClient,
             nvidiaClient = nvidiaClient
         )
 

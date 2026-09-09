@@ -3,6 +3,7 @@ package com.fasaldrishti.app.data.repository
 import com.fasaldrishti.app.data.local.ScanDao
 import com.fasaldrishti.app.data.local.ScanEntity
 import com.fasaldrishti.app.data.ml.TFLiteDiseaseClassifier
+import com.fasaldrishti.app.data.remote.GeminiClient
 import com.fasaldrishti.app.data.remote.NvidiaClient
 import com.fasaldrishti.app.data.remote.PredictApi
 import com.fasaldrishti.app.data.remote.SupabaseManager
@@ -26,6 +27,7 @@ class ScanRepositoryImpl(
     private val supabaseManager: SupabaseManager,
     private val onDeviceClassifier: TFLiteDiseaseClassifier,
     private val diseaseRepository: DiseaseRepository,
+    private val geminiClient: GeminiClient? = null,
     private val nvidiaClient: NvidiaClient? = null
 ) : ScanRepository {
 
@@ -77,29 +79,56 @@ class ScanRepositoryImpl(
             var treatment = localDiseaseInfo?.treatment ?: "Apply recommended fungicide and maintain proper plant spacing."
             var finalPredictedClass = preliminaryClass
 
-            // 2. LAYER 2: MANDATORY NVIDIA NIM Multimodal AI Vision Verification
-            // Cross-checks the uploaded farm photo with NVIDIA NIM Vision LLM to validate plant authenticity,
-            // eliminate false positives (non-crop objects), and generate precise spray dosages.
-            val verificationResult = nvidiaClient?.verifyCropDiagnosis(
-                imageFile = imageFile,
-                initialCropName = preliminaryCrop,
-                initialDiseaseName = preliminaryDisease,
-                initialConfidence = preliminaryConfidence
-            )
-            val verifiedData = verificationResult?.getOrNull()
+            var verificationSuccess = false
 
-            if (verifiedData != null) {
-                cropName = verifiedData.cropName
-                diseaseName = verifiedData.diseaseName
-                severity = verifiedData.severity
-                confidence = verifiedData.confidence
-                symptoms = verifiedData.symptoms
-                treatment = verifiedData.treatment
+            // 2. LAYER 2 (PRIMARY): Google Gemini Multimodal AI Vision Verification
+            if (geminiClient != null) {
+                val geminiResult = geminiClient.verifyCropDiagnosis(
+                    imageFile = imageFile,
+                    initialCropName = preliminaryCrop,
+                    initialDiseaseName = preliminaryDisease,
+                    initialConfidence = preliminaryConfidence
+                )
+                val verifiedData = geminiResult.getOrNull()
+                if (verifiedData != null) {
+                    cropName = verifiedData.cropName
+                    diseaseName = verifiedData.diseaseName
+                    severity = verifiedData.severity
+                    confidence = verifiedData.confidence
+                    symptoms = verifiedData.symptoms
+                    treatment = verifiedData.treatment
 
-                if (severity.equals("Invalid", ignoreCase = true) || cropName.contains("Non-Crop", ignoreCase = true)) {
-                    finalPredictedClass = "Invalid_Crop"
-                } else {
-                    finalPredictedClass = "${cropName}___${diseaseName}".replace(" ", "_")
+                    if (severity.equals("Invalid", ignoreCase = true) || cropName.contains("Non-Crop", ignoreCase = true)) {
+                        finalPredictedClass = "Invalid_Crop"
+                    } else {
+                        finalPredictedClass = "${cropName}___${diseaseName}".replace(" ", "_")
+                    }
+                    verificationSuccess = true
+                }
+            }
+
+            // 3. LAYER 2 (FALLBACK / SECONDARY): NVIDIA NIM Vision AI (if Gemini didn't respond or failed)
+            if (!verificationSuccess && nvidiaClient != null) {
+                val nvidiaResult = nvidiaClient.verifyCropDiagnosis(
+                    imageFile = imageFile,
+                    initialCropName = preliminaryCrop,
+                    initialDiseaseName = preliminaryDisease,
+                    initialConfidence = preliminaryConfidence
+                )
+                val verifiedData = nvidiaResult.getOrNull()
+                if (verifiedData != null) {
+                    cropName = verifiedData.cropName
+                    diseaseName = verifiedData.diseaseName
+                    severity = verifiedData.severity
+                    confidence = verifiedData.confidence
+                    symptoms = verifiedData.symptoms
+                    treatment = verifiedData.treatment
+
+                    if (severity.equals("Invalid", ignoreCase = true) || cropName.contains("Non-Crop", ignoreCase = true)) {
+                        finalPredictedClass = "Invalid_Crop"
+                    } else {
+                        finalPredictedClass = "${cropName}___${diseaseName}".replace(" ", "_")
+                    }
                 }
             }
 

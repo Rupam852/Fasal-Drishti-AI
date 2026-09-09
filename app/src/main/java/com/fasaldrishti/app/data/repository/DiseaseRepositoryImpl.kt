@@ -1,5 +1,6 @@
 package com.fasaldrishti.app.data.repository
 
+import com.fasaldrishti.app.data.remote.GeminiClient
 import com.fasaldrishti.app.data.remote.NvidiaClient
 import com.fasaldrishti.app.data.remote.PredictApi
 import com.fasaldrishti.app.domain.model.DiseaseInfo
@@ -9,6 +10,7 @@ import kotlinx.coroutines.withContext
 
 class DiseaseRepositoryImpl(
     private val predictApi: PredictApi,
+    private val geminiClient: GeminiClient? = null,
     private val nvidiaClient: NvidiaClient = NvidiaClient()
 ) : DiseaseRepository {
 
@@ -134,7 +136,20 @@ class DiseaseRepositoryImpl(
         query: String,
         language: String
     ): Result<String> = withContext(Dispatchers.IO) {
-        // Direct live call to NVIDIA NIM Vision/LLM API
+        // 1. PRIMARY: Try Google Gemini Multimodal AI
+        if (geminiClient != null) {
+            val geminiResult = geminiClient.getAgronomyAdvice(
+                primaryClass = primaryClass,
+                confidence = confidence,
+                query = query,
+                language = language
+            )
+            if (geminiResult.isSuccess) {
+                return@withContext geminiResult
+            }
+        }
+
+        // 2. SECONDARY / FALLBACK: NVIDIA NIM Vision / LLM API
         nvidiaClient.getAgronomyAdvice(
             primaryClass = primaryClass,
             confidence = confidence,
