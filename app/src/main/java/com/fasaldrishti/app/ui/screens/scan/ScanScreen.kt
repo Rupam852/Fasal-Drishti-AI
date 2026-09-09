@@ -53,6 +53,8 @@ fun ScanScreen(
     var showShutterFlash by remember { mutableStateOf(false) }
     var showHelperText by remember { mutableStateOf(true) }
 
+    var isCapturing by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         delay(3500)
         showHelperText = false
@@ -231,20 +233,28 @@ fun ScanScreen(
                     .clip(CircleShape)
                     .background(Color.White)
                     .clickable {
-                        showShutterFlash = true
-                        takePhoto(
-                            context = context,
-                            imageCapture = imageCapture,
-                            onImageCaptured = { file ->
-                                showShutterFlash = false
-                                onNavigateToAnalyzing(file.absolutePath)
-                            },
-                            onError = {
-                                showShutterFlash = false
-                                val fallbackFile = File(context.cacheDir, "sample_scan.jpg")
-                                onNavigateToAnalyzing(fallbackFile.absolutePath)
-                            }
-                        )
+                        if (!isCapturing) {
+                            isCapturing = true
+                            showShutterFlash = true
+                            takePhoto(
+                                context = context,
+                                imageCapture = imageCapture,
+                                onImageCaptured = { file ->
+                                    isCapturing = false
+                                    showShutterFlash = false
+                                    onNavigateToAnalyzing(file.absolutePath)
+                                },
+                                onError = { err ->
+                                    isCapturing = false
+                                    showShutterFlash = false
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "Camera capture failed. Please try again.",
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            )
+                        }
                     },
                 contentAlignment = Alignment.Center
             ) {
