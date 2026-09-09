@@ -186,7 +186,7 @@ fun AboutScreen(
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
-                            text = "Fasal Drishti is built to empower farmers with instant, zero-latency, offline crop disease detection and personalized agronomy care.",
+                            text = "Fasal Drishti is built to empower farmers with high-precision multimodal AI crop disease detection, cloud verification, and personalized agronomy care.",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                 lineHeight = 22.sp

@@ -295,7 +295,7 @@ fun HomeScreen(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = "100% OFFLINE AI",
+                                            text = "DUAL CLOUD AI",
                                             style = MaterialTheme.typography.labelSmall.copy(
                                                 color = EmeraldPrimary,
                                                 fontWeight = FontWeight.Bold,
@@ -307,7 +307,7 @@ fun HomeScreen(
                                 }
 
                                 Text(
-                                    text = "38 DISEASES",
+                                    text = "ALL INDIAN CROPS",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         color = Color.White.copy(alpha = 0.6f),
                                         fontWeight = FontWeight.SemiBold,
@@ -368,7 +368,7 @@ fun HomeScreen(
                                 }
 
                                 Text(
-                                    text = "< 150ms Speed ⚡",
+                                    text = "Real-time AI Vision ⚡",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         color = EmeraldPrimary,
                                         fontWeight = FontWeight.SemiBold

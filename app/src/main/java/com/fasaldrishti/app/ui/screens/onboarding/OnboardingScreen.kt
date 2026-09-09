@@ -71,20 +71,20 @@ fun OnboardingScreen(
 
     val pages = listOf(
         OnboardingPage(
-            title = "Crop Leaf Photo Scan",
-            description = "Point your camera at affected leaves. On-device NNAPI vision runs instantly with zero internet requirement.",
+            title = "Instant Crop Leaf Vision",
+            description = "Point your camera or pick a photo from gallery to instantly scan crop leaves with high-accuracy AI Vision.",
             icon = Icons.Default.CameraAlt,
             gradient = listOf(EmeraldPrimary, EmeraldDark)
         ),
         OnboardingPage(
-            title = "38 Plant Disease Diagnosis",
-            description = "Fine-tuned MobileNet deep learning model recognizes 38 crop disease types in under 150ms with 95%+ accuracy.",
+            title = "Dual-Cloud AI Diagnosis",
+            description = "High-precision multimodal AI analyzes diseases across all major Indian crops with automatic cloud cross-verification.",
             icon = Icons.Default.Psychology,
             gradient = listOf(Color(0xFF00E5FF), Color(0xFF0091EA))
         ),
         OnboardingPage(
-            title = "Prescriptions & AI Agronomist",
-            description = "Get exact chemical dosages per litre, bio-organic remedies, and chat in your native language with NVIDIA NIM.",
+            title = "Prescriptions & AI Agri Doctor",
+            description = "Get exact chemical dosages per litre, organic remedies, and chat in Hindi or English with your AI Agri Doctor.",
             icon = Icons.Default.CheckCircle,
             gradient = listOf(SolarGold, Color(0xFFE65100))
         )
