@@ -57,9 +57,11 @@ class UpdateManager(private val context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "App Updates"
             val descriptionText = "Notifications for new versions of Fasal Drishti"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(channelId, name, importance).apply {
                 description = descriptionText
+                enableVibration(true)
+                setShowBadge(true)
             }
             val notificationManager: NotificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -184,7 +186,8 @@ class UpdateManager(private val context: Context) {
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setContentTitle("Fasal Drishti Update Available! 🌾")
             .setContentText("Version $newVersion is ready. Tap to download new features and disease model updates.")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
