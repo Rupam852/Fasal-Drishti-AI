@@ -256,18 +256,18 @@ fun ProfileScreen(
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                 ) {
-                    Column(modifier = Modifier.padding(8.dp)) {
+                    Column(modifier = Modifier.padding(4.dp)) {
                         ProfileTile(
                             icon = Icons.Default.History,
                             title = "My Scan History",
                             subtitle = "View past diagnoses & prescriptions",
                             onClick = onNavigateToHistory
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(horizontal = 12.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f), modifier = Modifier.padding(horizontal = 10.dp))
                         ProfileTile(
                             icon = Icons.Default.DeleteSweep,
                             title = "Clear All Scan History",
@@ -275,7 +275,7 @@ fun ProfileScreen(
                             onClick = { showClearDialog = true },
                             tint = CrimsonCoral
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(horizontal = 12.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f), modifier = Modifier.padding(horizontal = 10.dp))
                         ProfileTile(
                             icon = Icons.Default.ChatBubbleOutline,
                             title = "Clear AI Chat History",
@@ -283,14 +283,14 @@ fun ProfileScreen(
                             onClick = { showClearChatDialog = true },
                             tint = CrimsonCoral
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(horizontal = 12.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f), modifier = Modifier.padding(horizontal = 10.dp))
                         ProfileTile(
                             icon = Icons.Default.Info,
                             title = "About Fasal Drishti",
                             subtitle = "Version, developer vision & contributors",
                             onClick = onNavigateToAbout
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(horizontal = 12.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f), modifier = Modifier.padding(horizontal = 10.dp))
                         ProfileTile(
                             icon = Icons.AutoMirrored.Filled.Logout,
                             title = "Sign Out",
@@ -315,27 +315,34 @@ private fun StatCard(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(18.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
-        shadowElevation = 2.dp
+        border = BorderStroke(1.dp, color.copy(alpha = 0.35f))
     ) {
         Column(
-            modifier = Modifier.padding(14.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(20.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleLarge.copy(
+                style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.ExtraBold,
-                    fontSize = 20.sp
+                    fontSize = 18.sp
                 )
             )
             Text(
@@ -360,15 +367,15 @@ private fun ProfileTile(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(14.dp))
             .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 14.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(52.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .size(38.dp)
+                .clip(RoundedCornerShape(11.dp))
                 .background(tint.copy(alpha = 0.14f)),
             contentAlignment = Alignment.Center
         ) {
@@ -376,35 +383,35 @@ private fun ProfileTile(
                 imageVector = icon,
                 contentDescription = null,
                 tint = tint,
-                modifier = Modifier.size(26.dp)
+                modifier = Modifier.size(20.dp)
             )
         }
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 16.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.5.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(1.dp))
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
+                    fontSize = 11.5.sp,
+                    lineHeight = 15.sp
                 )
             )
         }
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(6.dp))
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(16.dp)
         )
     }
 }
