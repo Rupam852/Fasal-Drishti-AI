@@ -343,12 +343,12 @@ fun ChatScreen(
                     shape = RoundedCornerShape(28.dp),
                     color = MaterialTheme.colorScheme.surface,
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
-                    shadowElevation = 6.dp
+                    shadowElevation = 4.dp
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                            .padding(start = 12.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         OutlinedTextField(
@@ -400,23 +400,23 @@ fun ChatScreen(
                                 }
                             },
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(38.dp)
                                 .then(if (isListening) Modifier.graphicsLayer(scaleX = micScale, scaleY = micScale) else Modifier)
                                 .clip(CircleShape)
                                 .background(
                                     if (isListening) CrimsonCoral.copy(alpha = 0.2f)
-                                    else EmeraldPrimary.copy(alpha = 0.12f)
+                                    else Color.Transparent
                                 )
                         ) {
                             Icon(
                                 imageVector = if (isListening) Icons.Default.MicOff else Icons.Default.Mic,
                                 contentDescription = "Voice Input",
                                 tint = if (isListening) CrimsonCoral else EmeraldPrimary,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(22.dp)
                             )
                         }
 
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
                         IconButton(
                             onClick = {
@@ -426,18 +426,18 @@ fun ChatScreen(
                                 }
                             },
                             modifier = Modifier
-                                .size(42.dp)
+                                .size(38.dp)
                                 .clip(CircleShape)
                                 .background(
                                     if (inputText.isNotBlank()) EmeraldPrimary
-                                    else MaterialTheme.colorScheme.surfaceVariant
+                                    else Color.Transparent
                                 )
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = "Send",
-                                tint = if (inputText.isNotBlank()) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.size(19.dp)
+                                tint = if (inputText.isNotBlank()) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }

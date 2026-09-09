@@ -11,6 +11,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
@@ -55,6 +59,14 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val isConnected by app.networkMonitor.isConnected.collectAsState()
+            var isOfflineDismissed by remember { mutableStateOf(false) }
+
+            LaunchedEffect(isConnected) {
+                if (isConnected) {
+                    isOfflineDismissed = false
+                }
+            }
+
             val themeMode by app.themeManager.themeMode.collectAsState()
             val currentLanguage by app.languageManager.currentLanguage.collectAsState()
             val isDarkTheme = when (themeMode) {
@@ -84,10 +96,13 @@ class MainActivity : ComponentActivity() {
                             onClearPendingDestination = { pendingDestinationState.value = null }
                         )
 
-                        if (!isConnected) {
+                        if (!isConnected && !isOfflineDismissed) {
                             com.fasaldrishti.app.ui.components.NoInternetDialog(
                                 onRetry = {
                                     app.networkMonitor.verifyConnection()
+                                },
+                                onDismiss = {
+                                    isOfflineDismissed = true
                                 }
                             )
                         }

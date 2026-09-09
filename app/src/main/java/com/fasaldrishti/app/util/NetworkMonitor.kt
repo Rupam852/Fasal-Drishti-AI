@@ -5,13 +5,10 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 import java.net.Socket
 
@@ -20,28 +17,55 @@ class NetworkMonitor(private val context: Context) {
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
 
+    private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var pendingDisconnectJob: Job? = null
+
     private val _isConnected = MutableStateFlow(isCurrentlyConnected())
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            checkAndUpdateConnection()
+            // Cancel any pending disconnect job immediately on reconnect/wake-up
+            pendingDisconnectJob?.cancel()
+            _isConnected.value = true
         }
 
         override fun onLost(network: Network) {
-            _isConnected.value = false
-            checkAndUpdateConnection()
+            // Screen lock or network interface switch might fire onLost temporarily.
+            // Apply a grace period (3.5 seconds) so unlocking the phone doesn't trigger false alarms.
+            pendingDisconnectJob?.cancel()
+            pendingDisconnectJob = monitorScope.launch {
+                delay(3500)
+                if (!isCurrentlyConnected()) {
+                    _isConnected.value = false
+                }
+            }
         }
 
         override fun onCapabilitiesChanged(
             network: Network,
             networkCapabilities: NetworkCapabilities
         ) {
-            val hasInternet = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            if (!hasInternet) {
-                _isConnected.value = false
+            val hasInternet = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            
+            if (hasInternet) {
+                pendingDisconnectJob?.cancel()
+                _isConnected.value = true
             } else {
-                checkAndUpdateConnection()
+                val hasBasicInternet = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                if (hasBasicInternet) {
+                    pendingDisconnectJob?.cancel()
+                    _isConnected.value = true
+                } else {
+                    pendingDisconnectJob?.cancel()
+                    pendingDisconnectJob = monitorScope.launch {
+                        delay(3500)
+                        if (!isCurrentlyConnected()) {
+                            _isConnected.value = false
+                        }
+                    }
+                }
             }
         }
     }
@@ -54,8 +78,8 @@ class NetworkMonitor(private val context: Context) {
             connectivityManager?.registerNetworkCallback(request, networkCallback)
         } catch (_: Exception) {}
         
-        // Initial check
-        checkAndUpdateConnection()
+        // Initial state
+        _isConnected.value = isCurrentlyConnected()
     }
 
     fun isCurrentlyConnected(): Boolean {
@@ -66,9 +90,17 @@ class NetworkMonitor(private val context: Context) {
     }
 
     fun checkAndUpdateConnection() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val connected = isCurrentlyConnected() && canReachInternet()
-            _isConnected.value = connected
+        monitorScope.launch {
+            val connected = isCurrentlyConnected()
+            if (connected) {
+                pendingDisconnectJob?.cancel()
+                _isConnected.value = true
+            } else {
+                delay(2000)
+                if (!isCurrentlyConnected()) {
+                    _isConnected.value = false
+                }
+            }
         }
     }
 
@@ -86,7 +118,7 @@ class NetworkMonitor(private val context: Context) {
             socket.close()
             true
         } catch (_: Exception) {
-            // Fallback: If port 53 / socket is blocked on certain carrier networks, trust network capabilities
+            // Fallback: trust system capabilities if socket ping is blocked
             isCurrentlyConnected()
         }
     }

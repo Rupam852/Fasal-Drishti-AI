@@ -5,7 +5,6 @@ import android.provider.Settings
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,12 +30,12 @@ import androidx.compose.ui.window.DialogProperties
 import com.fasaldrishti.app.ui.theme.CrimsonCoral
 import com.fasaldrishti.app.ui.theme.CrimsonCoralVariant
 import com.fasaldrishti.app.ui.theme.EmeraldPrimary
-import com.fasaldrishti.app.ui.theme.SolarGold
 import kotlinx.coroutines.launch
 
 @Composable
 fun NoInternetDialog(
-    onRetry: suspend () -> Boolean
+    onRetry: suspend () -> Boolean,
+    onDismiss: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -56,17 +55,17 @@ fun NoInternetDialog(
     )
 
     Dialog(
-        onDismissRequest = { /* Non-dismissible while offline */ },
+        onDismissRequest = onDismiss,
         properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
             usePlatformDefaultWidth = false
         )
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.88f)),
+                .background(Color.Black.copy(alpha = 0.85f)),
             contentAlignment = Alignment.Center
         ) {
             Card(
@@ -83,14 +82,14 @@ fun NoInternetDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(26.dp),
+                        .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Pulsing Warning Icon
                     Box(
                         modifier = Modifier
                             .scale(pulseScale)
-                            .size(76.dp)
+                            .size(70.dp)
                             .clip(CircleShape)
                             .background(
                                 brush = Brush.radialGradient(
@@ -103,35 +102,35 @@ fun NoInternetDialog(
                             imageVector = Icons.Default.WifiOff,
                             contentDescription = "No Internet",
                             tint = Color.White,
-                            modifier = Modifier.size(38.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
                         text = "No Internet Connection",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            fontSize = 20.sp
+                            fontSize = 19.sp
                         ),
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Fasal Drishti AI requires an active internet connection to deliver cloud AI diagnostics, weather alerts, and crop treatment dosages.\n\nPlease connect to Mobile Data or Wi-Fi and retry.",
+                        text = "Fasal Drishti AI requires internet for live AI consultation, mandi rates, and weather sync.\n\nYou can connect to data/Wi-Fi or continue in offline mode.",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
-                            lineHeight = 21.sp,
-                            fontSize = 13.5.sp
+                            lineHeight = 20.sp,
+                            fontSize = 13.sp
                         ),
                         textAlign = TextAlign.Center
                     )
 
                     if (showErrorMessage) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = CrimsonCoral.copy(alpha = 0.12f),
@@ -150,7 +149,7 @@ fun NoInternetDialog(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(22.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
 
                     // Retry Button
                     Button(
@@ -169,8 +168,8 @@ fun NoInternetDialog(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(18.dp),
+                            .height(50.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = EmeraldPrimary,
                             contentColor = Color.Black
@@ -179,7 +178,7 @@ fun NoInternetDialog(
                     ) {
                         if (isChecking) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(22.dp),
+                                modifier = Modifier.size(20.dp),
                                 color = Color.Black,
                                 strokeWidth = 2.5.dp
                             )
@@ -187,24 +186,39 @@ fun NoInternetDialog(
                             Text(
                                 text = "Checking Connection...",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
+                                fontSize = 14.sp
                             )
                         } else {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
                                 contentDescription = null,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "Retry Connection",
                                 fontWeight = FontWeight.ExtraBold,
-                                fontSize = 15.sp
+                                fontSize = 14.5.sp
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Continue Offline Button
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Continue Offline",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                fontSize = 13.sp
+                            )
+                        )
+                    }
 
                     // Open Settings Button
                     OutlinedButton(
@@ -221,22 +235,23 @@ fun NoInternetDialog(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp),
-                        shape = RoundedCornerShape(18.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                            .height(44.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onSurface
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "Open Network Settings",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                fontSize = 12.sp
                             )
                         )
                     }

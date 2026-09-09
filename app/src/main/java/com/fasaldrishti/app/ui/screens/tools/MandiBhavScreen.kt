@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -134,6 +136,10 @@ fun MandiBhavScreen(
         matchesDistrict && matchesCategory && matchesSearch
     }
 
+    val languageManager = remember { com.fasaldrishti.app.data.local.LanguageManager(context) }
+    val currentAppLanguage by languageManager.currentLanguage.collectAsState()
+    var showHelpGuideDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             Row(
@@ -141,43 +147,68 @@ fun MandiBhavScreen(
                     .fillMaxWidth()
                     .statusBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Surface(
+                        onClick = onNavigateBack,
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.size(38.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Live Mandi Bhav & APMC Rates",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 17.sp
+                            )
+                        )
+                        Text(
+                            text = "Official Government Agmarknet & e-NAM Portal",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+                }
+
+                // Help Guide Button (?)
                 Surface(
-                    onClick = onNavigateBack,
+                    onClick = { showHelpGuideDialog = true },
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = EmeraldPrimary.copy(alpha = 0.15f),
+                    border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.45f)),
                     modifier = Modifier.size(38.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                            contentDescription = "Mandi Rate Guide",
                             modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = EmeraldPrimary
                         )
                     }
-                }
-                Spacer(modifier = Modifier.width(14.dp))
-                Column {
-                    Text(
-                        text = "Live Mandi Bhav & APMC Rates",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp
-                        )
-                    )
-                    Text(
-                        text = "Official Government Agmarknet & e-NAM Portal",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            fontSize = 11.5.sp
-                        )
-                    )
                 }
             }
         }
     ) { innerPadding ->
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -582,6 +613,499 @@ fun MandiBhavScreen(
             }
         }
     }
+
+    // MANDI RATES HELP GUIDE DIALOG (LOCALIZED)
+    if (showHelpGuideDialog) {
+        MandiHelpGuideDialog(
+            language = currentAppLanguage,
+            onDismiss = { showHelpGuideDialog = false }
+        )
+    }
+}
+
+private data class MandiHelpItem(
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val title: String,
+    val description: String,
+    val accentColor: Color
+)
+
+private data class MandiHelpGuideContent(
+    val title: String,
+    val subtitle: String,
+    val items: List<MandiHelpItem>,
+    val footerNote: String,
+    val closeButtonText: String
+)
+
+@Composable
+private fun MandiHelpGuideDialog(
+    language: com.fasaldrishti.app.data.local.AppLanguage,
+    onDismiss: () -> Unit
+) {
+    val content = remember(language) { getLocalizedMandiHelpGuide(language) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(24.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = EmeraldPrimary.copy(alpha = 0.15f),
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                            contentDescription = null,
+                            tint = EmeraldPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = content.title,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 16.5.sp
+                        )
+                    )
+                    Text(
+                        text = content.subtitle,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            fontSize = 11.sp
+                        )
+                    )
+                }
+            }
+        },
+        text = {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(content.items) { item ->
+                    Surface(
+                        shape = RoundedCornerShape(14.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        border = BorderStroke(1.dp, item.accentColor.copy(alpha = 0.3f)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = item.accentColor.copy(alpha = 0.15f),
+                                    modifier = Modifier.size(26.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = item.icon,
+                                            contentDescription = null,
+                                            tint = item.accentColor,
+                                            modifier = Modifier.size(15.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = item.title,
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = item.accentColor,
+                                        fontSize = 13.sp
+                                    )
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = item.description,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontSize = 11.5.sp,
+                                    lineHeight = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
+                                )
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = EmeraldPrimary.copy(alpha = 0.08f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = content.footerNote,
+                            modifier = Modifier.padding(10.dp),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 11.sp,
+                                color = EmeraldPrimary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = content.closeButtonText,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.5.sp
+                )
+            }
+        }
+    )
+}
+
+private fun getLocalizedMandiHelpGuide(language: com.fasaldrishti.app.data.local.AppLanguage): MandiHelpGuideContent {
+    return when (language) {
+        com.fasaldrishti.app.data.local.AppLanguage.HINDI -> MandiHelpGuideContent(
+            title = "मंडी भाव एवं दरों की समझ",
+            subtitle = "APMC नीलामी एवं बाजार भाव की मार्गदर्शिका",
+            items = listOf(
+                MandiHelpItem(
+                    icon = Icons.Default.CurrencyRupee,
+                    title = "1. मॉडल भाव (Modal Rate)",
+                    description = "मंडी में वह औसत नीलामी मूल्य (प्रति क्विंटल / 100 किग्रा) जिस पर सबसे अधिक मात्रा में फसल बिकी है। किसान को आज यही भाव मिलने की सबसे अधिक संभावना होती है।",
+                    accentColor = EmeraldPrimary
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Tune,
+                    title = "2. न्यूनतम - अधिकतम भाव (Price Range)",
+                    description = "कमजोर/नमी वाली फसल के सबसे कम दाम (Min) से लेकर उत्तम ग्रेड-A फसल के सबसे ऊंचे दाम (Max) का दायरा।",
+                    accentColor = Color(0xFF00E5FF)
+                ),
+                MandiHelpItem(
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    title = "3. दैनिक रुझान (Daily Trend)",
+                    description = "कल के मुकाबले आज का भाव बढ़ा (+▲ तेजी) या घटा (-▼ मंदी) है।",
+                    accentColor = SolarGold
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Psychology,
+                    title = "4. बेचें या रोकें (AI Advisory)",
+                    description = "🟢 SELL: आज मंडी में मांग और भाव अच्छा है, फसल बेचना फायदेमंद है। ⏳ HOLD: कुछ दिन बाद दाम बढ़ने की संभावना है, फसल रोक कर रखें।",
+                    accentColor = Color(0xFF818CF8)
+                )
+            ),
+            footerNote = "💡 सभी भाव प्रति क्विंटल (100 किलोग्राम) के आधार पर आधिकारिक Agmarknet एवं e-NAM पोर्टल से लिए गए हैं।",
+            closeButtonText = "समझ गया (Close)"
+        )
+
+        com.fasaldrishti.app.data.local.AppLanguage.BENGALI -> MandiHelpGuideContent(
+            title = "মান্ডি দর ও মূল্য সহায়িকা",
+            subtitle = "APMC নিলাম ও বাজার মূল্যের সহজ নির্দেশিকা",
+            items = listOf(
+                MandiHelpItem(
+                    icon = Icons.Default.CurrencyRupee,
+                    title = "১. মডেল দর (Modal Rate)",
+                    description = "যে মূল্যে মন্ডিতে সবচেয়ে বেশি পরিমাণ ফসল বিক্রি হয়েছে (প্রতি কুইন্টাল / ১০০ কেজি)। কৃষকের এই দাম পাওয়ার সম্ভাবনা সবচেয়ে বেশি।",
+                    accentColor = EmeraldPrimary
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Tune,
+                    title = "২. সর্বনিম্ন - সর্বোচ্চ দর (Price Range)",
+                    description = "সাধারণ/আর্দ্র মান থেকে শুরু করে প্রিমিয়াম গ্রেড-A ফসলের মূল্যের বিস্তার।",
+                    accentColor = Color(0xFF00E5FF)
+                ),
+                MandiHelpItem(
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    title = "৩. দৈনিক প্রবণতা (Daily Trend)",
+                    description = "গতকালের চেয়ে আজকের দাম বৃদ্ধি (+▲) বা হ্রাস (-▼) নির্দেশ করে।",
+                    accentColor = SolarGold
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Psychology,
+                    title = "৪. বিক্রি বা ধরে রাখা (AI Advisory)",
+                    description = "🟢 SELL: বাজারে ভালো দাম ও চাহিদা রয়েছে। ⏳ HOLD: কয়েকদিন পর দর বাড়ার সম্ভাবনা রয়েছে।",
+                    accentColor = Color(0xFF818CF8)
+                )
+            ),
+            footerNote = "💡 সরকারি Agmarknet ও e-NAM পোর্টাল অনুযায়ী প্রতি কুইন্টাল (১০০ কেজি) হিসেবে মূল্য প্রদর্শিত।",
+            closeButtonText = "বুঝেছি (Close)"
+        )
+
+        com.fasaldrishti.app.data.local.AppLanguage.MARATHI -> MandiHelpGuideContent(
+            title = "मंडी दर व भावाची माहिती",
+            subtitle = "APMC बाजारभाव व लिलाव मार्गदर्शिका",
+            items = listOf(
+                MandiHelpItem(
+                    icon = Icons.Default.CurrencyRupee,
+                    title = "१. मॉडल भाव (Modal Rate)",
+                    description = "ज्या दरावर बाजारात सर्वाधिक शेतमालाची विक्री झाली आहे (प्रति क्विंटल / १०० किलो). शेतकऱ्याला हाच भाव मिळण्याची सर्वाधिक शक्यता असते.",
+                    accentColor = EmeraldPrimary
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Tune,
+                    title = "२. किमान - कमाल भाव (Price Range)",
+                    description = "कमी दर्जाच्या मालापासून ते उत्कृष्ट ग्रेड-A शेतमालाच्या दराची कक्षा.",
+                    accentColor = Color(0xFF00E5FF)
+                ),
+                MandiHelpItem(
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    title = "३. दैनंदिन कल (Daily Trend)",
+                    description = "कालच्या तुलनेत आज भाव वाढला (+▲) किंवा घसरला (-▼) आहे.",
+                    accentColor = SolarGold
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Psychology,
+                    title = "४. विक्री किंवा साठवणूक (AI Advisory)",
+                    description = "🟢 SELL: आज बाजारात चांगला भाव आहे. ⏳ HOLD: काही दिवसांनी भाव वाढण्याची शक्यता आहे.",
+                    accentColor = Color(0xFF818CF8)
+                )
+            ),
+            footerNote = "💡 सर्व दर प्रति क्विंटल (१०० किलोग्रॅम) नुसार Agmarknet पोर्टलवरून घेतलेले आहेत.",
+            closeButtonText = "समजले (Close)"
+        )
+
+        com.fasaldrishti.app.data.local.AppLanguage.PUNJABI -> MandiHelpGuideContent(
+            title = "ਮੰਡੀ ਭਾਅ ਅਤੇ ਦਰਾਂ ਬਾਰੇ ਗਾਈਡ",
+            subtitle = "APMC ਨਿਲਾਮੀ ਅਤੇ ਮੰਡੀ ਭਾਅ ਦੀ ਜਾਣਕਾਰੀ",
+            items = listOf(
+                MandiHelpItem(
+                    icon = Icons.Default.CurrencyRupee,
+                    title = "1. ਮਾਡਲ ਰੇਟ (Modal Rate)",
+                    description = "ਉਹ ਔਸਤ ਭਾਅ ਜਿਸ ਉੱਤੇ ਮੰਡੀ ਵਿੱਚ ਸਭ ਤੋਂ ਵੱਧ ਫ਼ਸਲ ਵਿਕੀ ਹੈ (ਪ੍ਰਤੀ ਕੁਇੰਟਲ / 100 ਕਿਲੋ)।",
+                    accentColor = EmeraldPrimary
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Tune,
+                    title = "2. ਘੱਟੋ-ਘੱਟ - ਵੱਧ ਤੋਂ ਵੱਧ ਭਾਅ",
+                    description = "ਆਮ ਕੁਆਲਿਟੀ ਤੋਂ ਲੈ ਕੇ ਟੌਪ ਗ੍ਰੇਡ-A ਫ਼ਸਲ ਦੇ ਭਾਅ ਦਾ ਦਾਇਰਾ।",
+                    accentColor = Color(0xFF00E5FF)
+                ),
+                MandiHelpItem(
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    title = "3. ਰੋਜ਼ਾਨਾ ਰੁਝਾਨ (Daily Trend)",
+                    description = "ਕੱਲ੍ਹ ਦੇ ਮੁਕਾਬਲੇ ਅੱਜ ਦਾ ਭਾਅ ਵਧਿਆ (+▲) ਜਾਂ ਘਟਿਆ (-▼) ਹੈ।",
+                    accentColor = SolarGold
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Psychology,
+                    title = "4. ਵੇਚੋ ਜਾਂ ਰੋਕੋ (AI Advisory)",
+                    description = "🟢 SELL: ਫ਼ਸਲ ਵੇਚਣ ਦਾ ਸਹੀ ਸਮਾਂ ਹੈ। ⏳ HOLD: ਕੁਝ ਦਿਨ ਫ਼ਸਲ ਰੋਕ ਕੇ ਰੱਖਣਾ ਫ਼ਾਇਦੇਮੰਦ ਹੋ ਸਕਦਾ ਹੈ।",
+                    accentColor = Color(0xFF818CF8)
+                )
+            ),
+            footerNote = "💡 ਸਾਰੇ ਭਾਅ ਪ੍ਰਤੀ ਕੁਇੰਟਲ (100 ਕਿਲੋਗ੍ਰਾਮ) ਸਰਕਾਰੀ Agmarknet ਪੋਰਟਲ ਅਨੁਸਾਰ ਹਨ।",
+            closeButtonText = "ਸਮਝ ਆ ਗਿਆ (Close)"
+        )
+
+        com.fasaldrishti.app.data.local.AppLanguage.GUJARATI -> MandiHelpGuideContent(
+            title = "મંડી ભાવ અને દરોની માર્ગદર્શિકા",
+            subtitle = "APMC હરાજી અને બજાર ભાવની સરળ સમજૂતી",
+            items = listOf(
+                MandiHelpItem(
+                    icon = Icons.Default.CurrencyRupee,
+                    title = "૧. મોડલ ભાવ (Modal Rate)",
+                    description = "જે ભાવે બજારમાં સૌથી વધુ જથ્થામાં પાક વેચાયો છે (પ્રતિ ક્વિન્ટલ / ૧૦૦ કિગ્રા).",
+                    accentColor = EmeraldPrimary
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Tune,
+                    title = "૨. ન્યૂનતમ - મહત્તમ ભાવ",
+                    description = "સામાન્ય ગુણવત્તાથી લઈને શ્રેષ્ઠ ગ્રેડ-A પાકના ભાવોની શ્રેણી.",
+                    accentColor = Color(0xFF00E5FF)
+                ),
+                MandiHelpItem(
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    title = "૩. દૈનિક વલણ (Daily Trend)",
+                    description = "ગઈકાલ કરતાં આજે ભાવ વધ્યો (+▲) કે ઘટ્યો (-▼) છે.",
+                    accentColor = SolarGold
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Psychology,
+                    title = "૪. વેચો કે હોલ્ડ કરો (AI Advisory)",
+                    description = "🟢 SELL: આજે પાક વેચવો ફાયદાકારક છે. ⏳ HOLD: થોડા દિવસ સાચવી રાખવાથી સારો ભાવ મળી શકે છે.",
+                    accentColor = Color(0xFF818CF8)
+                )
+            ),
+            footerNote = "💡 તમામ ભાવો પ્રતિ ક્વિન્ટલ (૧૦૦ કિલોગ્રામ) ના આધારે Agmarknet પરથી છે.",
+            closeButtonText = "સમજાઈ ગયું (Close)"
+        )
+
+        com.fasaldrishti.app.data.local.AppLanguage.TELUGU -> MandiHelpGuideContent(
+            title = "మండీ ధరల మార్గదర్శిని",
+            subtitle = "APMC వేలం మరియు మార్కెట్ ధరల వివరణ",
+            items = listOf(
+                MandiHelpItem(
+                    icon = Icons.Default.CurrencyRupee,
+                    title = "1. మోడల్ ధర (Modal Rate)",
+                    description = "మార్కెట్‌లో అత్యధిక పరిమాణంలో పంట అమ్ముడైన సగటు ధర (క్వింటాల్ / 100 కేజీలకు).",
+                    accentColor = EmeraldPrimary
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Tune,
+                    title = "2. కనిష్ట - గరిష్ట ధర (Price Range)",
+                    description = "సాధారణ నాణ్యత నుండి ప్రీమియం గ్రేడ్-A పంట ధరల శ్రేణి.",
+                    accentColor = Color(0xFF00E5FF)
+                ),
+                MandiHelpItem(
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    title = "3. రోజువారీ ధోరణి (Daily Trend)",
+                    description = "నిన్నటితో పోలిస్తే ఈరోజు ధర పెరిగిందా (+▲) లేదా తగ్గిందా (-▼).",
+                    accentColor = SolarGold
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Psychology,
+                    title = "4. అమ్మండి లేదా నిల్వ ఉంచండి (AI Advisory)",
+                    description = "🟢 SELL: ఈరోజు మంచి ధర ఉంది. ⏳ HOLD: కొద్ది రోజులు ఆగి అమ్మడం మంచిది.",
+                    accentColor = Color(0xFF818CF8)
+                )
+            ),
+            footerNote = "💡 ధరలు క్వింటాల్ (100 కేజీలు) ప్రాతిపదికన Agmarknet ద్వారా అందించబడుతున్నాయి.",
+            closeButtonText = "అర్థమైంది (Close)"
+        )
+
+        com.fasaldrishti.app.data.local.AppLanguage.TAMIL -> MandiHelpGuideContent(
+            title = "மண்டி விலை வழிகாட்டி",
+            subtitle = "APMC ஏல விற்பனை விலை விவரங்கள்",
+            items = listOf(
+                MandiHelpItem(
+                    icon = Icons.Default.CurrencyRupee,
+                    title = "1. மாதிரி விலை (Modal Rate)",
+                    description = "சந்தையில் அதிகளவில் பயிர் விற்கப்பட்ட சராசரி விலை (குவிண்டால் / 100 கிலோவுக்கு).",
+                    accentColor = EmeraldPrimary
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Tune,
+                    title = "2. குறைந்தபட்ச - அதிகபட்ச விலை",
+                    description = "சராசரி தரம் முதல் முதல்-தரம் (Grade-A) வரையிலான விலை வரம்பு.",
+                    accentColor = Color(0xFF00E5FF)
+                ),
+                MandiHelpItem(
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    title = "3. தினசரி போக்கு (Daily Trend)",
+                    description = "நேற்றைய விலையை விட இன்று விலை உயர்ந்துள்ளதா (+▲) அல்லது குறைந்துள்ளதா (-▼).",
+                    accentColor = SolarGold
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Psychology,
+                    title = "4. விற்கவும் அல்லது வைக்கவும் (AI Advisory)",
+                    description = "🟢 SELL: இன்று நல்ல விலை உள்ளது. ⏳ HOLD: சில நாட்கள் கழித்து விற்கலாம்.",
+                    accentColor = Color(0xFF818CF8)
+                )
+            ),
+            footerNote = "💡 அனைத்து விலைகளும் அரசு Agmarknet போர்ட்டல் மூலம் குவிண்டால் வீதம் கணக்கிடப்படுகிறது.",
+            closeButtonText = "புரிந்தது (Close)"
+        )
+
+        com.fasaldrishti.app.data.local.AppLanguage.KANNADA -> MandiHelpGuideContent(
+            title = "ಮಂಡಿ ದರಗಳ ಮಾರ್ಗದರ್ಶಿ",
+            subtitle = "APMC ಮಾರುಕಟ್ಟೆ ಹರಾಜು ದರಗಳ ವಿವರಣೆ",
+            items = listOf(
+                MandiHelpItem(
+                    icon = Icons.Default.CurrencyRupee,
+                    title = "1. ಮಾದರಿ ದರ (Modal Rate)",
+                    description = "ಮಾರುಕಟ್ಟೆಯಲ್ಲಿ ಗರಿಷ್ಠ ಪ್ರಮಾಣದ ಬೆಳೆ ಮಾರಾಟವಾದ ಸರಾಸರಿ ದರ (ಕ್ವಿಂಟಾಲ್ / 100 ಕೆಜಿಗೆ).",
+                    accentColor = EmeraldPrimary
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Tune,
+                    title = "2. ಕನಿಷ್ಠ - ಗರಿಷ್ಠ ದರ (Price Range)",
+                    description = "ಸಾಮಾನ್ಯ ಗುಣಮಟ್ಟದಿಂದ ಉತ್ತಮ ಗ್ರೇಡ್-A ಬೆಳೆಯ ದರ ಶ್ರೇಣಿ.",
+                    accentColor = Color(0xFF00E5FF)
+                ),
+                MandiHelpItem(
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    title = "3. ದೈನಂದಿನ ಪ್ರವೃತ್ತಿ (Daily Trend)",
+                    description = "ನಿನ್ನೆಯ ದರಕ್ಕೆ ಹೋಲಿಸಿದರೆ ಇಂದು ದರ ಏರಿದೆಯೆ (+▲) ಅಥವಾ ಇಳಿದಿದೆಯೆ (-▼).",
+                    accentColor = SolarGold
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Psychology,
+                    title = "4. ಮಾರಾಟ ಅಥವಾ ಹೋಲ್ಡ್ (AI Advisory)",
+                    description = "🟢 SELL: ಇಂದು ಮಾರಾಟ ಮಾಡಲು ಉತ್ತಮ ದರವಿದೆ. ⏳ HOLD: ಕೆಲ ದಿನಗಳ ನಂತರ ಮಾರಾಟ ಮಾಡುವುದು ಸೂಕ್ತ.",
+                    accentColor = Color(0xFF818CF8)
+                )
+            ),
+            footerNote = "💡 ಎಲ್ಲಾ ದರಗಳು ಕ್ವಿಂಟಾಲ್ (100 ಕೆಜಿ) ಆಧಾರದ ಮೇಲೆ Agmarknet ಪೋರ್ಟಲ್‌ನಿಂದ ನೀಡಲಾಗಿದೆ.",
+            closeButtonText = "ಅರ್ಥವಾಯಿತು (Close)"
+        )
+
+        com.fasaldrishti.app.data.local.AppLanguage.ODIA -> MandiHelpGuideContent(
+            title = "ମଣ୍ଡି ଦର ଓ ଭାବ ମାର୍ଗଦର୍ଶିକା",
+            subtitle = "APMC ବଜାର ଦର ଏବଂ ନିଲାମ ମୂଲ୍ୟର ସରଳ ବ୍ୟାଖ୍ୟା",
+            items = listOf(
+                MandiHelpItem(
+                    icon = Icons.Default.CurrencyRupee,
+                    title = "୧. ମଡେଲ ଦର (Modal Rate)",
+                    description = "ମଣ୍ଡିରେ ଯେଉଁ ହାରରେ ସର୍ବାଧିକ ଫସଲ ବିକ୍ରି ହୋଇଛି (କ୍ୱିଣ୍ଟାଲ / ୧୦୦ କିଗ୍ରା ପ୍ରତି)।",
+                    accentColor = EmeraldPrimary
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Tune,
+                    title = "୨. ସର୍ବନିମ୍ନ - ସର୍ବାଧିକ ଦର (Price Range)",
+                    description = "ସାଧାରଣ ଗୁଣବତ୍ତା ଠାରୁ ପ୍ରିମିୟମ ଗ୍ରେଡ୍-A ଫସଲ ମଧ୍ୟରେ ଦରର ପରିସୀମା।",
+                    accentColor = Color(0xFF00E5FF)
+                ),
+                MandiHelpItem(
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    title = "୩. ଦୈନିକ ଧାରା (Daily Trend)",
+                    description = "ଗତକାଲି ତୁଳନାରେ ଆଜିର ଦର ବୃଦ୍ଧି (+▲) କିମ୍ବା ହ୍ରାସ (-▼) ପାଇଛି।",
+                    accentColor = SolarGold
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Psychology,
+                    title = "୪. ବିକ୍ରୟ କିମ୍ବା ସଂରକ୍ଷଣ (AI Advisory)",
+                    description = "🟢 SELL: ଆଜି ବିକ୍ରି କରିବା ଲାଭଦାୟକ। ⏳ HOLD: କିଛି ଦିନ ରଖିବା ଉଚିତ।",
+                    accentColor = Color(0xFF818CF8)
+                )
+            ),
+            footerNote = "💡 ସମସ୍ତ ଦର କ୍ୱିଣ୍ଟାଲ (୧୦୦ କିଲୋଗ୍ରାମ) ଆଧାରରେ ସରକାରୀ Agmarknet ପୋର୍ଟାଲରୁ ଅଣାଯାଇଛି।",
+            closeButtonText = "ବୁଝିଲି (Close)"
+        )
+
+        else -> MandiHelpGuideContent(
+            title = "Understanding Mandi Rates Guide",
+            subtitle = "Explanation of APMC Market Auction Terms",
+            items = listOf(
+                MandiHelpItem(
+                    icon = Icons.Default.CurrencyRupee,
+                    title = "1. Modal Rate (Main Price)",
+                    description = "The primary auction price per Quintal (100 kg) where the maximum quantity of crop lots were traded. This is the most realistic price a farmer can expect today.",
+                    accentColor = EmeraldPrimary
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Tune,
+                    title = "2. Min - Max Range (Quality Range)",
+                    description = "The price span between the lowest bid (fair/high-moisture lots) and the highest bid (clean, dried Grade-A lots).",
+                    accentColor = Color(0xFF00E5FF)
+                ),
+                MandiHelpItem(
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
+                    title = "3. Daily Trend (Price Movement)",
+                    description = "Indicates whether today's modal rate increased (+▲ Price Up) or softened (-▼ Price Down) compared to yesterday's closing rate.",
+                    accentColor = SolarGold
+                ),
+                MandiHelpItem(
+                    icon = Icons.Default.Psychology,
+                    title = "4. Sell vs Hold (AI Advisory)",
+                    description = "🟢 SELL: Strong buyer bidding and healthy profit margin today. ⏳ HOLD: Market arrivals high or prices likely to increase soon.",
+                    accentColor = Color(0xFF818CF8)
+                )
+            ),
+            footerNote = "💡 All prices are quoted per Quintal (100 kg) from official Directorate of Marketing & Inspection (DMI) / Agmarknet & e-NAM portals.",
+            closeButtonText = "Understood (Close)"
+        )
+    }
 }
 
 @Composable
@@ -750,3 +1274,4 @@ private fun MandiCard(record: MandiRecord) {
         }
     }
 }
+
