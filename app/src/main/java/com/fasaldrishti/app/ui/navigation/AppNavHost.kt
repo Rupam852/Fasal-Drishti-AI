@@ -148,7 +148,9 @@ fun AppNavHost(
                     viewModel = scanViewModel,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToAnalyzing = { imagePath ->
-                        navController.navigate(Screen.Analyzing.createRoute(imagePath))
+                        navController.navigate(Screen.Analyzing.createRoute(imagePath)) {
+                            popUpTo(Screen.Scan.route) { inclusive = true }
+                        }
                     },
                     onScanComplete = { scanRecord ->
                         navController.navigate(Screen.Result.createRoute(scanRecord.id)) {
@@ -168,7 +170,18 @@ fun AppNavHost(
                 } catch (e: Exception) {
                     rawPath
                 }
-                AnalyzingScreen(imagePath = imagePath)
+                AnalyzingScreen(
+                    imagePath = imagePath,
+                    scanRepository = scanRepository,
+                    onAnalysisComplete = { scanRecord ->
+                        navController.navigate(Screen.Result.createRoute(scanRecord.id)) {
+                            popUpTo(Screen.Analyzing.route) { inclusive = true }
+                        }
+                    },
+                    onAnalysisError = {
+                        navController.popBackStack()
+                    }
+                )
             }
 
             composable(

@@ -30,6 +30,30 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
 
     private val apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions"
 
+    private fun compressAndEncodeImage(imageFile: File): String {
+        val originalBitmap = android.graphics.BitmapFactory.decodeFile(imageFile.absolutePath)
+            ?: return Base64.encodeToString(imageFile.readBytes(), Base64.NO_WRAP)
+
+        val width = originalBitmap.width
+        val height = originalBitmap.height
+        val maxDim = kotlin.math.max(width, height)
+        val targetDim = 1024
+
+        val resizedBitmap = if (maxDim > targetDim) {
+            val scale = targetDim.toFloat() / maxDim
+            val newW = (width * scale).toInt()
+            val newH = (height * scale).toInt()
+            android.graphics.Bitmap.createScaledBitmap(originalBitmap, newW, newH, true)
+        } else {
+            originalBitmap
+        }
+
+        val outputStream = java.io.ByteArrayOutputStream()
+        resizedBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 85, outputStream)
+        val imageBytes = outputStream.toByteArray()
+        return Base64.encodeToString(imageBytes, Base64.NO_WRAP)
+    }
+
     /**
      * Mandatory Multimodal AI Dual-Layer Verification:
      * Cross-examines the user's photo against the initial on-device vision detection,
@@ -49,8 +73,7 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
                 return@withContext Result.failure(Exception("NVIDIA API key not available or image file missing"))
             }
 
-            val imageBytes = imageFile.readBytes()
-            val base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP)
+            val base64Image = compressAndEncodeImage(imageFile)
 
             val initialContext = if (!initialCropName.isNullOrBlank()) {
                 """

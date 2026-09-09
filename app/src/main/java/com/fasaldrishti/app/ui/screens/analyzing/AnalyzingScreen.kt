@@ -22,38 +22,66 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.fasaldrishti.app.domain.model.ScanRecord
+import com.fasaldrishti.app.domain.repository.ScanRepository
 import com.fasaldrishti.app.ui.theme.EmeraldDark
 import com.fasaldrishti.app.ui.theme.EmeraldPrimary
 import com.fasaldrishti.app.ui.theme.ObsidianVoid
 import kotlinx.coroutines.delay
+import java.io.File
 
 @Composable
 fun AnalyzingScreen(
-    imagePath: String
+    imagePath: String,
+    scanRepository: ScanRepository,
+    onAnalysisComplete: (ScanRecord) -> Unit,
+    onAnalysisError: (String) -> Unit
 ) {
     val statusMessages = listOf(
         "🌿 Extracting Leaf Vein Topology...",
-        "⚡ Running On-Device MobileNetV2 Neural Graph...",
-        "🔍 Cross-referencing 38 Plant Pathology Indices...",
-        "🩺 Generating Agronomy Treatment Plan..."
+        "⚡ Running On-Device Neural Vision Model...",
+        "🤖 AI Multimodal Pathologist Cross-Verification...",
+        "🩺 Computing Precise Treatment & Spray Dosages..."
     )
 
     var currentMessageIndex by remember { mutableIntStateOf(0) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Cycle through telemetry steps
     LaunchedEffect(Unit) {
         while (true) {
-            delay(1200)
+            delay(1100)
             currentMessageIndex = (currentMessageIndex + 1) % statusMessages.size
+        }
+    }
+
+    // Execute scan asynchronously and transition directly to ResultScreen
+    LaunchedEffect(imagePath) {
+        if (imagePath.isNotBlank()) {
+            val file = File(imagePath)
+            if (file.exists()) {
+                val result = scanRepository.performScan(file)
+                result.onSuccess { record ->
+                    delay(500) // Brief smooth transition delay
+                    onAnalysisComplete(record)
+                }.onFailure { err ->
+                    errorMessage = err.localizedMessage ?: "Analysis failed"
+                    delay(2500)
+                    onAnalysisError(errorMessage ?: "Analysis failed")
+                }
+            } else {
+                errorMessage = "Image file not found"
+                delay(2000)
+                onAnalysisError("Image file not found")
+            }
         }
     }
 
@@ -63,7 +91,7 @@ fun AnalyzingScreen(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000, easing = LinearEasing)
+            animation = tween(durationMillis = 1800, easing = LinearEasing)
         ),
         label = "SweepAngle"
     )
@@ -87,12 +115,12 @@ fun AnalyzingScreen(
         // Blurred captured image backdrop
         if (imagePath.isNotBlank()) {
             AsyncImage(
-                model = imagePath,
+                model = File(imagePath),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
                     .blur(25.dp)
-                    .alpha(0.25f),
+                    .alpha(0.28f),
                 contentScale = ContentScale.Crop
             )
         }
@@ -174,7 +202,7 @@ fun AnalyzingScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "TENSORFLOW LITE NNAPI",
+                        text = "HYBRID AI VISION ENGINE",
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = EmeraldPrimary,
                             fontWeight = FontWeight.Bold,
@@ -186,21 +214,33 @@ fun AnalyzingScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Dynamic Step Ticker
-            AnimatedContent(
-                targetState = statusMessages[currentMessageIndex],
-                transitionSpec = { fadeIn(tween(350)) togetherWith fadeOut(tween(350)) },
-                label = "AnalyzingStatus"
-            ) { msg ->
+            // Dynamic Step Ticker or Error Display
+            if (errorMessage != null) {
                 Text(
-                    text = msg,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp
+                    text = "⚠️ $errorMessage",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color(0xFFEF4444),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
                     ),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
+            } else {
+                AnimatedContent(
+                    targetState = statusMessages[currentMessageIndex],
+                    transitionSpec = { fadeIn(tween(350)) togetherWith fadeOut(tween(350)) },
+                    label = "AnalyzingStatus"
+                ) { msg ->
+                    Text(
+                        text = msg,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp
+                        ),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
             }
         }
 

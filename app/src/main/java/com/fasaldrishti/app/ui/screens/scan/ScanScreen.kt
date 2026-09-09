@@ -62,16 +62,17 @@ fun ScanScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            viewModel.processGalleryUri(context, it)
-        }
-    }
-
-    LaunchedEffect(scanState) {
-        when (val state = scanState) {
-            is ScanState.Success -> {
-                onScanComplete(state.scanRecord)
+            try {
+                val inputStream = context.contentResolver.openInputStream(it)
+                val tempFile = File.createTempFile("gallery_crop_", ".jpg", context.cacheDir)
+                val outputStream = java.io.FileOutputStream(tempFile)
+                inputStream?.copyTo(outputStream)
+                inputStream?.close()
+                outputStream.close()
+                onNavigateToAnalyzing(tempFile.absolutePath)
+            } catch (e: Exception) {
+                // Ignore load error
             }
-            else -> {}
         }
     }
 
@@ -237,13 +238,11 @@ fun ScanScreen(
                             onImageCaptured = { file ->
                                 showShutterFlash = false
                                 onNavigateToAnalyzing(file.absolutePath)
-                                viewModel.processCapturedImage(file)
                             },
                             onError = {
                                 showShutterFlash = false
                                 val fallbackFile = File(context.cacheDir, "sample_scan.jpg")
                                 onNavigateToAnalyzing(fallbackFile.absolutePath)
-                                viewModel.processCapturedImage(fallbackFile)
                             }
                         )
                     },
