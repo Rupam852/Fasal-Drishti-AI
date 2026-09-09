@@ -118,22 +118,10 @@ fun NoInternetDialog(
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "इंटरनेट कनेक्शन उपलब्ध नहीं है",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = SolarGold,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        ),
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    Text(
-                        text = "Fasal Drishti AI requires an active internet connection to deliver AI crop diagnostics, weather alerts, and treatment dosages.\n\nकृपया मोबाइल डेटा या वाई-फाई चालू करें और पुनः प्रयास करें।",
+                        text = "Fasal Drishti AI requires an active internet connection to deliver cloud AI diagnostics, weather alerts, and crop treatment dosages.\n\nPlease connect to Mobile Data or Wi-Fi and retry.",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                             lineHeight = 21.sp,
@@ -209,7 +197,7 @@ fun NoInternetDialog(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Retry (पुनः प्रयास करें)",
+                                text = "Retry Connection",
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 15.sp
                             )

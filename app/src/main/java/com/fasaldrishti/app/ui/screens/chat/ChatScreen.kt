@@ -56,11 +56,11 @@ fun ChatScreen(
     }
 
     val suggestedChips = listOf(
-        "🇮🇳 हिंदी में समझाएं",
+        "🇮🇳 Explain in Hindi",
         "🧪 Chemical Spray & Dosage",
-        "🌿 Desi/Organic Upchar",
-        "🌾 বাংলা ভাষায় বলুন",
-        "🌾 मराठीत सांगा",
+        "🌿 Organic & Bio Remedies",
+        "🌾 Explain in Bengali",
+        "🌾 Explain in Marathi",
         "Is it contagious to other crops?"
     )
 

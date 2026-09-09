@@ -267,7 +267,7 @@ fun ResultScreen(
                                             )
                                         )
                                         Text(
-                                            text = "फसल की पत्ती नहीं मिली (Low Match)",
+                                            text = "Low Confidence Match",
                                             style = MaterialTheme.typography.bodySmall.copy(
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                                 fontSize = 12.sp
@@ -304,7 +304,7 @@ fun ResultScreen(
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Text(
-                                    text = "💡 How to Take a Valid Crop Photo (सही फोटो कैसे लें)",
+                                    text = "💡 Photography Guidelines for Clear Scan",
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = EmeraldPrimary
@@ -436,7 +436,7 @@ fun ResultScreen(
                                     Spacer(modifier = Modifier.width(14.dp))
                                     Column {
                                         Text(
-                                            text = "Ask AI Doctor (हिंदी / বাংলা / etc.)",
+                                            text = "Consult AI Agri Doctor",
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 15.sp,

@@ -63,21 +63,21 @@ fun CropLibraryScreen(
     }
 
     val indianCrops = listOf(
-        IndianCropCategory("All", "All (सभी)", "🌿"),
-        IndianCropCategory("Rice", "धान (Rice)", "🌾"),
-        IndianCropCategory("Wheat", "गेहूं (Wheat)", "🌾"),
-        IndianCropCategory("Cotton", "कपास (Cotton)", "🌿"),
-        IndianCropCategory("Sugarcane", "गन्ना (Sugarcane)", "🎋"),
-        IndianCropCategory("Chilli", "मिर्च (Chilli)", "🌶️"),
-        IndianCropCategory("Mustard", "सरसों (Mustard)", "🟡"),
-        IndianCropCategory("Mango", "आम (Mango)", "🥭"),
-        IndianCropCategory("Tomato", "टमाटर (Tomato)", "🍅"),
-        IndianCropCategory("Potato", "आलू (Potato)", "🥔"),
-        IndianCropCategory("Corn", "मक्का (Corn)", "🌽"),
-        IndianCropCategory("Soybean", "सोयाबीन (Soybean)", "🫘"),
-        IndianCropCategory("Citrus", "नींबू (Citrus)", "🍊"),
-        IndianCropCategory("Grape", "अंगूर (Grape)", "🍇"),
-        IndianCropCategory("Apple", "सेब (Apple)", "🍎")
+        IndianCropCategory("All", "All Crops", "🌿"),
+        IndianCropCategory("Rice", "Rice", "🌾"),
+        IndianCropCategory("Wheat", "Wheat", "🌾"),
+        IndianCropCategory("Cotton", "Cotton", "🌿"),
+        IndianCropCategory("Sugarcane", "Sugarcane", "🎋"),
+        IndianCropCategory("Chilli", "Chilli", "🌶️"),
+        IndianCropCategory("Mustard", "Mustard", "🟡"),
+        IndianCropCategory("Mango", "Mango", "🥭"),
+        IndianCropCategory("Tomato", "Tomato", "🍅"),
+        IndianCropCategory("Potato", "Potato", "🥔"),
+        IndianCropCategory("Corn", "Corn", "🌽"),
+        IndianCropCategory("Soybean", "Soybean", "🫘"),
+        IndianCropCategory("Citrus", "Citrus", "🍊"),
+        IndianCropCategory("Grape", "Grape", "🍇"),
+        IndianCropCategory("Apple", "Apple", "🍎")
     )
 
     val filteredDiseases = diseases.filter { d ->
@@ -130,7 +130,7 @@ fun CropLibraryScreen(
                             )
                         )
                         Text(
-                            text = "भारतीय प्रमुख फसल रोग एवं उपचार ज्ञानकोष",
+                            text = "Disease Knowledge Base & Agronomy Treatments",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
                                 fontSize = 11.5.sp
@@ -152,7 +152,7 @@ fun CropLibraryScreen(
                         onValueChange = { searchQuery = it },
                         placeholder = { 
                             Text(
-                                "Search crop, disease, or medicine (e.g. धान, Blast, Tricyclazole)...",
+                                "Search crop, disease, or chemical treatment...",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -241,7 +241,7 @@ fun CropLibraryScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Try searching with English or Hindi crop/disease name.",
+                        text = "Try searching with crop or disease name.",
                         style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                     )
                 }
@@ -294,7 +294,7 @@ fun CropLibraryScreen(
                             Spacer(modifier = Modifier.height(10.dp))
 
                             Text(
-                                text = "${disease.cropName.uppercase()} • ${disease.cropHindi ?: ""}",
+                                text = disease.cropName.uppercase(),
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold,
@@ -311,20 +311,9 @@ fun CropLibraryScreen(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.5.sp
                                 ),
-                                maxLines = 1,
+                                maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
-                            if (!disease.diseaseHindi.isNullOrBlank()) {
-                                Text(
-                                    text = disease.diseaseHindi,
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                        fontSize = 11.sp
-                                    ),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
 
                             Spacer(modifier = Modifier.height(8.dp))
 
@@ -333,7 +322,7 @@ fun CropLibraryScreen(
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                             ) {
                                 Text(
-                                    text = if (disease.isHealthy) "✅ Healthy Stand" else "💊 ${disease.treatment.take(50)}...",
+                                    text = if (disease.isHealthy) "Healthy Stand" else "Dosage: ${disease.treatment.take(45)}...",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontSize = 9.5.sp,
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -373,7 +362,7 @@ fun CropLibraryScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "${d.cropName.uppercase()} • ${d.cropHindi ?: ""}",
+                                text = d.cropName.uppercase(),
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold,
@@ -387,57 +376,30 @@ fun CropLibraryScreen(
                                     fontSize = 19.sp
                                 )
                             )
-                            if (!d.diseaseHindi.isNullOrBlank()) {
-                                Text(
-                                    text = d.diseaseHindi,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                )
-                            }
                         }
                         SeverityBadge(severity = d.severity)
                     }
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
-                    // Symptoms in English and Hindi
-                    val combinedSymptoms = buildString {
-                        append(d.symptoms)
-                        if (!d.symptomsHindi.isNullOrBlank()) {
-                            append("\n\n🇮🇳 हिंदी लक्षण:\n")
-                            append(d.symptomsHindi)
-                        }
-                    }
                     AccordionCard(
-                        title = "Symptoms & Identification (लक्षण)",
+                        title = "Symptoms & Identification",
                         icon = Icons.Default.Coronavirus,
-                        content = combinedSymptoms,
+                        content = d.symptoms,
                         initiallyExpanded = true,
                         accentColor = CrimsonCoral
                     )
 
-                    // Treatment in English and Hindi
-                    val combinedTreatment = buildString {
-                        append(d.treatment)
-                        if (!d.treatmentHindi.isNullOrBlank()) {
-                            append("\n\n🇮🇳 अनुशंसित दवा और मात्रा:\n")
-                            append(d.treatmentHindi)
-                        }
-                    }
                     AccordionCard(
-                        title = "Chemical Treatment & Dosage (दवाई एवं मात्रा)",
+                        title = "Chemical Treatment & Dosage",
                         icon = Icons.Default.Science,
-                        content = combinedTreatment,
+                        content = d.treatment,
                         initiallyExpanded = true,
                         accentColor = SolarGold
                     )
 
-                    // Organic & Prevention
                     AccordionCard(
-                        title = "Organic Control & Prevention (रोकथाम)",
+                        title = "Organic Control & Prevention",
                         icon = Icons.Default.Shield,
                         content = d.prevention,
                         initiallyExpanded = false,
@@ -447,7 +409,7 @@ fun CropLibraryScreen(
                     if (onNavigateToChat != null) {
                         Button(
                             onClick = {
-                                val contextMsg = "I want more information and advice about ${d.cropName} (${d.cropHindi ?: ""}) - ${d.diseaseName} (${d.diseaseHindi ?: ""}). How to cure it quickly?"
+                                val contextMsg = "I want more information and advice about ${d.cropName} - ${d.diseaseName}. How to cure it quickly?"
                                 selectedDiseaseForSheet = null
                                 onNavigateToChat(contextMsg)
                             },
@@ -463,9 +425,9 @@ fun CropLibraryScreen(
                             Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Ask AI Doctor about this (AI डॉक्टर से पूछें)",
+                                text = "Consult AI Agri Doctor",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 13.5.sp
+                                fontSize = 14.sp
                             )
                         }
                     }
