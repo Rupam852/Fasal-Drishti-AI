@@ -36,7 +36,8 @@ class WeatherManager(private val context: Context) {
     val weatherData: StateFlow<WeatherData> = _weatherData.asStateFlow()
 
     private fun loadCachedWeather(): WeatherData {
-        val location = prefs.getString("cached_location", "Farm Location (भारत)") ?: "Farm Location (भारत)"
+        val rawLocation = prefs.getString("cached_location", "Farm Location") ?: "Farm Location"
+        val location = rawLocation.replace(Regex("\\s*\\([^)]*\\)"), "").trim().ifBlank { "Farm Location" }
         val temp = prefs.getFloat("cached_temp", 28.0f).toDouble()
         val humidity = prefs.getInt("cached_humidity", 60)
         val wind = prefs.getFloat("cached_wind", 10.5f).toDouble()
@@ -89,7 +90,7 @@ class WeatherManager(private val context: Context) {
 
             var latitude = 25.5941 // Default: Central Gangetic Agro Zone (Patna / Delhi)
             var longitude = 85.1376
-            var resolvedCity = "Farm Location (कृषि क्षेत्र)"
+            var resolvedCity = "Farm Location"
 
             val hasFineLocation = ContextCompat.checkSelfPermission(
                 context,
