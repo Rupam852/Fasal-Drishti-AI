@@ -176,7 +176,7 @@ fun AboutScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "v1.0.0 • Precision Agronomy & Crop Disease Vision",
+                            text = "v1.0.1 • Precision Agronomy & Crop Disease Vision",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 color = EmeraldPrimary,
                                 fontWeight = FontWeight.Bold
