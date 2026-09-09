@@ -474,7 +474,7 @@ def build_pdf(filename="Fasal_Drishti_AI_SIH_Project_Report.pdf"):
 
     story.append(Spacer(1, 15))
     story.append(HRFlowable(width="100%", thickness=1, color=c_border, spaceBefore=5, spaceAfter=10))
-    story.append(Paragraph("<b>Project Lead & Developer:</b> Rupam Das | <b>Repository:</b> github.com/Rupam852/Fasal-Drishti-AI", ParagraphStyle('F1', fontName='Helvetica-Bold', fontSize=9, textColor=c_primary, alignment=1)))
+    story.append(Paragraph("<b>Project Lead & Developer:</b> Rupam Bairagya | <b>Repository:</b> github.com/Rupam852/Fasal-Drishti-AI", ParagraphStyle('F1', fontName='Helvetica-Bold', fontSize=9, textColor=c_primary, alignment=1)))
     story.append(Paragraph("Smart India Hackathon (SIH) — Innovation for Atmanirbhar Krishi 🇮🇳", ParagraphStyle('F2', fontName='Helvetica', fontSize=8.5, textColor=c_text, alignment=1)))
 
     doc.build(story, canvasmaker=NumberedCanvas)

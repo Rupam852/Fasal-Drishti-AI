@@ -126,7 +126,7 @@ The compiled release APK will be located at:
 ---
 
 ## 👨‍💻 Author & Contributions
-- **Lead Developer**: [Rupam Das](https://github.com/Rupam852)
+- **Lead Developer**: [Rupam Bairagya](https://github.com/Rupam852)
 - Contributions, issues, and feature requests are welcome! Feel free to check the [Issues Page](https://github.com/Rupam852/Fasal-Drishti-AI/issues).
 
 ---
