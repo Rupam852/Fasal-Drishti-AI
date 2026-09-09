@@ -462,7 +462,6 @@ fun HomeScreen(
                                     modifier = Modifier
                                         .size(34.dp)
                                         .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
                                 ) {
                                     val rotation by rememberInfiniteTransition(label = "refresh").animateFloat(
                                         initialValue = 0f,

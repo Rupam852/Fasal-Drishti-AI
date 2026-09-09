@@ -1,12 +1,21 @@
 package com.fasaldrishti.app.data.remote
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import androidx.core.content.ContextCompat
 import com.fasaldrishti.app.domain.model.MandiRecord
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class AgmarknetClient(private val context: Context) {
@@ -17,13 +26,99 @@ class AgmarknetClient(private val context: Context) {
         .build()
 
     private val prefs = context.getSharedPreferences("fasal_mandi_prefs", Context.MODE_PRIVATE)
+    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+    val supportedStates = listOf(
+        "Uttar Pradesh",
+        "Madhya Pradesh",
+        "Punjab",
+        "Haryana",
+        "Rajasthan",
+        "Maharashtra",
+        "Gujarat",
+        "West Bengal",
+        "Bihar",
+        "Karnataka",
+        "Andhra Pradesh",
+        "Telangana",
+        "Tamil Nadu",
+        "Odisha",
+        "Chhattisgarh",
+        "Jharkhand",
+        "Assam",
+        "Kerala",
+        "Himachal Pradesh",
+        "Uttarakhand"
+    )
+
+    fun getSavedState(): String? {
+        val saved = prefs.getString("selected_mandi_state", null)
+        return if (saved.isNullOrBlank()) null else saved
+    }
 
     fun getPreferredState(): String {
-        return prefs.getString("selected_mandi_state", "Uttar Pradesh") ?: "Uttar Pradesh"
+        return prefs.getString("selected_mandi_state", "") ?: ""
     }
 
     fun setPreferredState(state: String) {
         prefs.edit().putString("selected_mandi_state", state).apply()
+    }
+
+    @SuppressLint("MissingPermission")
+    suspend fun detectStateFromLocation(): String? = withContext(Dispatchers.IO) {
+        try {
+            val hasFine = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            val hasCoarse = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!hasFine && !hasCoarse) return@withContext null
+
+            val cts = CancellationTokenSource()
+            val location = kotlinx.coroutines.suspendCancellableCoroutine<android.location.Location?> { continuation ->
+                fusedLocationClient.getCurrentLocation(
+                    Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                    cts.token
+                ).addOnSuccessListener { loc ->
+                    if (continuation.isActive) continuation.resume(loc, null)
+                }.addOnFailureListener {
+                    if (continuation.isActive) continuation.resume(null, null)
+                }
+                continuation.invokeOnCancellation { cts.cancel() }
+            } ?: return@withContext null
+
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+            if (!addresses.isNullOrEmpty()) {
+                val rawAdminArea = addresses[0].adminArea ?: ""
+                mapToSupportedState(rawAdminArea)
+            } else {
+                null
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    fun mapToSupportedState(rawStateName: String): String? {
+        if (rawStateName.isBlank()) return null
+        val clean = rawStateName.trim().lowercase()
+
+        return supportedStates.firstOrNull { supported ->
+            val suppLower = supported.lowercase()
+            suppLower == clean || clean.contains(suppLower) || suppLower.contains(clean)
+        } ?: when {
+            clean.contains("up") || clean.contains("uttar") -> "Uttar Pradesh"
+            clean.contains("mp") || clean.contains("madhya") -> "Madhya Pradesh"
+            clean.contains("orissa") || clean.contains("odisha") -> "Odisha"
+            clean.contains("bengal") || clean.contains("wb") -> "West Bengal"
+            clean.contains("delhi") -> "Haryana"
+            else -> null
+        }
     }
 
     suspend fun fetchLiveStateMandiRates(state: String): List<MandiRecord> = withContext(Dispatchers.IO) {

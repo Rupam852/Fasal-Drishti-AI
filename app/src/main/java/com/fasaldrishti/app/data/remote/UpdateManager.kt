@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 
 data class AppUpdateInfo(
-    val currentVersion: String = "1.0.4",
-    val latestVersion: String = "1.0.4",
+    val currentVersion: String = "1.0.5",
+    val latestVersion: String = "1.0.5",
     val hasUpdate: Boolean = false,
     val downloadUrl: String? = null,
     val releaseNotes: String = "",
@@ -34,8 +34,8 @@ class UpdateManager(private val context: Context) {
 
     private val _updateInfo = MutableStateFlow(
         AppUpdateInfo(
-            currentVersion = "v1.0.4",
-            latestVersion = "v1.0.4",
+            currentVersion = "v1.0.5",
+            latestVersion = "v1.0.5",
             hasUpdate = false,
             releaseNotes = """
 • 🎙️ Multilingual Voice Assistant (Speech-to-Text & Audio Playback)

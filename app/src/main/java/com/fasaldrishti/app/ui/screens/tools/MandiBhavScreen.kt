@@ -1,5 +1,9 @@
 package com.fasaldrishti.app.ui.screens.tools
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -12,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -24,8 +27,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.fasaldrishti.app.data.remote.AgmarknetClient
 import com.fasaldrishti.app.domain.model.MandiRecord
 import com.fasaldrishti.app.ui.theme.*
@@ -40,7 +45,10 @@ fun MandiBhavScreen(
     val agmarknetClient = remember { AgmarknetClient(context) }
     val coroutineScope = rememberCoroutineScope()
 
-    var selectedState by remember { mutableStateOf(agmarknetClient.getPreferredState()) }
+    var selectedState by remember { mutableStateOf<String?>(agmarknetClient.getSavedState()) }
+    var isDetectingLocation by remember { mutableStateOf(false) }
+    var isLocationAutoDetected by remember { mutableStateOf(false) }
+
     var searchQuery by remember { mutableStateOf("") }
     var selectedCropCategory by remember { mutableStateOf("All Crops") }
     var selectedDistrict by remember { mutableStateOf("All Districts") }
@@ -50,30 +58,7 @@ fun MandiBhavScreen(
     var showStatePickerSheet by remember { mutableStateOf(false) }
     var stateSearchQuery by remember { mutableStateOf("") }
 
-    val allStates = remember {
-        listOf(
-            "Uttar Pradesh",
-            "Madhya Pradesh",
-            "Punjab",
-            "Haryana",
-            "Rajasthan",
-            "Maharashtra",
-            "Gujarat",
-            "West Bengal",
-            "Bihar",
-            "Karnataka",
-            "Andhra Pradesh",
-            "Telangana",
-            "Tamil Nadu",
-            "Odisha",
-            "Chhattisgarh",
-            "Jharkhand",
-            "Assam",
-            "Kerala",
-            "Himachal Pradesh",
-            "Uttarakhand"
-        )
-    }
+    val allStates = remember { agmarknetClient.supportedStates }
 
     val cropCategories = listOf(
         "All Crops",
@@ -84,6 +69,82 @@ fun MandiBhavScreen(
         "Vegetables & Spices",
         "Cotton & Fibres"
     )
+
+    // Request Location Permission Launcher
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+        val coarseGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (fineGranted || coarseGranted) {
+            coroutineScope.launch {
+                isDetectingLocation = true
+                val detected = agmarknetClient.detectStateFromLocation()
+                if (!detected.isNullOrBlank()) {
+                    selectedState = detected
+                    isLocationAutoDetected = true
+                    agmarknetClient.setPreferredState(detected)
+                }
+                isDetectingLocation = false
+            }
+        }
+    }
+
+    fun triggerLocationDetection() {
+        val hasFine = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasFine || hasCoarse) {
+            coroutineScope.launch {
+                isDetectingLocation = true
+                val detected = agmarknetClient.detectStateFromLocation()
+                if (!detected.isNullOrBlank()) {
+                    selectedState = detected
+                    isLocationAutoDetected = true
+                    agmarknetClient.setPreferredState(detected)
+                }
+                isDetectingLocation = false
+            }
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
+    // Auto-detect GPS location on screen launch if no state is saved yet
+    LaunchedEffect(Unit) {
+        if (selectedState.isNullOrBlank()) {
+            val hasFine = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            val hasCoarse = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (hasFine || hasCoarse) {
+                isDetectingLocation = true
+                val detected = agmarknetClient.detectStateFromLocation()
+                if (!detected.isNullOrBlank()) {
+                    selectedState = detected
+                    isLocationAutoDetected = true
+                    agmarknetClient.setPreferredState(detected)
+                }
+                isDetectingLocation = false
+            }
+        }
+    }
 
     // Load data for selected state
     fun loadStateData(state: String, isForceLiveSync: Boolean = false) {
@@ -101,9 +162,11 @@ fun MandiBhavScreen(
     }
 
     LaunchedEffect(selectedState) {
-        agmarknetClient.setPreferredState(selectedState)
-        selectedDistrict = "All Districts"
-        loadStateData(selectedState)
+        selectedState?.let { state ->
+            agmarknetClient.setPreferredState(state)
+            selectedDistrict = "All Districts"
+            loadStateData(state)
+        }
     }
 
     // Extract unique districts in this state
@@ -198,7 +261,7 @@ fun MandiBhavScreen(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                            imageVector = Icons.Default.HelpOutline,
                             contentDescription = "Mandi Rate Guide",
                             modifier = Modifier.size(20.dp),
                             tint = EmeraldPrimary
@@ -209,165 +272,444 @@ fun MandiBhavScreen(
         }
     ) { innerPadding ->
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            // 1. STATE SELECTOR BANNER
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showStatePickerSheet = true },
-                    shape = RoundedCornerShape(22.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.4f))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                Brush.linearGradient(
-                                    listOf(
-                                        EmeraldPrimary.copy(alpha = 0.16f),
-                                        Color(0xFF00E5FF).copy(alpha = 0.08f)
+        val currentState = selectedState
+
+        if (currentState == null) {
+            // STATE SELECTION REQUIRED SCREEN (When location is off and no state is chosen)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header Prompt Card
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(26.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.45f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    Brush.verticalGradient(
+                                        listOf(
+                                            EmeraldPrimary.copy(alpha = 0.18f),
+                                            MaterialTheme.colorScheme.surface
+                                        )
                                     )
                                 )
-                            )
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(24.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.weight(1f)
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Surface(
                                     shape = CircleShape,
                                     color = EmeraldPrimary,
-                                    modifier = Modifier.size(42.dp)
+                                    modifier = Modifier.size(64.dp)
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = Icons.Default.LocationOn,
                                             contentDescription = null,
                                             tint = Color.Black,
-                                            modifier = Modifier.size(22.dp)
+                                            modifier = Modifier.size(32.dp)
                                         )
                                     }
                                 }
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column {
-                                    Text(
-                                        text = "Selected State / Mandi Zone",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontSize = 10.5.sp,
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                        )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Text(
+                                    text = "Select Your State / अपना राज्य चुनें",
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 19.sp
+                                    ),
+                                    textAlign = TextAlign.Center
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Text(
+                                    text = "Apne rajya ke taaza mandi rate aur daily APMC bhav dekhne ke liye apna state select karein ya GPS se auto-detect karein.",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                                        fontSize = 13.5.sp,
+                                        lineHeight = 20.sp
+                                    ),
+                                    textAlign = TextAlign.Center
+                                )
+
+                                Spacer(modifier = Modifier.height(20.dp))
+
+                                // Select State Button
+                                Button(
+                                    onClick = { showStatePickerSheet = true },
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = EmeraldPrimary,
+                                        contentColor = Color.Black
+                                    ),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(50.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Map,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
                                     )
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = selectedState,
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.ExtraBold,
-                                            fontSize = 18.sp,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
+                                        text = "Choose State / राज्य चुनें",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 15.sp
                                     )
                                 }
-                            }
 
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = EmeraldPrimary.copy(alpha = 0.2f),
-                                border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.5f))
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                // Auto-Detect via GPS Button
+                                OutlinedButton(
+                                    onClick = { triggerLocationDetection() },
+                                    shape = RoundedCornerShape(16.dp),
+                                    border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.6f)),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp),
+                                    enabled = !isDetectingLocation
+                                ) {
+                                    if (isDetectingLocation) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(18.dp),
+                                            color = EmeraldPrimary,
+                                            strokeWidth = 2.dp
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Detecting Location...",
+                                            color = EmeraldPrimary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.5.sp
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Default.MyLocation,
+                                            contentDescription = null,
+                                            tint = EmeraldPrimary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Auto-Detect via GPS / लोकेशन से पता करें",
+                                            color = EmeraldPrimary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.5.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Quick Selection Chips for Top States
+                item {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Popular Agricultural States / प्रमुख राज्य:",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                fontSize = 13.sp
+                            ),
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        )
+
+                        val popularStates = listOf(
+                            "Uttar Pradesh",
+                            "Madhya Pradesh",
+                            "Punjab",
+                            "Haryana",
+                            "Rajasthan",
+                            "Maharashtra",
+                            "Gujarat",
+                            "West Bengal",
+                            "Bihar",
+                            "Karnataka",
+                            "Telangana",
+                            "Andhra Pradesh",
+                            "Tamil Nadu",
+                            "Odisha"
+                        )
+
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(popularStates) { state ->
+                                Surface(
+                                    onClick = {
+                                        selectedState = state
+                                        agmarknetClient.setPreferredState(state)
+                                    },
+                                    shape = RoundedCornerShape(14.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.LocationCity,
+                                            contentDescription = null,
+                                            tint = EmeraldPrimary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = state,
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // MAIN MANDI CONTENT (When state is selected)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // 1. STATE SELECTOR BANNER
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showStatePickerSheet = true },
+                        shape = RoundedCornerShape(22.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.4f))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    Brush.linearGradient(
+                                        listOf(
+                                            EmeraldPrimary.copy(alpha = 0.16f),
+                                            Color(0xFF00E5FF).copy(alpha = 0.08f)
+                                        )
+                                    )
+                                )
+                                .padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
                                 ) {
-                                    Text(
-                                        text = "Change State",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = EmeraldPrimary,
-                                            fontSize = 11.sp
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = EmeraldPrimary,
+                                        modifier = Modifier.size(42.dp)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(
+                                                imageVector = Icons.Default.LocationOn,
+                                                contentDescription = null,
+                                                tint = Color.Black,
+                                                modifier = Modifier.size(22.dp)
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = "Selected State / Mandi Zone",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontSize = 10.5.sp,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                                )
+                                            )
+                                            if (isLocationAutoDetected) {
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Surface(
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    color = EmeraldPrimary.copy(alpha = 0.2f)
+                                                ) {
+                                                    Text(
+                                                        text = "GPS Detected",
+                                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp),
+                                                        style = MaterialTheme.typography.labelSmall.copy(
+                                                            color = EmeraldPrimary,
+                                                            fontSize = 9.sp,
+                                                            fontWeight = FontWeight.Bold
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        Text(
+                                            text = currentState,
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontWeight = FontWeight.ExtraBold,
+                                                fontSize = 18.sp,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
                                         )
-                                    )
-                                    Spacer(modifier = Modifier.width(3.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.ArrowDropDown,
-                                        contentDescription = null,
-                                        tint = EmeraldPrimary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                                    }
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = EmeraldPrimary.copy(alpha = 0.2f),
+                                    border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.5f))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Change State",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = EmeraldPrimary,
+                                                fontSize = 11.sp
+                                            )
+                                        )
+                                        Spacer(modifier = Modifier.width(3.dp))
+                                        Icon(
+                                            imageVector = Icons.Default.ArrowDropDown,
+                                            contentDescription = null,
+                                            tint = EmeraldPrimary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            // 2. SEARCH BAR & LIVE SYNC BUTTON
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        placeholder = { Text("Search crop or mandi in $selectedState...") },
-                        leadingIcon = {
-                            Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = EmeraldPrimary)
-                        },
-                        trailingIcon = {
-                            if (searchQuery.isNotBlank()) {
-                                IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
-                                }
-                            }
-                        },
-                        singleLine = true,
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    Surface(
-                        onClick = { loadStateData(selectedState, isForceLiveSync = true) },
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
-                        modifier = Modifier.size(52.dp)
+                // 2. SEARCH BAR & LIVE SYNC BUTTON
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            if (isLiveSyncing) {
-                                CircularProgressIndicator(modifier = Modifier.size(20.dp), color = EmeraldPrimary, strokeWidth = 2.dp)
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = "Sync",
-                                    tint = EmeraldPrimary,
-                                    modifier = Modifier.size(22.dp)
-                                )
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text("Search crop or mandi in $currentState...") },
+                            leadingIcon = {
+                                Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = EmeraldPrimary)
+                            },
+                            trailingIcon = {
+                                if (searchQuery.isNotBlank()) {
+                                    IconButton(onClick = { searchQuery = "" }) {
+                                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
+                                    }
+                                }
+                            },
+                            singleLine = true,
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Surface(
+                            onClick = { loadStateData(currentState, isForceLiveSync = true) },
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                if (isLiveSyncing) {
+                                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = EmeraldPrimary, strokeWidth = 2.dp)
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = "Sync",
+                                        tint = EmeraldPrimary,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // 3. DISTRICT FILTER CHIPS (IF APPLICABLE)
-            if (stateDistricts.size > 2) {
+                // 3. DISTRICT FILTER CHIPS (IF APPLICABLE)
+                if (stateDistricts.size > 2) {
+                    item {
+                        Column {
+                            Text(
+                                text = "Filter by District ($currentState)",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                ),
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            )
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(stateDistricts) { dist ->
+                                    val isSelected = dist == selectedDistrict
+                                    Surface(
+                                        onClick = { selectedDistrict = dist },
+                                        shape = RoundedCornerShape(14.dp),
+                                        color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(
+                                            1.dp,
+                                            if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+                                        )
+                                    ) {
+                                        Text(
+                                            text = dist,
+                                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 4. CROP CATEGORY CHIPS
                 item {
                     Column {
                         Text(
-                            text = "Filter by District ($selectedState)",
+                            text = "Crop Category",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -377,19 +719,19 @@ fun MandiBhavScreen(
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(stateDistricts) { dist ->
-                                val isSelected = dist == selectedDistrict
+                            items(cropCategories) { cat ->
+                                val isSelected = cat == selectedCropCategory
                                 Surface(
-                                    onClick = { selectedDistrict = dist },
+                                    onClick = { selectedCropCategory = cat },
                                     shape = RoundedCornerShape(14.dp),
-                                    color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.surface,
+                                    color = if (isSelected) Color(0xFF00E5FF) else MaterialTheme.colorScheme.surface,
                                     border = BorderStroke(
                                         1.dp,
-                                        if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+                                        if (isSelected) Color(0xFF00E5FF) else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
                                     )
                                 ) {
                                     Text(
-                                        text = dist,
+                                        text = cat,
                                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
                                         style = MaterialTheme.typography.labelMedium.copy(
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
@@ -401,107 +743,68 @@ fun MandiBhavScreen(
                         }
                     }
                 }
-            }
 
-            // 4. CROP CATEGORY CHIPS
-            item {
-                Column {
-                    Text(
-                        text = "Crop Category",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        ),
-                        modifier = Modifier.padding(bottom = 6.dp)
-                    )
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(cropCategories) { cat ->
-                            val isSelected = cat == selectedCropCategory
-                            Surface(
-                                onClick = { selectedCropCategory = cat },
-                                shape = RoundedCornerShape(14.dp),
-                                color = if (isSelected) Color(0xFF00E5FF) else MaterialTheme.colorScheme.surface,
-                                border = BorderStroke(
-                                    1.dp,
-                                    if (isSelected) Color(0xFF00E5FF) else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
-                                )
-                            ) {
-                                Text(
-                                    text = cat,
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 5. RESULTS COUNT BAR & GOVT ATTRIBUTION
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 2.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Showing ${filteredRecords.size} Mandi Rates in $selectedState",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = EmeraldPrimary,
-                            fontSize = 12.sp
-                        )
-                    )
-                    Text(
-                        text = "🟢 Agmarknet Live",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
-                            fontSize = 11.sp
-                        )
-                    )
-                }
-            }
-
-            // 6. MANDI RATE CARDS
-            if (filteredRecords.isEmpty()) {
+                // 5. RESULTS COUNT BAR & GOVT ATTRIBUTION
                 item {
-                    Box(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 35.dp),
-                        contentAlignment = Alignment.Center
+                            .padding(vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "No mandi records found for '$searchQuery' in $selectedState",
-                                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                        Text(
+                            text = "Showing ${filteredRecords.size} Mandi Rates in $currentState",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = EmeraldPrimary,
+                                fontSize = 12.sp
                             )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Button(
-                                onClick = {
-                                    searchQuery = ""
-                                    selectedCropCategory = "All Crops"
-                                    selectedDistrict = "All Districts"
-                                    loadStateData(selectedState, isForceLiveSync = true)
-                                },
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
-                            ) {
-                                Text(text = "Reset Filters & Sync", color = Color.Black, fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            text = "🟢 Agmarknet Live",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+                }
+
+                // 6. MANDI RATE CARDS
+                if (filteredRecords.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 35.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "No mandi records found for '$searchQuery' in $currentState",
+                                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Button(
+                                    onClick = {
+                                        searchQuery = ""
+                                        selectedCropCategory = "All Crops"
+                                        selectedDistrict = "All Districts"
+                                        loadStateData(currentState, isForceLiveSync = true)
+                                    },
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                                ) {
+                                    Text(text = "Reset Filters & Sync", color = Color.Black, fontWeight = FontWeight.Bold)
+                                }
                             }
                         }
                     }
-                }
-            } else {
-                items(filteredRecords) { record ->
-                    MandiCard(record = record)
+                } else {
+                    items(filteredRecords) { record ->
+                        MandiCard(record = record)
+                    }
                 }
             }
         }
@@ -535,10 +838,45 @@ fun MandiBhavScreen(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Auto-Detect GPS Button in Sheet
+                Surface(
+                    onClick = {
+                        showStatePickerSheet = false
+                        triggerLocationDetection()
+                    },
+                    shape = RoundedCornerShape(14.dp),
+                    color = EmeraldPrimary.copy(alpha = 0.12f),
+                    border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MyLocation,
+                            contentDescription = null,
+                            tint = EmeraldPrimary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Auto-Detect My State from GPS",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = EmeraldPrimary,
+                                fontSize = 13.sp
+                            )
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 OutlinedTextField(
                     value = stateSearchQuery,
                     onValueChange = { stateSearchQuery = it },
-                    placeholder = { Text("Search state name (e.g. Uttar Pradesh, Bengal...)") },
+                    placeholder = { Text("Search state name (e.g. Rajasthan, Bengal...)") },
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = EmeraldPrimary)
                     },
@@ -564,6 +902,8 @@ fun MandiBhavScreen(
                         Surface(
                             onClick = {
                                 selectedState = state
+                                isLocationAutoDetected = false
+                                agmarknetClient.setPreferredState(state)
                                 showStatePickerSheet = false
                             },
                             shape = RoundedCornerShape(14.dp),
@@ -660,7 +1000,7 @@ private fun MandiHelpGuideDialog(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                            imageVector = Icons.Default.HelpOutline,
                             contentDescription = null,
                             tint = EmeraldPrimary,
                             modifier = Modifier.size(20.dp)
