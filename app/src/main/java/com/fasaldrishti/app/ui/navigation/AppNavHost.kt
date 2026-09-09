@@ -162,7 +162,12 @@ fun AppNavHost(
                 route = Screen.Analyzing.route,
                 arguments = listOf(navArgument("imagePath") { type = NavType.StringType })
             ) { backStackEntry ->
-                val imagePath = java.net.URLDecoder.decode(backStackEntry.arguments?.getString("imagePath") ?: "", "UTF-8")
+                val rawPath = backStackEntry.arguments?.getString("imagePath") ?: ""
+                val imagePath = try {
+                    java.net.URLDecoder.decode(rawPath, "UTF-8")
+                } catch (e: Exception) {
+                    rawPath
+                }
                 AnalyzingScreen(imagePath = imagePath)
             }
 
@@ -204,8 +209,17 @@ fun AppNavHost(
                     defaultValue = null
                 })
             ) { backStackEntry ->
-                val contextParam = backStackEntry.arguments?.getString("context")?.let {
-                    java.net.URLDecoder.decode(it, "UTF-8")
+                val rawContext = backStackEntry.arguments?.getString("context")
+                val contextParam = rawContext?.let {
+                    try {
+                        if (it.contains("%") && !it.contains("% ")) {
+                            java.net.URLDecoder.decode(it, "UTF-8")
+                        } else {
+                            it
+                        }
+                    } catch (e: Exception) {
+                        it
+                    }
                 }
                 val chatViewModel = remember(contextParam) { ChatViewModel(diseaseRepository) }
                 ChatScreen(

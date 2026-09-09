@@ -102,8 +102,8 @@ fun FasalBottomBar(
                 BottomNavItem(
                     icon = Icons.Default.ChatBubbleOutline,
                     label = "AI Salah",
-                    selected = currentRoute == Screen.Chat.route,
-                    onClick = { onNavigate(Screen.Chat.route) },
+                    selected = currentRoute == Screen.Chat.route || currentRoute.startsWith("chat"),
+                    onClick = { onNavigate(Screen.Chat.createRoute()) },
                     modifier = Modifier.weight(1f)
                 )
 
