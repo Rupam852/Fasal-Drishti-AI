@@ -68,6 +68,45 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Smooth Scroll & Clean URL (Prevents /#features or hash anchors in address bar)
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const targetId = this.getAttribute('href');
+      if (targetId && targetId !== '#') {
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          e.preventDefault();
+          const headerOffset = 80;
+          const elementPosition = targetElement.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+
+          // Ensure browser URL stays clean (e.g. fasaldrishti-ai.vercel.app without #)
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+          }
+        }
+      } else if (targetId === '#') {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+        }
+      }
+    });
+  });
+
+  // Clean any existing hash on initial page load
+  if (window.location.hash && window.history && window.history.replaceState) {
+    setTimeout(() => {
+      window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+    }, 150);
+  }
+
   // 3. Modals System (Download, Terms, Privacy)
   const downloadModal = document.getElementById('downloadModal');
   const termsModal = document.getElementById('termsModal');
