@@ -119,15 +119,25 @@ The compiled release APK will be located at:
 ---
 
 ## 🔒 Security & Privacy
-- **Offline First**: All image scans are classified locally on the device by default. No photos are sent to external servers without explicit user request.
+- **User Privacy First**: All preliminary leaf diagnostics, prescription histories, and conversations with AI Salah are stored securely in local encrypted SQLite database.
 - **Secure Supabase Integration**: Row-Level Security (RLS) guarantees user scan histories and chat records remain strictly private.
-- **Zero Plaintext Secrets**: Dynamic encrypted key resolution for AI services.
+- **Zero Third-Party Ads**: No tracking pixels, zero analytics leaks, and no monetization of farmer records.
+- **Dynamic AI Key Resolution**: Secure credential handling for Google Gemini and NVIDIA NIM vision backends.
 
 ---
 
-## 👨‍💻 Author & Contributions
-- **Lead Developer**: [Rupam Bairagya](https://github.com/Rupam852)
-- Contributions, issues, and feature requests are welcome! Feel free to check the [Issues Page](https://github.com/Rupam852/Fasal-Drishti-AI/issues).
+## 👥 Project Team & Contributors
+
+| Contributor | Role | GitHub |
+|---|---|---|
+| **Rupam Bairagya** | **Lead AI & Full-Stack Architect** | [@Rupam852](https://github.com/Rupam852) |
+| **Pritam Rakshit** | **Core Contributor & Developer** | [@pritamrakshit24](https://github.com/pritamrakshit24) |
+| **Anish Das** | **Core Contributor & Developer** | [@Anish061106](https://github.com/Anish061106) |
+| **Abhijit Sahoo** | **Core Contributor & Developer** | [@abhijitsahoo70](https://github.com/abhijitsahoo70) |
+| **Tiasa Neogi** | **Core Contributor & Developer** | [@Katha04](https://github.com/Katha04) |
+| **Tiyasha Ghosh** | **Core Team Contributor** | [@bwubts24051-ux](https://github.com/bwubts24051-ux) |
+
+Contributions, issues, and feature requests are welcome! Feel free to check the [Issues Page](https://github.com/Rupam852/Fasal-Drishti-AI/issues).
 
 ---
 
