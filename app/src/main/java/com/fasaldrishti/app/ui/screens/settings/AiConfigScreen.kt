@@ -75,24 +75,38 @@ fun AiConfigScreen(
     // Cooldown countdown for default test
     var remainingCooldown by remember { mutableStateOf(aiConfigManager.getRemainingDefaultCooldownSeconds()) }
 
-    // Function to ensure active configuration is always saved
-    val saveCurrentState = {
-        val newConfig = AiConfigState(
-            isCustomMode = isCustomMode,
-            primaryProvider = primaryProvider,
-            secondaryProvider = if (primaryProvider == AiProvider.GEMINI) AiProvider.NVIDIA else AiProvider.GEMINI,
-            geminiModel = selectedGeminiModel,
-            geminiApiKey = geminiApiKey.trim(),
-            nvidiaModel = selectedNvidiaModel,
-            nvidiaApiKey = nvidiaApiKey.trim()
-        )
-        aiConfigManager.saveConfig(newConfig)
+    // Function to ensure active configuration is always saved safely
+    val handleNavigationBack = {
+        if (isCustomMode) {
+            val isGeminiPrimary = primaryProvider == AiProvider.GEMINI
+            val primaryKey = if (isGeminiPrimary) geminiApiKey.trim() else nvidiaApiKey.trim()
+            
+            if (primaryKey.isBlank()) {
+                // Key was left empty in custom mode. Revert safely to default mode to guarantee 0 scan errors!
+                aiConfigManager.setMode(false)
+                Toast.makeText(context, "⚠️ Incomplete custom key. Switched to Default AI so scans never fail.", Toast.LENGTH_LONG).show()
+            } else {
+                val newConfig = AiConfigState(
+                    isCustomMode = true,
+                    primaryProvider = primaryProvider,
+                    secondaryProvider = if (primaryProvider == AiProvider.GEMINI) AiProvider.NVIDIA else AiProvider.GEMINI,
+                    geminiModel = selectedGeminiModel,
+                    geminiApiKey = geminiApiKey.trim(),
+                    nvidiaModel = selectedNvidiaModel,
+                    nvidiaApiKey = nvidiaApiKey.trim()
+                )
+                aiConfigManager.saveConfig(newConfig)
+                Toast.makeText(context, "Custom AI Configuration Active", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            aiConfigManager.setMode(false)
+        }
+        onNavigateBack()
     }
 
-    // Android back button auto-save
+    // Android hardware/gesture back button handler
     BackHandler {
-        saveCurrentState()
-        onNavigateBack()
+        handleNavigationBack()
     }
 
     LaunchedEffect(Unit) {
@@ -113,10 +127,7 @@ fun AiConfigScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    onClick = {
-                        saveCurrentState()
-                        onNavigateBack()
-                    },
+                    onClick = { handleNavigationBack() },
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.size(38.dp)
@@ -760,17 +771,28 @@ fun AiConfigScreen(
                 item {
                     Button(
                         onClick = {
-                            val newConfig = AiConfigState(
-                                isCustomMode = true,
-                                primaryProvider = primaryProvider,
-                                secondaryProvider = if (primaryProvider == AiProvider.GEMINI) AiProvider.NVIDIA else AiProvider.GEMINI,
-                                geminiModel = selectedGeminiModel,
-                                geminiApiKey = geminiApiKey.trim(),
-                                nvidiaModel = selectedNvidiaModel,
-                                nvidiaApiKey = nvidiaApiKey.trim()
-                            )
-                            aiConfigManager.saveConfig(newConfig)
-                            Toast.makeText(context, "Custom AI Configuration Saved Locally!", Toast.LENGTH_SHORT).show()
+                            val isGeminiPrimary = primaryProvider == AiProvider.GEMINI
+                            val primaryKey = if (isGeminiPrimary) geminiApiKey.trim() else nvidiaApiKey.trim()
+
+                            if (primaryKey.isBlank()) {
+                                Toast.makeText(
+                                    context,
+                                    "⚠️ Please enter your API key or switch to Default AI mode.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                val newConfig = AiConfigState(
+                                    isCustomMode = true,
+                                    primaryProvider = primaryProvider,
+                                    secondaryProvider = if (primaryProvider == AiProvider.GEMINI) AiProvider.NVIDIA else AiProvider.GEMINI,
+                                    geminiModel = selectedGeminiModel,
+                                    geminiApiKey = geminiApiKey.trim(),
+                                    nvidiaModel = selectedNvidiaModel,
+                                    nvidiaApiKey = nvidiaApiKey.trim()
+                                )
+                                aiConfigManager.saveConfig(newConfig)
+                                Toast.makeText(context, "Custom AI Configuration Saved Successfully!", Toast.LENGTH_SHORT).show()
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
