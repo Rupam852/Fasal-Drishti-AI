@@ -50,6 +50,16 @@ fun ResultScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     var showTranslateDialog by remember { mutableStateOf(false) }
+    var dotCount by remember { mutableIntStateOf(1) }
+
+    LaunchedEffect(uiState.isTranslating) {
+        if (uiState.isTranslating) {
+            while (true) {
+                kotlinx.coroutines.delay(350)
+                dotCount = (dotCount % 3) + 1
+            }
+        }
+    }
 
     LaunchedEffect(scanId) {
         viewModel.loadScanResult(scanId)
@@ -858,16 +868,30 @@ fun ResultScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
 
-                    Text(
-                        text = "AI Translating Dossier ✨",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.onSurface
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Translating",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 20.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         )
-                    )
+                        Text(
+                            text = ".".repeat(dotCount),
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 20.sp,
+                                color = EmeraldPrimary
+                            ),
+                            modifier = Modifier.width(30.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -879,17 +903,6 @@ fun ResultScreen(
                             lineHeight = 19.sp
                         ),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp)),
-                        color = EmeraldPrimary,
-                        trackColor = EmeraldPrimary.copy(alpha = 0.2f)
                     )
                 }
             }
