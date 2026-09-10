@@ -1322,20 +1322,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .social-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--slate-100);
-  color: var(--slate-700);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: var(--slate-100);
+  color: var(--slate-800);
+  font-size: 0.82rem;
+  font-weight: 700;
   transition: var(--transition);
 }
 
 .social-btn:hover {
   background: var(--emerald-600);
   color: #FFFFFF;
+  transform: translateY(-2px);
 }
 
 /* ==========================================================================
