@@ -40,6 +40,7 @@ import com.fasaldrishti.app.ui.screens.result.ResultViewModel
 import com.fasaldrishti.app.ui.screens.scan.ScanScreen
 import com.fasaldrishti.app.ui.screens.scan.ScanViewModel
 import com.fasaldrishti.app.ui.screens.settings.SettingsScreen
+import com.fasaldrishti.app.ui.screens.settings.AiConfigScreen
 import com.fasaldrishti.app.ui.screens.splash.SplashScreen
 import com.fasaldrishti.app.ui.screens.updater.UpdaterScreen
 import com.fasaldrishti.app.ui.screens.tools.FertilizerCalculatorScreen
@@ -311,7 +312,19 @@ fun AppNavHost(
                     languageManager = languageManager,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
-                    onNavigateToUpdater = { navController.navigate(Screen.Updater.route) }
+                    onNavigateToUpdater = { navController.navigate(Screen.Updater.route) },
+                    onNavigateToAiConfig = { navController.navigate(Screen.AiConfig.route) }
+                )
+            }
+
+            composable(Screen.AiConfig.route) {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val app = context.applicationContext as? com.fasaldrishti.app.FasalDrishtiApp
+                val aiConfigManager = remember { com.fasaldrishti.app.data.local.AiConfigManager(context) }
+                AiConfigScreen(
+                    aiConfigManager = aiConfigManager,
+                    supabaseManager = app?.supabaseManager,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 

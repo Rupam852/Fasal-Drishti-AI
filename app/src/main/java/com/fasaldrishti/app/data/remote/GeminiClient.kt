@@ -20,7 +20,10 @@ import kotlin.math.max
  * Google Gemini Multimodal Vision & Agronomy Advisory Client (Primary Cloud AI).
  * Backed by Supabase Remote Config with secure high-availability fallback.
  */
-class GeminiClient(private val supabaseManager: SupabaseManager? = null) {
+class GeminiClient(
+    private val supabaseManager: SupabaseManager? = null,
+    private val aiConfigManager: com.fasaldrishti.app.data.local.AiConfigManager? = null
+) {
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -35,6 +38,24 @@ class GeminiClient(private val supabaseManager: SupabaseManager? = null) {
         get() = try {
             String(Base64.decode("QVEuQWI4Uk42SVA2TkNyd3QtMG9YMlc4ZmtHU0cwaVNwbE5leDhrRFhwR29ERzJYLTAyWFE=", Base64.DEFAULT))
         } catch (_: Exception) { "" }
+
+    private suspend fun resolveApiKey(): String {
+        val config = aiConfigManager?.configState?.value
+        if (config?.isCustomMode == true && config.geminiApiKey.isNotBlank()) {
+            return config.geminiApiKey
+        }
+        val remoteKey = supabaseManager?.getRemoteConfig("gemini_api_key", "") ?: ""
+        return if (remoteKey.isNotBlank()) remoteKey else defaultApiKey
+    }
+
+    private suspend fun resolveModelName(): String {
+        val config = aiConfigManager?.configState?.value
+        if (config?.isCustomMode == true && config.geminiModel.isNotBlank()) {
+            return config.geminiModel
+        }
+        val remoteModel = supabaseManager?.getRemoteConfig("gemini_model_name", "") ?: ""
+        return if (remoteModel.isNotBlank()) remoteModel else "gemini-2.5-flash"
+    }
 
     /**
      * Resizes and compresses image to ~1024px and ~150KB JPEG for ultra-fast <500ms Gemini Vision inference.
@@ -65,7 +86,7 @@ class GeminiClient(private val supabaseManager: SupabaseManager? = null) {
 
     /**
      * Primary Multimodal AI Dual-Layer Verification:
-     * Cross-examines the uploaded crop leaf image with Google Gemini 3.7 Vision,
+     * Cross-examines the uploaded crop leaf image with Google Gemini Vision,
      * strictly validates plant authenticity, eliminates non-crop objects, and computes exact spray dosages.
      */
     suspend fun verifyCropDiagnosis(
@@ -75,10 +96,8 @@ class GeminiClient(private val supabaseManager: SupabaseManager? = null) {
         initialConfidence: Float? = null
     ): Result<FallbackScanDiagnosis> = withContext(Dispatchers.IO) {
         try {
-            val remoteKey = supabaseManager?.getRemoteConfig("gemini_api_key", "") ?: ""
-            val apiKey = if (remoteKey.isNotBlank()) remoteKey else defaultApiKey
-            val remoteModel = supabaseManager?.getRemoteConfig("gemini_model_name", "") ?: ""
-            val primaryModel = if (remoteModel.isNotBlank()) remoteModel else "gemini-3.7-flash"
+            val apiKey = resolveApiKey()
+            val primaryModel = resolveModelName()
 
             if (apiKey.isBlank() || !imageFile.exists()) {
                 return@withContext Result.failure(Exception("Gemini API key not configured or image missing"))
@@ -219,10 +238,8 @@ class GeminiClient(private val supabaseManager: SupabaseManager? = null) {
         language: String
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
-            val remoteKey = supabaseManager?.getRemoteConfig("gemini_api_key", "") ?: ""
-            val apiKey = if (remoteKey.isNotBlank()) remoteKey else defaultApiKey
-            val remoteModel = supabaseManager?.getRemoteConfig("gemini_model_name", "") ?: ""
-            val primaryModel = if (remoteModel.isNotBlank()) remoteModel else "gemini-3.7-flash"
+            val apiKey = resolveApiKey()
+            val primaryModel = resolveModelName()
 
             if (apiKey.isBlank()) {
                 return@withContext Result.failure(Exception("Gemini API key not configured"))

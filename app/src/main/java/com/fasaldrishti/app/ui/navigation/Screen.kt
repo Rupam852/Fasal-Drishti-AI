@@ -25,4 +25,5 @@ sealed class Screen(val route: String) {
     object FertilizerCalculator : Screen("fertilizer_calculator")
     object GovtSchemes : Screen("govt_schemes")
     object SoilHealth : Screen("soil_health")
+    object AiConfig : Screen("ai_config")
 }

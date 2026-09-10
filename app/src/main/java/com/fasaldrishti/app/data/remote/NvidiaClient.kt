@@ -21,7 +21,10 @@ data class FallbackScanDiagnosis(
     val treatment: String
 )
 
-class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
+class NvidiaClient(
+    private val supabaseManager: SupabaseManager? = null,
+    private val aiConfigManager: com.fasaldrishti.app.data.local.AiConfigManager? = null
+) {
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(25, TimeUnit.SECONDS)
@@ -29,6 +32,22 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
         .build()
 
     private val apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions"
+
+    private suspend fun resolveApiKey(): String {
+        val config = aiConfigManager?.configState?.value
+        if (config?.isCustomMode == true && config.nvidiaApiKey.isNotBlank()) {
+            return config.nvidiaApiKey
+        }
+        return supabaseManager?.getRemoteConfig("nvidia_nim_api_key") ?: ""
+    }
+
+    private suspend fun resolveModelName(): String {
+        val config = aiConfigManager?.configState?.value
+        if (config?.isCustomMode == true && config.nvidiaModel.isNotBlank()) {
+            return config.nvidiaModel
+        }
+        return supabaseManager?.getRemoteConfig("nvidia_model_name", "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
+    }
 
     private fun compressAndEncodeImage(imageFile: File): String {
         val originalBitmap = android.graphics.BitmapFactory.decodeFile(imageFile.absolutePath)
@@ -66,8 +85,8 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
         initialConfidence: Float? = null
     ): Result<FallbackScanDiagnosis> = withContext(Dispatchers.IO) {
         try {
-            val apiKey = supabaseManager?.getRemoteConfig("nvidia_nim_api_key") ?: ""
-            val modelName = supabaseManager?.getRemoteConfig("nvidia_model_name", "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
+            val apiKey = resolveApiKey()
+            val modelName = resolveModelName()
 
             if (apiKey.isBlank() || !imageFile.exists()) {
                 return@withContext Result.failure(Exception("NVIDIA API key not available or image file missing"))
@@ -208,9 +227,8 @@ class NvidiaClient(private val supabaseManager: SupabaseManager? = null) {
         language: String = "en"
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
-            // 1. Dynamically fetch the latest active key and model name from Supabase app_config
-            val apiKey = supabaseManager?.getRemoteConfig("nvidia_nim_api_key") ?: ""
-            val modelName = supabaseManager?.getRemoteConfig("nvidia_model_name", "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
+            val apiKey = resolveApiKey()
+            val modelName = resolveModelName()
 
             if (apiKey.isBlank()) {
                 return@withContext Result.success(

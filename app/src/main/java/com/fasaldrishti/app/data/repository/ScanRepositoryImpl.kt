@@ -28,7 +28,8 @@ class ScanRepositoryImpl(
     private val onDeviceClassifier: TFLiteDiseaseClassifier,
     private val diseaseRepository: DiseaseRepository,
     private val geminiClient: GeminiClient? = null,
-    private val nvidiaClient: NvidiaClient? = null
+    private val nvidiaClient: NvidiaClient? = null,
+    private val aiConfigManager: com.fasaldrishti.app.data.local.AiConfigManager? = null
 ) : ScanRepository {
 
     override val syncStatus: Flow<SyncStatus> = supabaseManager.syncStatus
@@ -81,54 +82,74 @@ class ScanRepositoryImpl(
 
             var verificationSuccess = false
 
-            // 2. LAYER 2 (PRIMARY): Google Gemini Multimodal AI Vision Verification
-            if (geminiClient != null) {
-                val geminiResult = geminiClient.verifyCropDiagnosis(
-                    imageFile = imageFile,
-                    initialCropName = preliminaryCrop,
-                    initialDiseaseName = preliminaryDisease,
-                    initialConfidence = preliminaryConfidence
-                )
-                val verifiedData = geminiResult.getOrNull()
-                if (verifiedData != null) {
-                    cropName = verifiedData.cropName
-                    diseaseName = verifiedData.diseaseName
-                    severity = verifiedData.severity
-                    confidence = verifiedData.confidence
-                    symptoms = verifiedData.symptoms
-                    treatment = verifiedData.treatment
+            val primaryEngine = aiConfigManager?.configState?.value?.primaryProvider ?: com.fasaldrishti.app.data.local.AiProvider.GEMINI
 
-                    if (severity.equals("Invalid", ignoreCase = true) || cropName.contains("Non-Crop", ignoreCase = true)) {
-                        finalPredictedClass = "Invalid_Crop"
-                    } else {
-                        finalPredictedClass = "${cropName}___${diseaseName}".replace(" ", "_")
-                    }
-                    verificationSuccess = true
-                }
+            // Function to verify with Gemini
+            val verifyWithGemini: suspend () -> Boolean = {
+                if (geminiClient != null) {
+                    val geminiResult = geminiClient.verifyCropDiagnosis(
+                        imageFile = imageFile,
+                        initialCropName = preliminaryCrop,
+                        initialDiseaseName = preliminaryDisease,
+                        initialConfidence = preliminaryConfidence
+                    )
+                    val verifiedData = geminiResult.getOrNull()
+                    if (verifiedData != null) {
+                        cropName = verifiedData.cropName
+                        diseaseName = verifiedData.diseaseName
+                        severity = verifiedData.severity
+                        confidence = verifiedData.confidence
+                        symptoms = verifiedData.symptoms
+                        treatment = verifiedData.treatment
+
+                        if (severity.equals("Invalid", ignoreCase = true) || cropName.contains("Non-Crop", ignoreCase = true)) {
+                            finalPredictedClass = "Invalid_Crop"
+                        } else {
+                            finalPredictedClass = "${cropName}___${diseaseName}".replace(" ", "_")
+                        }
+                        true
+                    } else false
+                } else false
             }
 
-            // 3. LAYER 2 (FALLBACK / SECONDARY): NVIDIA NIM Vision AI (if Gemini didn't respond or failed)
-            if (!verificationSuccess && nvidiaClient != null) {
-                val nvidiaResult = nvidiaClient.verifyCropDiagnosis(
-                    imageFile = imageFile,
-                    initialCropName = preliminaryCrop,
-                    initialDiseaseName = preliminaryDisease,
-                    initialConfidence = preliminaryConfidence
-                )
-                val verifiedData = nvidiaResult.getOrNull()
-                if (verifiedData != null) {
-                    cropName = verifiedData.cropName
-                    diseaseName = verifiedData.diseaseName
-                    severity = verifiedData.severity
-                    confidence = verifiedData.confidence
-                    symptoms = verifiedData.symptoms
-                    treatment = verifiedData.treatment
+            // Function to verify with NVIDIA
+            val verifyWithNvidia: suspend () -> Boolean = {
+                if (nvidiaClient != null) {
+                    val nvidiaResult = nvidiaClient.verifyCropDiagnosis(
+                        imageFile = imageFile,
+                        initialCropName = preliminaryCrop,
+                        initialDiseaseName = preliminaryDisease,
+                        initialConfidence = preliminaryConfidence
+                    )
+                    val verifiedData = nvidiaResult.getOrNull()
+                    if (verifiedData != null) {
+                        cropName = verifiedData.cropName
+                        diseaseName = verifiedData.diseaseName
+                        severity = verifiedData.severity
+                        confidence = verifiedData.confidence
+                        symptoms = verifiedData.symptoms
+                        treatment = verifiedData.treatment
 
-                    if (severity.equals("Invalid", ignoreCase = true) || cropName.contains("Non-Crop", ignoreCase = true)) {
-                        finalPredictedClass = "Invalid_Crop"
-                    } else {
-                        finalPredictedClass = "${cropName}___${diseaseName}".replace(" ", "_")
-                    }
+                        if (severity.equals("Invalid", ignoreCase = true) || cropName.contains("Non-Crop", ignoreCase = true)) {
+                            finalPredictedClass = "Invalid_Crop"
+                        } else {
+                            finalPredictedClass = "${cropName}___${diseaseName}".replace(" ", "_")
+                        }
+                        true
+                    } else false
+                } else false
+            }
+
+            // Execute in user-configured priority order (Primary -> Secondary fallback)
+            if (primaryEngine == com.fasaldrishti.app.data.local.AiProvider.NVIDIA) {
+                verificationSuccess = verifyWithNvidia()
+                if (!verificationSuccess) {
+                    verificationSuccess = verifyWithGemini()
+                }
+            } else {
+                verificationSuccess = verifyWithGemini()
+                if (!verificationSuccess) {
+                    verificationSuccess = verifyWithNvidia()
                 }
             }
 
