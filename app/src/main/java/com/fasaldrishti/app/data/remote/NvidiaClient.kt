@@ -310,4 +310,103 @@ class NvidiaClient(
             Result.success("Based on the scan of ${primaryClass.replace("___", " ")}, our AI Agronomist recommends isolating infected plants and applying approved systemic fungicide spray.")
         }
     }
+
+    suspend fun translateDossier(
+        languageCode: String,
+        targetLanguageName: String,
+        targetLanguageNative: String,
+        diseaseName: String,
+        symptoms: String,
+        treatment: String,
+        prevention: String
+    ): Result<com.fasaldrishti.app.data.local.TranslatedDossier> = withContext(Dispatchers.IO) {
+        try {
+            val apiKey = resolveApiKey()
+            if (apiKey.isBlank()) {
+                return@withContext Result.failure(Exception("NVIDIA API key is not configured"))
+            }
+
+            val prompt = """
+                You are an expert Indian agricultural agronomist and professional translator. Translate the following crop disease diagnosis and management advice into $targetLanguageName ($targetLanguageNative).
+                Maintain clear, farmer-friendly terminology for agricultural terms, spray dosages, and chemical names (keep active chemical ingredients or spray brand names easily readable/transliterated in $targetLanguageNative script).
+                
+                Return ONLY a valid JSON object with EXACTLY these keys:
+                {
+                  "disease_name": "translated disease name in $targetLanguageNative",
+                  "symptoms": "translated symptoms & identification in $targetLanguageNative",
+                  "treatment": "translated chemical fungicide & spray dosages in $targetLanguageNative",
+                  "prevention": "translated organic remedies & prevention tips in $targetLanguageNative"
+                }
+
+                Original English Content:
+                - Condition: $diseaseName
+                - Symptoms: $symptoms
+                - Chemical Treatment: $treatment
+                - Prevention: $prevention
+            """.trimIndent()
+
+            val modelName = resolveModelName()
+            val jsonBody = JSONObject().apply {
+                put("model", modelName)
+                val messages = JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("role", "system")
+                        put("content", "You are an expert plant pathologist and translator for Indian agriculture. Output only pure JSON.")
+                    })
+                    put(JSONObject().apply {
+                        put("role", "user")
+                        put("content", prompt)
+                    })
+                }
+                put("messages", messages)
+                put("temperature", 0.2)
+                put("max_tokens", 800)
+            }
+
+            val request = Request.Builder()
+                .url(apiUrl)
+                .addHeader("Authorization", "Bearer $apiKey")
+                .addHeader("Content-Type", "application/json")
+                .post(jsonBody.toString().toRequestBody("application/json".toMediaType()))
+                .build()
+
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                val responseString = response.body?.string() ?: ""
+                val jsonObj = JSONObject(responseString)
+                val choices = jsonObj.getJSONArray("choices")
+                if (choices.length() > 0) {
+                    val content = choices.getJSONObject(0).getJSONObject("message").getString("content")
+                    val parsed = parseTranslationJson(content, languageCode)
+                    if (parsed != null) {
+                        return@withContext Result.success(parsed)
+                    }
+                }
+            }
+
+            Result.failure(Exception("NVIDIA translation failed"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun parseTranslationJson(rawText: String, languageCode: String): com.fasaldrishti.app.data.local.TranslatedDossier? {
+        return try {
+            val startIdx = rawText.indexOf('{')
+            val endIdx = rawText.lastIndexOf('}')
+            if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+                val jsonStr = rawText.substring(startIdx, endIdx + 1)
+                val obj = JSONObject(jsonStr)
+                com.fasaldrishti.app.data.local.TranslatedDossier(
+                    languageCode = languageCode,
+                    diseaseName = obj.optString("disease_name", "").ifBlank { "Crop Condition" },
+                    symptoms = obj.optString("symptoms", "").ifBlank { "Symptoms details" },
+                    treatment = obj.optString("treatment", "").ifBlank { "Treatment recommendations" },
+                    prevention = obj.optString("prevention", "").ifBlank { "Prevention guidance" }
+                )
+            } else null
+        } catch (_: Exception) {
+            null
+        }
+    }
 }

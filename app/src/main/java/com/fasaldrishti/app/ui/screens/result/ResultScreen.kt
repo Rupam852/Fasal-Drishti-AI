@@ -2,15 +2,18 @@ package com.fasaldrishti.app.ui.screens.result
 
 import android.content.Intent
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,7 +28,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.fasaldrishti.app.data.local.AppLanguage
 import com.fasaldrishti.app.ui.components.AccordionCard
 import com.fasaldrishti.app.ui.components.ConfidenceRing
 import com.fasaldrishti.app.ui.components.GradientButton
@@ -43,6 +49,7 @@ fun ResultScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    var showTranslateDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(scanId) {
         viewModel.loadScanResult(scanId)
@@ -50,6 +57,17 @@ fun ResultScreen(
 
     val scan = uiState.scanRecord
     val diseaseInfo = uiState.diseaseInfo
+
+    val effectiveDiseaseName = uiState.translatedDossier?.diseaseName ?: (scan?.diseaseName ?: "")
+    val effectiveSymptoms = uiState.translatedDossier?.symptoms ?: (scan?.symptoms?.ifBlank {
+        diseaseInfo?.symptoms ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces."
+    } ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces.")
+    val effectiveTreatment = uiState.translatedDossier?.treatment ?: (scan?.treatment?.ifBlank {
+        diseaseInfo?.treatment ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)."
+    } ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water).")
+    val effectivePrevention = uiState.translatedDossier?.prevention ?: (
+        diseaseInfo?.prevention ?: "Spray 5% Neem oil extract, prune and destroy severely infected leaves, and maintain proper crop spacing."
+    )
 
     Scaffold(
         topBar = {
@@ -66,13 +84,47 @@ fun ResultScreen(
                     }
                 },
                 actions = {
+                    // Translate button with language flag / name
+                    Surface(
+                        onClick = { showTranslateDialog = true },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (uiState.currentLanguage != AppLanguage.ENGLISH) EmeraldPrimary.copy(alpha = 0.18f) else MaterialTheme.colorScheme.surfaceVariant,
+                        border = BorderStroke(
+                            1.dp,
+                            if (uiState.currentLanguage != AppLanguage.ENGLISH) EmeraldPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Translate,
+                                contentDescription = "Translate",
+                                tint = if (uiState.currentLanguage != AppLanguage.ENGLISH) EmeraldPrimary else MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(17.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = "${uiState.currentLanguage.flag} ${uiState.currentLanguage.nativeName.take(6)}",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.5.sp,
+                                    color = if (uiState.currentLanguage != AppLanguage.ENGLISH) EmeraldPrimary else MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
                     IconButton(onClick = {
                         scan?.let {
                             val sendIntent = Intent().apply {
                                 action = Intent.ACTION_SEND
                                 putExtra(
                                     Intent.EXTRA_TEXT,
-                                    "Fasal Drishti Diagnosis Dossier:\nCondition: ${it.diseaseName}\nSeverity: ${it.severity}\nConfidence: ${(it.confidence * 100).toInt()}%"
+                                    "Fasal Drishti Diagnosis Dossier:\nCondition: $effectiveDiseaseName\nSeverity: ${it.severity}\nConfidence: ${(it.confidence * 100).toInt()}%"
                                 )
                                 type = "text/plain"
                             }
@@ -92,7 +144,7 @@ fun ResultScreen(
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp,
                 shadowElevation = 16.dp,
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
             ) {
                 Row(
                     modifier = Modifier
@@ -106,7 +158,7 @@ fun ResultScreen(
                             .weight(1f)
                             .height(52.dp),
                         shape = RoundedCornerShape(16.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.5f))
+                        border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.5f))
                     ) {
                         Icon(Icons.Default.CameraAlt, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
@@ -115,11 +167,11 @@ fun ResultScreen(
 
                     GradientButton(
                         text = "Consult AI Doctor",
-                        onClick = { scan?.let { onNavigateToChat(it.diseaseName) } },
+                        onClick = { scan?.let { onNavigateToChat(effectiveDiseaseName) } },
                         modifier = Modifier
                             .weight(1.3f)
                             .height(52.dp),
-                        icon = Icons.Default.Chat
+                        icon = Icons.AutoMirrored.Filled.Chat
                     )
                 }
             }
@@ -137,7 +189,7 @@ fun ResultScreen(
                 contentPadding = PaddingValues(bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                // 1. HERO LEAF IMAGE WITH GLOW OVERLAY
+                // 1. HERO LEAF IMAGE
                 item {
                     Box(
                         modifier = Modifier
@@ -203,6 +255,42 @@ fun ResultScreen(
                     }
                 }
 
+                // AI TRANSLATION LOADING BANNER
+                if (uiState.isTranslating) {
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            shape = RoundedCornerShape(18.dp),
+                            colors = CardDefaults.cardColors(containerColor = EmeraldPrimary.copy(alpha = 0.12f)),
+                            border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.5.dp,
+                                    color = EmeraldPrimary
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = uiState.translationMessage ?: "Translating diagnosis...",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.5.sp,
+                                        color = EmeraldPrimary
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+
                 val isInvalidCrop = scan.predictedClass == "Invalid_Crop" || scan.severity.equals("Invalid", ignoreCase = true) || scan.confidence < 0.50f
 
                 if (isInvalidCrop) {
@@ -215,7 +303,7 @@ fun ResultScreen(
                                 .shadow(6.dp, RoundedCornerShape(26.dp)),
                             shape = RoundedCornerShape(26.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            border = androidx.compose.foundation.BorderStroke(1.5.dp, CrimsonCoral.copy(alpha = 0.6f))
+                            border = BorderStroke(1.5.dp, CrimsonCoral.copy(alpha = 0.6f))
                         ) {
                             Column(modifier = Modifier.padding(22.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -329,7 +417,7 @@ fun ResultScreen(
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.surface
                             ),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                         ) {
                             Row(
                                 modifier = Modifier
@@ -342,7 +430,7 @@ fun ResultScreen(
                                     SeverityBadge(severity = scan.severity)
                                     Spacer(modifier = Modifier.height(10.dp))
                                     Text(
-                                        text = scan.diseaseName,
+                                        text = effectiveDiseaseName,
                                         style = MaterialTheme.typography.headlineMedium.copy(
                                             fontWeight = FontWeight.ExtraBold,
                                             fontSize = 21.sp
@@ -376,12 +464,12 @@ fun ResultScreen(
                                 .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = EmeraldPrimary.copy(alpha = 0.35f))
                                 .clip(RoundedCornerShape(24.dp))
                                 .clickable {
-                                    val contextMsg = "Condition: ${scan.diseaseName} (${(scan.confidence * 100).toInt()}% confidence, Severity: ${scan.severity})"
+                                    val contextMsg = "Condition: $effectiveDiseaseName (${(scan.confidence * 100).toInt()}% confidence, Severity: ${scan.severity})"
                                     onNavigateToChat(contextMsg)
                                 },
                             shape = RoundedCornerShape(24.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                            border = androidx.compose.foundation.BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.5f))
+                            border = BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.5f))
                         ) {
                             Row(
                                 modifier = Modifier
@@ -457,7 +545,7 @@ fun ResultScreen(
                                 },
                             shape = RoundedCornerShape(22.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            border = androidx.compose.foundation.BorderStroke(1.2.dp, EmeraldPrimary.copy(alpha = 0.5f)),
+                            border = BorderStroke(1.2.dp, EmeraldPrimary.copy(alpha = 0.5f)),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                         ) {
                             Row(
@@ -545,7 +633,7 @@ fun ResultScreen(
                             AccordionCard(
                                 title = "Disease Symptoms & Identification",
                                 icon = Icons.Default.Coronavirus,
-                                content = scan.symptoms.ifBlank { diseaseInfo?.symptoms ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces." },
+                                content = effectiveSymptoms,
                                 initiallyExpanded = true,
                                 accentColor = CrimsonCoral
                             )
@@ -553,7 +641,7 @@ fun ResultScreen(
                             AccordionCard(
                                 title = "Chemical Fungicide & Spray Dosages",
                                 icon = Icons.Default.Science,
-                                content = scan.treatment.ifBlank { diseaseInfo?.treatment ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)." },
+                                content = effectiveTreatment,
                                 initiallyExpanded = true,
                                 accentColor = SolarGold
                             )
@@ -561,10 +649,153 @@ fun ResultScreen(
                             AccordionCard(
                                 title = "Organic / Desi Remedies & Prevention",
                                 icon = Icons.Default.Shield,
-                                content = diseaseInfo?.prevention ?: "Spray 5% Neem oil extract, prune and destroy severely infected leaves, and maintain proper crop spacing.",
+                                content = effectivePrevention,
                                 initiallyExpanded = false,
                                 accentColor = EmeraldPrimary
                             )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // 5. TRANSLATION LANGUAGE SELECTION MODAL DIALOG
+    if (showTranslateDialog) {
+        Dialog(
+            onDismissRequest = { showTranslateDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .fillMaxHeight(0.78f),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.5f))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(22.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Translate,
+                                contentDescription = null,
+                                tint = EmeraldPrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "Translate Diagnosis",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 18.sp
+                                    )
+                                )
+                                Text(
+                                    text = "AI Translation for Indian Languages",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                        fontSize = 11.5.sp
+                                    )
+                                )
+                            }
+                        }
+
+                        IconButton(
+                            onClick = { showTranslateDialog = false },
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close",
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(AppLanguage.entries.toTypedArray()) { lang ->
+                            val isSelected = uiState.currentLanguage == lang
+                            Surface(
+                                onClick = {
+                                    viewModel.translateTo(lang)
+                                    showTranslateDialog = false
+                                },
+                                shape = RoundedCornerShape(16.dp),
+                                color = if (isSelected) EmeraldPrimary.copy(alpha = 0.16f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                                border = BorderStroke(
+                                    width = if (isSelected) 1.5.dp else 1.dp,
+                                    color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.18f)
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = lang.flag,
+                                            fontSize = 22.sp
+                                        )
+                                        Spacer(modifier = Modifier.width(14.dp))
+                                        Column {
+                                            Text(
+                                                text = lang.nativeName,
+                                                style = MaterialTheme.typography.titleMedium.copy(
+                                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                                                    fontSize = 16.sp,
+                                                    color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.onSurface
+                                                )
+                                            )
+                                            Text(
+                                                text = if (lang == AppLanguage.ENGLISH) "Original (Default)" else lang.englishName,
+                                                style = MaterialTheme.typography.bodySmall.copy(
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                                    fontSize = 12.sp
+                                                )
+                                            )
+                                        }
+                                    }
+
+                                    if (isSelected) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(24.dp)
+                                                .clip(CircleShape)
+                                                .background(EmeraldPrimary),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = "Selected",
+                                                tint = Color.Black,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

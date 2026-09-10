@@ -215,8 +215,18 @@ fun AppNavHost(
                 route = Screen.Result.route,
                 arguments = listOf(navArgument("scanId") { type = NavType.StringType })
             ) { backStackEntry ->
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val app = context.applicationContext as? com.fasaldrishti.app.FasalDrishtiApp
                 val scanId = backStackEntry.arguments?.getString("scanId") ?: ""
-                val resultViewModel = remember(scanId) { ResultViewModel(scanRepository, diseaseRepository) }
+                val resultViewModel = remember(scanId) {
+                    ResultViewModel(
+                        scanRepository = scanRepository,
+                        diseaseRepository = diseaseRepository,
+                        geminiClient = app?.geminiClient,
+                        nvidiaClient = app?.nvidiaClient,
+                        translationManager = app?.scanTranslationManager
+                    )
+                }
                 ResultScreen(
                     scanId = scanId,
                     viewModel = resultViewModel,

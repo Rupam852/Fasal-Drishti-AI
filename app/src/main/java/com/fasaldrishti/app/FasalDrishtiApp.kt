@@ -48,6 +48,10 @@ class FasalDrishtiApp : Application() {
         private set
     lateinit var geminiClient: com.fasaldrishti.app.data.remote.GeminiClient
         private set
+    lateinit var nvidiaClient: NvidiaClient
+        private set
+    lateinit var scanTranslationManager: com.fasaldrishti.app.data.local.ScanTranslationManager
+        private set
 
     override fun onCreate() {
         super.onCreate()
@@ -59,6 +63,7 @@ class FasalDrishtiApp : Application() {
         val database = AppDatabase.getInstance(this)
         themeManager = com.fasaldrishti.app.data.local.ThemeManager(this)
         languageManager = com.fasaldrishti.app.data.local.LanguageManager(this)
+        scanTranslationManager = com.fasaldrishti.app.data.local.ScanTranslationManager(this)
 
         // 2. Initialize Networking (Retrofit)
         val logging = HttpLoggingInterceptor().apply {
@@ -72,7 +77,7 @@ class FasalDrishtiApp : Application() {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://tajizxhfxewkelzrmgux.supabase.co/")
+            .baseUrl("https://api.fasaldrishti.ai/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -103,6 +108,7 @@ class FasalDrishtiApp : Application() {
             supabaseManager = supabaseManager,
             aiConfigManager = aiConfigManager
         )
+        this.nvidiaClient = nvidiaClient
 
         // 7. Initialize Disease Repository
         diseaseRepository = DiseaseRepositoryImpl(
