@@ -191,35 +191,120 @@
           <div class="phone-notch"></div>
           
           <div class="phone-screen">
-            <!-- App Header Simulation -->
-            <div style="padding: 34px 16px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); background: #081610;">
-              <span style="font-size: 0.8rem; font-weight: 800; color: #34D399; letter-spacing: 1px;">AI OPTICAL SENSOR</span>
-              <span style="font-size: 0.72rem; background: rgba(52,211,153,0.2); color: #34D399; padding: 2px 8px; border-radius: 99px; font-weight: 700;">120 FPS</span>
+            <!-- Android System Status Bar -->
+            <div class="app-status-bar">
+              <span class="status-time">09:41</span>
+              <div class="status-icons">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.27 19.64 10.58 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 4h-3V2h-4v2H7v18h10V4z"/></svg>
+              </div>
             </div>
 
-            <!-- Scanner Camera Viewport -->
-            <div class="app-demo-reticle">
-              <div class="reticle-box">
-                <div class="reticle-laser"></div>
-                <div style="text-align: center;">
-                  <div style="font-size: 2.2rem;">🍃</div>
-                  <div style="font-size: 0.72rem; color: #A7F3D0; font-weight: 700; margin-top: 4px;">Align Leaf In Boundary</div>
+            <!-- Fasal Drishti App Top Bar -->
+            <div class="app-top-bar">
+              <div class="app-user-info">
+                <div class="app-user-avatar">
+                  <img src="logo.png" alt="Fasal Drishti Logo">
+                </div>
+                <div>
+                  <div class="app-greeting">Namaste, Kisan 🙏</div>
+                  <div class="app-status-indicator">
+                    <span class="status-dot"></span>
+                    <span>Crop AI Doctor Active</span>
+                  </div>
+                </div>
+              </div>
+              <div class="app-top-actions">
+                <div class="app-icon-badge" title="Cloud Sync Active">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
+                </div>
+                <div class="app-icon-badge" title="Crop Pathology Library">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 </div>
               </div>
             </div>
 
-            <!-- Bottom Diagnosis Live Card -->
-            <div class="app-demo-card">
-              <div class="demo-title">
-                <span>Tomato Early Blight</span>
-                <span class="demo-chip">Severe (94%)</span>
+            <!-- Scrollable App Screen Body -->
+            <div class="app-screen-body">
+              
+              <!-- 1. Hero Sci-Fi Scanner Card -->
+              <div class="app-hero-scanner-card">
+                <div class="scanner-laser-line"></div>
+                <div class="scanner-card-header">
+                  <span class="scanner-tag">⚡ DUAL CLOUD AI</span>
+                  <span class="scanner-crop-scope">ALL CROPS</span>
+                </div>
+                <div class="scanner-card-text">
+                  <div class="scanner-title">Instant Crop Diagnosis</div>
+                  <div class="scanner-desc">Point camera at affected leaf for sub-100ms AI diagnosis</div>
+                </div>
+                <div class="scanner-card-footer">
+                  <div class="scanner-cta-btn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    <span>Scan Now</span>
+                  </div>
+                  <span class="scanner-meta">Real-time Vision ⚡</span>
+                </div>
               </div>
-              <div class="demo-dawa">
-                🧪 <b>Prescription:</b> Mancozeb 75 WP @ 2.5 g/L + Neem Oil 5ml/L spray.
+
+              <!-- 2. Live Agro-Weather & Spray Advisory -->
+              <div class="app-weather-card">
+                <div class="weather-card-top">
+                  <div class="weather-loc">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#059669"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    <span>Bhopal, MP • Sunny</span>
+                  </div>
+                  <div class="weather-temp">31°C</div>
+                </div>
+                <div class="weather-spray-pill">
+                  <span class="spray-dot"></span>
+                  <span>Ideal Spray Window: <b>4:00 PM - 6:30 PM</b></span>
+                </div>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                <span style="font-size: 0.72rem; color: #FBBF24; font-weight: 700;">⚡ Dual Verified by Gemini</span>
-                <span style="font-size: 0.72rem; background: #10B981; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 800;">1-Tap PDF</span>
+
+              <!-- 3. Recent AI Prescription Card -->
+              <div class="app-recent-scan-card">
+                <div class="recent-scan-top">
+                  <div class="recent-leaf-thumb">🍃</div>
+                  <div class="recent-info">
+                    <div class="recent-disease">Tomato Early Blight</div>
+                    <div class="recent-severity-badge">High Severity • 94%</div>
+                  </div>
+                </div>
+                <div class="recent-rx-box">
+                  💊 <b>Rx:</b> Mancozeb 75 WP @ 2.5g/L + Neem Oil 5ml/L spray
+                </div>
+                <div class="recent-actions">
+                  <span class="gemini-tag">⚡ Gemini AI Verified</span>
+                  <span class="pdf-tag">1-Tap PDF</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Floating App Bottom Navigation Bar -->
+            <div class="app-bottom-nav">
+              <div class="nav-item active">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <span>Home</span>
+              </div>
+              <div class="nav-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>History</span>
+              </div>
+              <div class="nav-fab-wrap">
+                <div class="nav-center-fab">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+                </div>
+              </div>
+              <div class="nav-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>AI Salah</span>
+              </div>
+              <div class="nav-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Profile</span>
               </div>
             </div>
           </div>
