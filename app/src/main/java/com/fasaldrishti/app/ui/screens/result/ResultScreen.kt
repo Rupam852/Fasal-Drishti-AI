@@ -208,7 +208,7 @@ fun ResultScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(290.dp)
-                            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+                            .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
                     ) {
                         if (!scan.imageUrl.isNullOrBlank()) {
                             AsyncImage(

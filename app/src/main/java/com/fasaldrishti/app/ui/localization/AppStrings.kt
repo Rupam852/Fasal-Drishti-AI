@@ -43,7 +43,7 @@ data class Strings(
     val resultConsultAiDoctor: String,
     val resultShare: String,
 
-    // AI Doctor / Chat Screen
+    // AI Salah / Chat Screen
     val chatTitle: String,
     val chatSubtitle: String,
     val chatTypePlaceholder: String,
@@ -403,7 +403,7 @@ val PunjabiStrings = Strings(
 
 val MarathiStrings = Strings(
     navHome = "मुख्यपृष्ठ",
-    navDoctor = "AI सलाह",
+    navDoctor = "AI सल्ला",
     navScan = "स्कॅन",
     navHistory = "इतिहास",
     navProfile = "प्रोफाइल",

@@ -26,7 +26,10 @@ class LocalChatManager(context: Context) {
                         id = obj.getString("id"),
                         text = obj.getString("text"),
                         isUser = obj.getBoolean("is_user"),
-                        timestamp = obj.optLong("timestamp", System.currentTimeMillis())
+                        timestamp = obj.optLong("timestamp", System.currentTimeMillis()),
+                        isError = obj.optBoolean("is_error", false),
+                        isApiKeyError = obj.optBoolean("is_api_key_error", false),
+                        failedQuery = if (obj.has("failed_query")) obj.optString("failed_query") else null
                     )
                 )
             }
@@ -47,6 +50,11 @@ class LocalChatManager(context: Context) {
                     put("text", msg.text)
                     put("is_user", msg.isUser)
                     put("timestamp", msg.timestamp)
+                    put("is_error", msg.isError)
+                    put("is_api_key_error", msg.isApiKeyError)
+                    if (msg.failedQuery != null) {
+                        put("failed_query", msg.failedQuery)
+                    }
                 }
                 jsonArray.put(obj)
             }

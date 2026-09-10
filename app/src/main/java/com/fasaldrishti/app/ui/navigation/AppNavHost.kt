@@ -207,6 +207,9 @@ fun AppNavHost(
                     },
                     onAnalysisError = {
                         navController.popBackStack()
+                    },
+                    onNavigateToAiConfig = {
+                        navController.navigate(Screen.AiConfig.route)
                     }
                 )
             }
@@ -277,7 +280,8 @@ fun AppNavHost(
                 ChatScreen(
                     contextInfo = contextParam,
                     viewModel = chatViewModel,
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToAiConfig = { navController.navigate(Screen.AiConfig.route) }
                 )
             }
 

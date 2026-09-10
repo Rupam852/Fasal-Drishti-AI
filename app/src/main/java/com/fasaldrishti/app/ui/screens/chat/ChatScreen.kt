@@ -53,7 +53,8 @@ import com.fasaldrishti.app.util.VoiceAssistantManager
 fun ChatScreen(
     contextInfo: String?,
     viewModel: ChatViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToAiConfig: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
@@ -494,7 +495,11 @@ fun ChatScreen(
                     isSpeaking = isSpeaking && currentlySpeakingId == message.id,
                     onToggleSpeak = { text, id ->
                         voiceAssistant.speak(text, id, uiState.selectedLanguage)
-                    }
+                    },
+                    onRetry = { id, query ->
+                        viewModel.retryFailedMessage(id, query)
+                    },
+                    onNavigateToAiConfig = onNavigateToAiConfig
                 )
             }
 
@@ -538,11 +543,16 @@ fun ChatScreen(
 private fun ChatMessageBubble(
     message: ChatMessage,
     isSpeaking: Boolean = false,
-    onToggleSpeak: (String, String) -> Unit = { _, _ -> }
+    onToggleSpeak: (String, String) -> Unit = { _, _ -> },
+    onRetry: (String, String) -> Unit = { _, _ -> },
+    onNavigateToAiConfig: () -> Unit = {}
 ) {
     val isUser = message.isUser
+    val isError = message.isError
+    val isApiKeyError = message.isApiKeyError
+
     val formattedText = remember(message.text) {
-        if (isUser) AnnotatedString(message.text)
+        if (isUser || isError) AnnotatedString(message.text)
         else parseMarkdownToAnnotatedString(message.text)
     }
 
@@ -555,13 +565,27 @@ private fun ChatMessageBubble(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
-                    .background(EmeraldDark),
+                    .background(
+                        when {
+                            isError && isApiKeyError -> SolarGold.copy(alpha = 0.2f)
+                            isError -> CrimsonCoral.copy(alpha = 0.2f)
+                            else -> EmeraldDark
+                        }
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Psychology,
+                    imageVector = when {
+                        isError && isApiKeyError -> Icons.Default.Key
+                        isError -> Icons.Default.Warning
+                        else -> Icons.Default.Psychology
+                    },
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = when {
+                        isError && isApiKeyError -> SolarGold
+                        isError -> CrimsonCoral
+                        else -> Color.White
+                    },
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -575,13 +599,39 @@ private fun ChatMessageBubble(
                 bottomStart = if (isUser) 20.dp else 4.dp,
                 bottomEnd = if (isUser) 4.dp else 20.dp
             ),
-            color = if (isUser) EmeraldPrimary
-            else MaterialTheme.colorScheme.surface,
-            border = if (!isUser) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)) else null,
+            color = when {
+                isUser -> EmeraldPrimary
+                isError && isApiKeyError -> SolarGold.copy(alpha = 0.08f)
+                isError -> CrimsonCoral.copy(alpha = 0.08f)
+                else -> MaterialTheme.colorScheme.surface
+            },
+            border = when {
+                isUser -> null
+                isError && isApiKeyError -> androidx.compose.foundation.BorderStroke(1.2.dp, SolarGold.copy(alpha = 0.6f))
+                isError -> androidx.compose.foundation.BorderStroke(1.2.dp, CrimsonCoral.copy(alpha = 0.6f))
+                else -> androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+            },
             shadowElevation = 2.dp,
-            modifier = Modifier.widthIn(max = 310.dp)
+            modifier = Modifier.widthIn(max = 320.dp)
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
+                // If it is an Error Message, show Header Badge
+                if (isError) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    ) {
+                        Text(
+                            text = if (isApiKeyError) "API Key Invalid / Expired" else "AI Agronomist is temporarily unreachable",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = if (isApiKeyError) SolarGold else CrimsonCoral,
+                                fontSize = 13.sp
+                            )
+                        )
+                    }
+                }
+
                 Text(
                     text = formattedText,
                     style = MaterialTheme.typography.bodyMedium.copy(
@@ -591,8 +641,71 @@ private fun ChatMessageBubble(
                     )
                 )
 
-                // Speaker / Audio Playback Button for AI responses
-                if (!isUser) {
+                // Error Action Buttons (Retry / Open Settings)
+                if (isError) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Retry Button
+                        Button(
+                            onClick = { onRetry(message.id, message.failedQuery ?: "") },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(38.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isApiKeyError) SolarGold else CrimsonCoral
+                            ),
+                            contentPadding = PaddingValues(horizontal = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                                tint = Color.Black,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Retry",
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.5.sp
+                            )
+                        }
+
+                        // Settings Button (if API key error)
+                        if (isApiKeyError) {
+                            OutlinedButton(
+                                onClick = onNavigateToAiConfig,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(38.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, SolarGold.copy(alpha = 0.8f)),
+                                contentPadding = PaddingValues(horizontal = 8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Settings,
+                                    contentDescription = null,
+                                    tint = SolarGold,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Settings",
+                                    color = SolarGold,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.5.sp
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Speaker / Audio Playback Button for AI responses (when not error)
+                if (!isUser && !isError) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),

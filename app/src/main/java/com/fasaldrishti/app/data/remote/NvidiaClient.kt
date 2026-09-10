@@ -304,10 +304,15 @@ class NvidiaClient(
                     Result.success("Agronomy advisory generated for $primaryClass.")
                 }
             } else {
-                Result.success("AI Consultation for $primaryClass: Ensure adequate soil drainage, spray copper-based preventive fungicide (e.g. Mancozeb 2.5g/L), and check the underside of the leaves daily.")
+                val code = response.code
+                if (code == 401 || code == 403) {
+                    Result.failure(com.fasaldrishti.app.domain.model.AiApiKeyException())
+                } else {
+                    Result.failure(com.fasaldrishti.app.domain.model.AiUnreachableException())
+                }
             }
         } catch (e: Exception) {
-            Result.success("Based on the scan of ${primaryClass.replace("___", " ")}, our AI Agronomist recommends isolating infected plants and applying approved systemic fungicide spray.")
+            Result.failure(com.fasaldrishti.app.domain.model.AiUnreachableException())
         }
     }
 

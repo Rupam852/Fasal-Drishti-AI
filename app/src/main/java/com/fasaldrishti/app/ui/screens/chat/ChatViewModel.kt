@@ -3,6 +3,7 @@ package com.fasaldrishti.app.ui.screens.chat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fasaldrishti.app.data.local.LocalChatManager
+import com.fasaldrishti.app.domain.model.AiApiKeyException
 import com.fasaldrishti.app.domain.model.ChatMessage
 import com.fasaldrishti.app.domain.repository.DiseaseRepository
 import kotlinx.coroutines.delay
@@ -76,6 +77,15 @@ class ChatViewModel(
         }
     }
 
+    fun retryFailedMessage(failedMessageId: String, query: String) {
+        // Remove the failed error message
+        val filtered = _uiState.value.messages.filterNot { it.id == failedMessageId }
+        _uiState.value = _uiState.value.copy(messages = filtered, isAiTyping = true)
+        localChatManager.saveMessages(filtered)
+
+        executeAiAdvisory(query)
+    }
+
     fun sendMessage(userText: String) {
         if (userText.isBlank()) return
 
@@ -89,6 +99,10 @@ class ChatViewModel(
         _uiState.value = _uiState.value.copy(messages = updatedMessages, isAiTyping = true)
         localChatManager.saveMessages(updatedMessages)
 
+        executeAiAdvisory(userText)
+    }
+
+    private fun executeAiAdvisory(query: String) {
         viewModelScope.launch {
             delay(500)
             val primaryClass = _uiState.value.contextInfo ?: "General Crop Query"
@@ -96,30 +110,45 @@ class ChatViewModel(
             val result = diseaseRepository.askAiAdvisory(
                 primaryClass = primaryClass,
                 confidence = 0.94f,
-                query = userText,
+                query = query,
                 language = currentLang
             )
 
-            val aiReplyText = result.getOrDefault(
-                if (currentLang == "Hinglish") {
-                    "Fasal ($primaryClass) ke liye: Sankramit pattiyo ko todkar alag karein, Mancozeb (2.5g/L) ka spray karein, aur kheton me jal-nikasi (drainage) accha rakhein."
+            result.onSuccess { aiReplyText ->
+                val aiMessage = ChatMessage(
+                    id = UUID.randomUUID().toString(),
+                    text = aiReplyText,
+                    isUser = false
+                )
+                val finalList = _uiState.value.messages + aiMessage
+                _uiState.value = _uiState.value.copy(
+                    messages = finalList,
+                    isAiTyping = false
+                )
+                localChatManager.saveMessages(finalList)
+            }.onFailure { err ->
+                val isApiKeyErr = err is AiApiKeyException
+                val errorText = if (isApiKeyErr) {
+                    "Aapki Custom AI Key expire ya galat ho sakti hai. Kripya Settings ➔ AI Engine me jakar nayi key dalein ya Default Engine chunein."
                 } else {
-                    "For $primaryClass, ensure you rotate with non-host crops, prune infected leaves, and maintain balanced potassium and zinc in the soil."
+                    "Unable to connect to AI engines due to network or quota limit. Please try again shortly."
                 }
-            )
 
-            val aiMessage = ChatMessage(
-                id = UUID.randomUUID().toString(),
-                text = aiReplyText,
-                isUser = false
-            )
-
-            val finalList = _uiState.value.messages + aiMessage
-            _uiState.value = _uiState.value.copy(
-                messages = finalList,
-                isAiTyping = false
-            )
-            localChatManager.saveMessages(finalList)
+                val aiErrorMessage = ChatMessage(
+                    id = UUID.randomUUID().toString(),
+                    text = errorText,
+                    isUser = false,
+                    isError = true,
+                    isApiKeyError = isApiKeyErr,
+                    failedQuery = query
+                )
+                val finalList = _uiState.value.messages + aiErrorMessage
+                _uiState.value = _uiState.value.copy(
+                    messages = finalList,
+                    isAiTyping = false
+                )
+                localChatManager.saveMessages(finalList)
+            }
         }
     }
 

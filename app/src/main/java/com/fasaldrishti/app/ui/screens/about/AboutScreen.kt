@@ -184,7 +184,7 @@ fun AboutScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "v1.0.6 • Precision Agronomy & Crop Vision AI",
+                            text = "v1.0.7 • Precision Agronomy & Crop Vision AI",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 color = EmeraldPrimary,
                                 fontWeight = FontWeight.ExtraBold,

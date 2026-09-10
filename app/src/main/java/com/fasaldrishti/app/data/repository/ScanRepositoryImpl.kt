@@ -153,6 +153,20 @@ class ScanRepositoryImpl(
                 }
             }
 
+            // Strict rule: Do not proceed without successful 2nd-layer Cloud AI verification
+            if (!verificationSuccess) {
+                val isCustomKey = aiConfigManager?.configState?.value?.isCustomMode == true
+                if (isCustomKey) {
+                    return@withContext Result.failure(
+                        com.fasaldrishti.app.domain.model.AiApiKeyException()
+                    )
+                } else {
+                    return@withContext Result.failure(
+                        com.fasaldrishti.app.domain.model.AiUnreachableException()
+                    )
+                }
+            }
+
             // 4. Upload image to Supabase Storage in background or save local path
             val uploadResult = supabaseManager.uploadCropImage(imageFile)
             val storedImageUrl = uploadResult.getOrDefault(imageFile.absolutePath)
