@@ -188,23 +188,46 @@ class SupabaseManager(private val context: Context) {
 
     suspend fun syncUserProfileToCloud(user: UserProfile) = withContext(Dispatchers.IO) {
         try {
+            val dateStr = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).format(java.util.Date())
             val json = JSONObject().apply {
                 put("id", user.id)
                 put("name", user.name)
                 put("email", user.email)
                 put("avatar_url", user.avatarUrl ?: "")
-                put("updated_at", java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).format(java.util.Date()))
+                put("total_scans", user.totalScans)
+                put("healthy_count", user.healthyCount)
+                put("diseased_count", user.diseasedCount)
+                put("updated_at", dateStr)
             }
-            val request = Request.Builder()
+            val requestBody = json.toString().toRequestBody("application/json".toMediaType())
+
+            // 1. Sync to public.users
+            val requestUsers = Request.Builder()
+                .url("$supabaseUrl/rest/v1/users")
+                .addHeader("apikey", anonKey)
+                .addHeader("Authorization", "Bearer $anonKey")
+                .addHeader("Prefer", "resolution=merge-duplicates")
+                .addHeader("Content-Type", "application/json")
+                .post(requestBody)
+                .build()
+
+            try {
+                client.newCall(requestUsers).execute().close()
+            } catch (_: Exception) {}
+
+            // 2. Sync to public.profiles (for backward compatibility)
+            val requestProfiles = Request.Builder()
                 .url("$supabaseUrl/rest/v1/profiles")
                 .addHeader("apikey", anonKey)
                 .addHeader("Authorization", "Bearer $anonKey")
                 .addHeader("Prefer", "resolution=merge-duplicates")
                 .addHeader("Content-Type", "application/json")
-                .post(json.toString().toRequestBody("application/json".toMediaType()))
+                .post(requestBody)
                 .build()
 
-            client.newCall(request).execute().close()
+            try {
+                client.newCall(requestProfiles).execute().close()
+            } catch (_: Exception) {}
         } catch (_: Exception) {}
     }
 

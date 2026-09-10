@@ -27,9 +27,59 @@ values
   ('app_download_url', 'https://github.com/Rupam852/Fasal-Drishti-AI/releases/latest', 'Direct APK download link')
 on conflict (key) do update set
   value = excluded.value,
-  updated_at = now();
+-- 2. Users Table (Stores authenticated farmer profiles)
+create table if not exists public.users (
+  id text primary key,
+  name text not null default 'Farmer',
+  email text,
+  avatar_url text,
+  total_scans integer default 0,
+  healthy_count integer default 0,
+  diseased_count integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
 
--- 2. Scans Table (Stores all user disease scan records)
+alter table public.users enable row level security;
+
+drop policy if exists "Allow public read access to users" on public.users;
+create policy "Allow public read access to users"
+  on public.users for select using (true);
+
+drop policy if exists "Allow insert/upsert to users" on public.users;
+create policy "Allow insert/upsert to users"
+  on public.users for insert with check (true);
+
+drop policy if exists "Allow update to users" on public.users;
+create policy "Allow update to users"
+  on public.users for update using (true);
+
+-- 3. Profiles Table (Compatibility view)
+create table if not exists public.profiles (
+  id text primary key,
+  name text not null default 'Farmer',
+  email text,
+  avatar_url text,
+  total_scans integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.profiles enable row level security;
+
+drop policy if exists "Allow public read access to profiles" on public.profiles;
+create policy "Allow public read access to profiles"
+  on public.profiles for select using (true);
+
+drop policy if exists "Allow insert/upsert to profiles" on public.profiles;
+create policy "Allow insert/upsert to profiles"
+  on public.profiles for insert with check (true);
+
+drop policy if exists "Allow update to profiles" on public.profiles;
+create policy "Allow update to profiles"
+  on public.profiles for update using (true);
+
+-- 4. Scans Table (Stores all user disease scan records)
 create table if not exists public.scans (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
