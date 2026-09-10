@@ -39,7 +39,7 @@ data class AiConfigState(
     val isCustomMode: Boolean = false,
     val primaryProvider: AiProvider = AiProvider.GEMINI,
     val secondaryProvider: AiProvider = AiProvider.NVIDIA,
-    val geminiModel: String = "gemini-2.5-flash",
+    val geminiModel: String = "gemini-3.7-flash",
     val geminiApiKey: String = "",
     val nvidiaModel: String = "meta/llama-3.2-11b-vision-instruct",
     val nvidiaApiKey: String = ""
@@ -69,10 +69,12 @@ class AiConfigManager(private val context: Context) {
         private const val KEY_LAST_DEFAULT_TEST = "last_default_test_timestamp"
 
         val AVAILABLE_GEMINI_MODELS = listOf(
-            AiModelOption("gemini-2.5-flash", "Gemini 2.5 Flash", "Ultra-fast vision & precision diagnosis (Recommended)", true),
-            AiModelOption("gemini-2.0-flash", "Gemini 2.0 Flash", "Next-gen multimodal reasoning & low latency"),
-            AiModelOption("gemini-1.5-flash", "Gemini 1.5 Flash", "High-throughput stable multimodal model"),
-            AiModelOption("gemini-1.5-pro", "Gemini 1.5 Pro", "Deep complex agronomy & soil pathology reasoning")
+            AiModelOption("gemini-3.7-flash", "Gemini 3.7 Flash", "State-of-the-art hybrid reasoning & fast multimodal vision (Recommended)", true),
+            AiModelOption("gemini-3.5-flash", "Gemini 3.5 Flash", "Ultra high-throughput crop disease diagnosis"),
+            AiModelOption("gemini-3.5-flash-lite", "Gemini 3.5 Flash Lite", "Lightweight low-latency foliar analysis"),
+            AiModelOption("gemini-3.1-flash-lite", "Gemini 3.1 Flash Lite", "Optimized low-bandwidth agronomy engine"),
+            AiModelOption("gemini-flash-lite-latest", "Gemini Flash Lite (Latest)", "Automatically tracking latest stable Flash Lite"),
+            AiModelOption("gemini-3-flash-preview", "Gemini 3 Flash Preview", "Experimental rapid multimodal vision")
         )
 
         val AVAILABLE_NVIDIA_MODELS = listOf(
@@ -92,7 +94,7 @@ class AiConfigManager(private val context: Context) {
         val primary = try { AiProvider.valueOf(primaryStr) } catch (_: Exception) { AiProvider.GEMINI }
         val secondary = if (primary == AiProvider.GEMINI) AiProvider.NVIDIA else AiProvider.GEMINI
         
-        val geminiModel = prefs.getString(KEY_GEMINI_MODEL, "gemini-2.5-flash") ?: "gemini-2.5-flash"
+        val geminiModel = prefs.getString(KEY_GEMINI_MODEL, "gemini-3.7-flash") ?: "gemini-3.7-flash"
         val geminiKey = prefs.getString(KEY_GEMINI_API_KEY, "") ?: ""
         val nvidiaModel = prefs.getString(KEY_NVIDIA_MODEL, "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
         val nvidiaKey = prefs.getString(KEY_NVIDIA_API_KEY, "") ?: ""

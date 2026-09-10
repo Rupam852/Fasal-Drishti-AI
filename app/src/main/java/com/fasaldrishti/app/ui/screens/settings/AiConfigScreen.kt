@@ -300,7 +300,7 @@ fun AiConfigScreen(
                             // Default Engine 1: Gemini
                             DefaultEngineItem(
                                 title = "Primary: Google Gemini Vision AI",
-                                subtitle = "gemini-2.5-flash • Multimodal leaf diagnosis & treatment",
+                                subtitle = "gemini-3.7-flash • Multimodal leaf diagnosis & treatment",
                                 icon = Icons.Default.Psychology,
                                 badge = "Active",
                                 badgeColor = EmeraldPrimary
@@ -340,7 +340,8 @@ fun AiConfigScreen(
                                         // Test Gemini Default
                                         val defaultGeminiKey = supabaseManager?.getRemoteConfig("gemini_api_key", "") ?: ""
                                         val testKey = if (defaultGeminiKey.isNotBlank()) defaultGeminiKey else "AIzaSy_DEFAULT"
-                                        val geminiRes = aiConfigManager.testGemini("gemini-2.5-flash", testKey)
+                                        val defaultGeminiModel = supabaseManager?.getRemoteConfig("gemini_model_name", "gemini-3.7-flash") ?: "gemini-3.7-flash"
+                                        val geminiRes = aiConfigManager.testGemini(defaultGeminiModel, testKey)
                                         results.add(geminiRes)
                                         diagnosticResults = results.toList()
                                         delay(400)
