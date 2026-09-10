@@ -1,5 +1,6 @@
 package com.fasaldrishti.app.ui.screens.settings
 
+import androidx.activity.compose.BackHandler
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
@@ -49,7 +50,6 @@ fun AiConfigScreen(
     val configState by aiConfigManager.configState.collectAsState()
 
     val languageManager = remember { LanguageManager(context) }
-    val currentLang by languageManager.currentLanguage.collectAsState()
 
     // Local edit state for custom mode
     var isCustomMode by remember(configState.isCustomMode) { mutableStateOf(configState.isCustomMode) }
@@ -75,6 +75,26 @@ fun AiConfigScreen(
     // Cooldown countdown for default test
     var remainingCooldown by remember { mutableStateOf(aiConfigManager.getRemainingDefaultCooldownSeconds()) }
 
+    // Function to ensure active configuration is always saved
+    val saveCurrentState = {
+        val newConfig = AiConfigState(
+            isCustomMode = isCustomMode,
+            primaryProvider = primaryProvider,
+            secondaryProvider = if (primaryProvider == AiProvider.GEMINI) AiProvider.NVIDIA else AiProvider.GEMINI,
+            geminiModel = selectedGeminiModel,
+            geminiApiKey = geminiApiKey.trim(),
+            nvidiaModel = selectedNvidiaModel,
+            nvidiaApiKey = nvidiaApiKey.trim()
+        )
+        aiConfigManager.saveConfig(newConfig)
+    }
+
+    // Android back button auto-save
+    BackHandler {
+        saveCurrentState()
+        onNavigateBack()
+    }
+
     LaunchedEffect(Unit) {
         while (true) {
             val cooldown = aiConfigManager.getRemainingDefaultCooldownSeconds()
@@ -93,7 +113,10 @@ fun AiConfigScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    onClick = onNavigateBack,
+                    onClick = {
+                        saveCurrentState()
+                        onNavigateBack()
+                    },
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.size(38.dp)
