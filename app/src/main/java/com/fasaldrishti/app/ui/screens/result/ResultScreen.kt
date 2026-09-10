@@ -85,7 +85,7 @@ fun ResultScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Diagnosis Dossier",
+                        "Diagnosis Result",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 },
@@ -117,7 +117,7 @@ fun ResultScreen(
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
-                                text = "${uiState.currentLanguage.flag} ${uiState.currentLanguage.nativeName.take(6)}",
+                                text = "${uiState.currentLanguage.flag} ${uiState.currentLanguage.nativeName}",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.5.sp,
@@ -135,7 +135,7 @@ fun ResultScreen(
                                 action = Intent.ACTION_SEND
                                 putExtra(
                                     Intent.EXTRA_TEXT,
-                                    "Fasal Drishti Diagnosis Dossier:\nCondition: $effectiveDiseaseName\nSeverity: ${it.severity}\nConfidence: ${(it.confidence * 100).toInt()}%"
+                                    "Fasal Drishti Diagnosis Result:\nCondition: $effectiveDiseaseName\nSeverity: ${it.severity}\nConfidence: ${(it.confidence * 100).toInt()}%"
                                 )
                                 type = "text/plain"
                             }
