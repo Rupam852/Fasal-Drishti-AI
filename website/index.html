@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Fasal Drishti - AI Precision Agronomy & Crop Vision</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Fasal Drishti AI: An offline-first, native Android ecosystem empowering Indian farmers with sub-100ms on-device TFLite crop disease vision, dual Google Gemini & NVIDIA AI reasoning, live Mandi rates, and 1-tap PDF doctor prescriptions.">
+  <meta name="keywords" content="Fasal Drishti, Crop Disease AI, Precision Agronomy, Smart India Hackathon, Plant Pathology, Mandi Bhav, NPK Calculator, Krishi AI, Farming Android App">
+  <meta name="author" content="Fasal Drishti Team">
+
+  <!-- OpenGraph / Social Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Fasal Drishti - AI Precision Agronomy & Crop Vision">
+  <meta property="og:description" content="Diagnose 40+ crop diseases in sub-100ms. 100% Free, offline-ready AI assistant for Indian agriculture.">
+  <meta property="og:image" content="favicon.svg">
+  <meta property="twitter:card" content="summary_large_image">
+
+  <!-- Favicon (Transparent) -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- QR Code Library CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+  <!-- =========================================================================
+       Site Header / Navigation Bar
+       ========================================================================= -->
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="brand-logo" aria-label="Fasal Drishti AI Home">
+        <svg viewBox="0 0 512 512" width="38" height="38">
+          <circle cx="256" cy="256" r="230" fill="rgba(16, 185, 129, 0.2)"/>
+          <path d="M 256 100 C 370 120 410 240 370 340 C 330 430 256 420 256 420 C 256 420 182 430 142 340 C 102 240 142 120 256 100 Z" fill="#10B981"/>
+          <path d="M 256 120 L 256 400" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+          <circle cx="256" cy="256" r="26" fill="#F59E0B" stroke="#FFFFFF" stroke-width="6"/>
+        </svg>
+        <span class="brand-name">
+          Fasal Drishti <span class="brand-tag">AI</span>
+        </span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav aria-label="Main Navigation">
+        <ul class="nav-menu">
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+          <li><a href="#technology" class="nav-link">AI Tech</a></li>
+          <li><a href="#contributors" class="nav-link">Contributors</a></li>
+          <li><a href="#faq" class="nav-link">FAQ</a></li>
+        </ul>
+      </nav>
+
+      <!-- Nav CTA & Mobile Hamburger -->
+      <div class="nav-actions">
+        <button class="btn btn-primary nav-btn trigger-download-modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download APK (v1.0.7)
+        </button>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button id="menuBtn" class="menu-toggle-btn" aria-label="Open Navigation Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       Mobile Drawer Navigation (Sliding Overlay)
+       ========================================================================= -->
+  <div id="drawerBackdrop" class="drawer-backdrop"></div>
+  <aside id="mobileNavDrawer" class="mobile-nav-drawer" aria-label="Mobile Navigation">
+    <div class="mobile-drawer-header">
+      <div class="brand-logo">
+        <svg viewBox="0 0 512 512" width="32" height="32">
+          <path d="M 256 100 C 370 120 410 240 370 340 C 330 430 256 420 256 420 C 256 420 182 430 142 340 C 102 240 142 120 256 100 Z" fill="#10B981"/>
+          <circle cx="256" cy="256" r="26" fill="#F59E0B"/>
+        </svg>
+        <span class="brand-name" style="font-size: 1.25rem;">Fasal Drishti</span>
+      </div>
+      <button id="closeMenuBtn" class="mobile-close-btn" aria-label="Close Navigation Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <ul class="mobile-nav-list">
+      <li>
+        <a href="#features" class="mobile-nav-link">
+          <span>✨ App Features</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="#how-it-works" class="mobile-nav-link">
+          <span>⚡ How It Works</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="#technology" class="mobile-nav-link">
+          <span>🤖 Multimodal AI Architecture</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="#contributors" class="mobile-nav-link">
+          <span>👥 Project Contributors</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="#faq" class="mobile-nav-link">
+          <span>❓ Frequently Asked Questions</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </li>
+    </ul>
+
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px;">
+      <button class="btn btn-primary trigger-download-modal" style="width: 100%;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Android APK (v1.0.7)
+      </button>
+      <div style="font-size: 0.8rem; text-align: center; color: var(--slate-500);">
+        100% Free • Offline-First Native Android
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================================
+       Hero Section
+       ========================================================================= -->
+  <section class="hero-section">
+    <div class="hero-bg-orb orb-1"></div>
+    <div class="hero-bg-orb orb-2"></div>
+
+    <div class="container hero-grid">
+      
+      <!-- Left Hero Content -->
+      <div class="hero-content">
+        <div class="badge-pill">
+          <span class="badge-dot"></span>
+          <span>Version 1.0.7 Released • Dual Gemini & NVIDIA NIM AI</span>
+        </div>
+
+        <h1 class="hero-headline">
+          AI Precision Agronomy & Crop Vision for <span class="gradient-text">Every Indian Farmer</span>
+        </h1>
+
+        <p class="hero-subhead">
+          Diagnose 40+ crop diseases in sub-100ms offline, get dual-engine multimodal AI prescriptions, live APMC Mandi rates, and 10-language voice agronomy advice — zero server cost and 100% free.
+        </p>
+
+        <!-- CTA Action Buttons -->
+        <div class="hero-ctas">
+          <button class="btn btn-primary trigger-download-modal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Android APK (v1.0.7)
+          </button>
+          
+          <a href="#features" class="btn btn-secondary">
+            <span>✨ Explore Features</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </div>
+
+        <!-- Trust Row -->
+        <div class="hero-trust-row">
+          <div class="trust-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Sub-100ms TFLite Offline</span>
+          </div>
+          <div class="trust-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>10 Indian Languages</span>
+          </div>
+          <div class="trust-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>100% Free & Open-Source</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Interactive Phone Mockup -->
+      <div class="hero-mockup-wrapper">
+        <div class="phone-mockup-frame">
+          <div class="phone-notch"></div>
+          
+          <div class="phone-screen">
+            <!-- App Header Simulation -->
+            <div style="padding: 34px 16px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); background: #081610;">
+              <span style="font-size: 0.8rem; font-weight: 800; color: #34D399; letter-spacing: 1px;">AI OPTICAL SENSOR</span>
+              <span style="font-size: 0.72rem; background: rgba(52,211,153,0.2); color: #34D399; padding: 2px 8px; border-radius: 99px; font-weight: 700;">120 FPS</span>
+            </div>
+
+            <!-- Scanner Camera Viewport -->
+            <div class="app-demo-reticle">
+              <div class="reticle-box">
+                <div class="reticle-laser"></div>
+                <div style="text-align: center;">
+                  <div style="font-size: 2.2rem;">🍃</div>
+                  <div style="font-size: 0.72rem; color: #A7F3D0; font-weight: 700; margin-top: 4px;">Align Leaf In Boundary</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Diagnosis Live Card -->
+            <div class="app-demo-card">
+              <div class="demo-title">
+                <span>Tomato Early Blight</span>
+                <span class="demo-chip">Severe (94%)</span>
+              </div>
+              <div class="demo-dawa">
+                🧪 <b>Prescription:</b> Mancozeb 75 WP @ 2.5 g/L + Neem Oil 5ml/L spray.
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                <span style="font-size: 0.72rem; color: #FBBF24; font-weight: 700;">⚡ Dual Verified by Gemini</span>
+                <span style="font-size: 0.72rem; background: #10B981; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 800;">1-Tap PDF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Interactive Badges -->
+        <div class="floating-badge badge-top-left">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: #ECFDF5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">⚡</div>
+          <div>
+            <div style="font-size: 0.75rem; color: #64748B;">Inference Latency</div>
+            <div style="font-weight: 900; color: #059669;">54 ms On-Device</div>
+          </div>
+        </div>
+
+        <div class="floating-badge badge-bottom-right">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🗣️</div>
+          <div>
+            <div style="font-size: 0.75rem; color: #64748B;">AI Salah Voice</div>
+            <div style="font-weight: 900; color: #D97706;">10 Native Languages</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Stats Strip Section
+       ========================================================================= -->
+  <section class="stats-strip-section">
+    <div class="container stats-grid">
+      <div class="stat-box">
+        <div class="stat-number" data-target="40" data-suffix="+">40+</div>
+        <div class="stat-label">Crop Diseases Detected</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" data-target="100" data-suffix="ms">&lt;100ms</div>
+        <div class="stat-label">On-Device TFLite Latency</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" data-target="10" data-suffix=" Languages">10</div>
+        <div class="stat-label">Indian Regional Languages</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" data-target="100" data-suffix="% Free">100%</div>
+        <div class="stat-label">Open-Source & Free for Farmers</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Features Showcase Section
+       ========================================================================= -->
+  <section id="features" class="section-padding">
+    <div class="container">
+      
+      <div class="section-header">
+        <div class="badge-pill">
+          <span>🌾 End-to-End Agri Ecosystem</span>
+        </div>
+        <h2 class="section-title">Engineered for the Realities of Indian Farming</h2>
+        <p class="section-desc">
+          Built natively with Jetpack Compose & Kotlin, providing zero-latency diagnostics, high-accuracy verification, and automated farming toolkits.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        
+        <!-- Feature 1 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">📸</div>
+          <span class="feature-tag">On-Device TFLite</span>
+          <h3 class="feature-title">Sub-100ms Optical Leaf Classifier</h3>
+          <p class="feature-desc">
+            Instantly identifies crop disease signatures on 40+ Indian crops (Tomato, Wheat, Cotton, Potato, Grape, Rice) even in 0% internet coverage.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">🤖</div>
+          <span class="feature-tag">Multimodal AI</span>
+          <h3 class="feature-title">Dual Gemini & NVIDIA Cloud Verification</h3>
+          <p class="feature-desc">
+            Deep secondary cross-examination cross-checks disease severity, symptoms, and calibrates exact chemical fungicide grams per Litre of water.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">🗣️</div>
+          <span class="feature-tag">Multilingual Voice</span>
+          <h3 class="feature-title">AI Salah - Voice Agronomist</h3>
+          <p class="feature-desc">
+            Natural voice chat in Hindi, Bengali, Punjabi, Marathi, Telugu, Tamil, Gujarati, Kannada, Odia & English with live speech recognition and audio playback.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">📄</div>
+          <span class="feature-tag">Agronomy Slip</span>
+          <h3 class="feature-title">1-Tap PDF Doctor Prescription</h3>
+          <p class="feature-desc">
+            Generates printable, formatted agricultural doctor slips with diagnosed disease, exact chemical & bio remedies, safety precautions, and 1-tap WhatsApp sharing.
+          </p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">📊</div>
+          <span class="feature-tag">Live Mandi API</span>
+          <h3 class="feature-title">Real-Time APMC Mandi Bhav</h3>
+          <p class="feature-desc">
+            GPS-enabled market intelligence tracks real-time crop prices across thousands of mandis with AI-powered buy, hold, or sell price forecasts.
+          </p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">🧪</div>
+          <span class="feature-tag">Soil & Dosage</span>
+          <h3 class="feature-title">ICAR-Calibrated NPK & Fertilizer Engine</h3>
+          <p class="feature-desc">
+            Calculates exact Urea, DAP, MOP, and Organic FYM bag requirements tailored to local acreage (Acre, Bigha, Guntha, Hectare) preventing crop damage.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       How It Works Workflow
+       ========================================================================= -->
+  <section id="how-it-works" class="section-padding workflow-section">
+    <div class="container">
+      
+      <div class="section-header">
+        <div class="badge-pill">
+          <span>⚡ 3-Step Simple Workflow</span>
+        </div>
+        <h2 class="section-title">How Fasal Drishti Works in the Field</h2>
+        <p class="section-desc">
+          Designed for simplicity so any farmer can get expert plant pathologist advice in under 5 seconds.
+        </p>
+      </div>
+
+      <div class="workflow-grid">
+        
+        <!-- Step 1 -->
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3 class="step-title">Snap or Upload Leaf Photo</h3>
+          <p class="step-desc">
+            Open the optical scanner and point your camera at the diseased plant leaf. The holographic reticle guides alignment for crisp image capture.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3 class="step-title">Dual AI Vision & Verification</h3>
+          <p class="step-desc">
+            On-device MobileNetV2 model classifies leaf condition in 50ms, while secondary Gemini/NVIDIA vision AI verifies diagnosis and calibrated dosage.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3 class="step-title">Get Prescription & PDF Slip</h3>
+          <p class="step-desc">
+            View exact chemical spray doses, organic desi remedies, prevention tips, and download or WhatsApp an official doctor prescription slip with 1 tap.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Technology Architecture & Multi-AI Stack
+       ========================================================================= -->
+  <section id="technology" class="section-padding">
+    <div class="container">
+      
+      <div class="section-header">
+        <div class="badge-pill">
+          <span>🧠 Modern AI Architecture</span>
+        </div>
+        <h2 class="section-title">State-of-the-Art Multimodal Tech Stack</h2>
+        <p class="section-desc">
+          Robust, offline-first engineering combining on-device deep learning with world-class cloud multimodal LLMs.
+        </p>
+      </div>
+
+      <div class="tech-grid">
+        <div class="tech-card">
+          <div class="tech-logo-title">
+            <span class="tech-icon">⚡</span>
+            <div class="tech-name">TensorFlow Lite</div>
+          </div>
+          <p class="tech-desc">Quantized MobileNetV2 vision model running locally on smartphone NPU/CPU with sub-100ms offline latency.</p>
+        </div>
+
+        <div class="tech-card">
+          <div class="tech-logo-title">
+            <span class="tech-icon">🌐</span>
+            <div class="tech-name">Google Gemini AI</div>
+          </div>
+          <p class="tech-desc">Multimodal vision reasoning for deep secondary cross-examination and 10-language voice agronomy generation.</p>
+        </div>
+
+        <div class="tech-card">
+          <div class="tech-logo-title">
+            <span class="tech-icon">🟢</span>
+            <div class="tech-name">NVIDIA NIM</div>
+          </div>
+          <p class="tech-desc">Enterprise-grade Llama-3.2 vision LLM inference serving as secondary cascade fallback for 99.9% uptime.</p>
+        </div>
+
+        <div class="tech-card">
+          <div class="tech-logo-title">
+            <span class="tech-icon">☁️</span>
+            <div class="tech-name">Supabase & Room</div>
+          </div>
+          <p class="tech-desc">Encrypted local SQLite Room database with automatic cloud synchronization and zero telemetry leak.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Contributors & Team Section
+       ========================================================================= -->
+  <section id="contributors" class="section-padding" style="background: var(--bg-surface-elevated);">
+    <div class="container">
+      
+      <div class="section-header">
+        <div class="badge-pill">
+          <span>👥 Team & Contributors</span>
+        </div>
+        <h2 class="section-title">Meet the Builders Behind Fasal Drishti</h2>
+        <p class="section-desc">
+          Dedicated engineers, data scientists, and agricultural innovators building solutions for Smart India Hackathon & Indian farming communities.
+        </p>
+      </div>
+
+      <div class="contributors-grid">
+        
+        <!-- Contributor 1 -->
+        <div class="contributor-card">
+          <div class="avatar-wrapper">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Rupam&backgroundColor=10B981" alt="Lead Developer Avatar" class="avatar-img">
+          </div>
+          <h3 class="contributor-name">Rupam & Team</h3>
+          <div class="contributor-role">Lead Android & AI Architecture</div>
+          <p class="contributor-bio">
+            Engineered the native Jetpack Compose architecture, TFLite on-device inference pipeline, dual Gemini & NVIDIA NIM integrations, and multilingual voice system.
+          </p>
+          <div class="social-links">
+            <a href="https://github.com/Rupam852/Fasal-Drishti-AI" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Contributor 2 -->
+        <div class="contributor-card">
+          <div class="avatar-wrapper">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=PlantPathology&backgroundColor=F59E0B" alt="Agronomy Advisor Avatar" class="avatar-img">
+          </div>
+          <h3 class="contributor-name">Agronomy & Pathology Domain</h3>
+          <div class="contributor-role">ICAR Crop & Chemical Data Calibration</div>
+          <p class="contributor-bio">
+            Curated and verified 40+ crop disease datasets, calibrated organic spray remedies, chemical dosage calculations, and Indian agricultural fertilizer parameters.
+          </p>
+          <div class="social-links">
+            <a href="https://github.com/Rupam852/Fasal-Drishti-AI" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Contributor 3 -->
+        <div class="contributor-card">
+          <div class="avatar-wrapper">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=OpenSourceCommunity&backgroundColor=34D399" alt="Open Source Contributor Avatar" class="avatar-img">
+          </div>
+          <h3 class="contributor-name">Open Source Community</h3>
+          <div class="contributor-role">Testing, Translations & Field Trials</div>
+          <p class="contributor-bio">
+            Supported regional language dataset translations across 10 Indian scripts, real-world village field validation, and continuous user experience feedback.
+          </p>
+          <div class="social-links">
+            <a href="https://github.com/Rupam852/Fasal-Drishti-AI" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Frequently Asked Questions (FAQ) Section
+       ========================================================================= -->
+  <section id="faq" class="section-padding">
+    <div class="container">
+      
+      <div class="section-header">
+        <div class="badge-pill">
+          <span>❓ Answers to Common Queries</span>
+        </div>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-desc">Everything you need to know about Fasal Drishti AI and its deployment.</p>
+      </div>
+
+      <div class="faq-container">
+        
+        <div class="faq-item active">
+          <button class="faq-question">
+            <span>Is Fasal Drishti AI really 100% free for farmers?</span>
+            <span class="faq-icon">▼</span>
+          </button>
+          <div class="faq-answer">
+            Yes! Fasal Drishti AI is 100% free, open-source, and does not require any paid subscription. On-device vision runs directly on your phone's processor with zero server cost, and Google Gemini API Free Tier powers the conversational voice features.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Does the crop disease diagnosis work without Internet?</span>
+            <span class="faq-icon">▼</span>
+          </button>
+          <div class="faq-answer">
+            Absolutely. The primary neural vision classifier is powered by a quantized TensorFlow Lite model embedded inside the APK. It performs instant leaf diagnosis in under 100ms even when your phone is in airplane mode or in remote rural fields with 0% network connectivity.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Which crops and diseases are supported?</span>
+            <span class="faq-icon">▼</span>
+          </button>
+          <div class="faq-answer">
+            Fasal Drishti currently supports 40+ widespread diseases across India's staple crops including Tomato (Early/Late Blight, Yellow Leaf Curl), Wheat (Brown Rust, Yellow Rust), Cotton (Leaf Curl Virus, Bacterial Blight), Potato, Grape, Apple, Corn, Pepper, and Rice.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>How do I install the Android APK on my smartphone?</span>
+            <span class="faq-icon">▼</span>
+          </button>
+          <div class="faq-answer">
+            Click the "Download APK" button to download the signed release APK file (v1.0.7). Once downloaded, tap the file in your notification bar or downloads folder, enable "Allow from this source" if prompted by Android security, and tap "Install".
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Can I use my own Custom Gemini or NVIDIA API Key?</span>
+            <span class="faq-icon">▼</span>
+          </button>
+          <div class="faq-answer">
+            Yes! For developers, evaluators, and power users, the app includes a dedicated "AI Engine Settings" menu where you can input your personal Gemini or NVIDIA developer API keys to bypass rate limits or choose specialized vision models.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Download Banner & QR Code CTA Section
+       ========================================================================= -->
+  <section class="download-cta-section">
+    <div class="container">
+      <div class="cta-banner">
+        
+        <div class="cta-content">
+          <div class="badge-pill" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border-color: rgba(255,255,255,0.25);">
+            <span>🚀 Latest Release v1.0.7 (Production Signed)</span>
+          </div>
+          <h2 class="cta-title">Equip Your Farm with AI Today</h2>
+          <p class="cta-desc">
+            Download the Android APK directly or scan the QR code with your mobile camera for instant installation.
+          </p>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px;">
+            <button class="btn btn-gold trigger-download-modal">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download APK File (36 MB)
+            </button>
+            <button class="btn btn-secondary btn-copy-link" style="background: rgba(255,255,255,0.15); color: #FFFFFF; border-color: rgba(255,255,255,0.3);">
+              <span>📋 Copy APK Link</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Generated QR Code Box -->
+        <div class="cta-qr-box">
+          <div id="heroQrCode" class="qr-code-wrapper"></div>
+          <div class="qr-caption">📱 Scan with phone to download</div>
+          <div style="font-size: 0.75rem; color: var(--slate-500);">Android 8.0 to Android 15</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Site Footer
+       ========================================================================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        
+        <!-- Brand Col -->
+        <div class="footer-brand-col">
+          <div class="brand-logo">
+            <svg viewBox="0 0 512 512" width="34" height="34">
+              <path d="M 256 100 C 370 120 410 240 370 340 C 330 430 256 420 256 420 C 256 420 182 430 142 340 C 102 240 142 120 256 100 Z" fill="#10B981"/>
+              <circle cx="256" cy="256" r="26" fill="#F59E0B"/>
+            </svg>
+            <span class="brand-name">Fasal Drishti AI</span>
+          </div>
+          <p class="footer-desc">
+            Empowering Indian agriculture through precision AI vision, ICAR-calibrated dosages, and voice-assisted bilingual agronomy tools.
+          </p>
+          <div style="font-size: 0.85rem; color: var(--emerald-700); font-weight: 700;">
+            🌾 Built with ❤️ for Smart India Hackathon & Indian Farmers
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <div>
+          <h4 class="footer-col-title">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="#features" class="footer-link">App Features</a></li>
+            <li><a href="#how-it-works" class="footer-link">How It Works</a></li>
+            <li><a href="#technology" class="footer-link">Multimodal AI Stack</a></li>
+            <li><a href="#contributors" class="footer-link">Core Contributors</a></li>
+            <li><a href="#faq" class="footer-link">Help & FAQs</a></li>
+          </ul>
+        </div>
+
+        <!-- Key Capabilities -->
+        <div>
+          <h4 class="footer-col-title">Key Capabilities</h4>
+          <ul class="footer-links">
+            <li><span class="footer-link">Sub-100ms TFLite Vision</span></li>
+            <li><span class="footer-link">Dual Gemini & NVIDIA Reasoning</span></li>
+            <li><span class="footer-link">1-Tap PDF Doctor Slip</span></li>
+            <li><span class="footer-link">Live Mandi Bhav APMC</span></li>
+            <li><span class="footer-link">10 Indian Languages Voice</span></li>
+          </ul>
+        </div>
+
+        <!-- Download & Repository -->
+        <div>
+          <h4 class="footer-col-title">Download & Code</h4>
+          <ul class="footer-links">
+            <li>
+              <a href="#" class="footer-link trigger-download-modal" style="font-weight: 700; color: var(--emerald-600);">
+                📥 Download Latest APK (v1.0.7)
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/Rupam852/Fasal-Drishti-AI" target="_blank" rel="noopener noreferrer" class="footer-link">
+                ⭐ GitHub Repository
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/Rupam852/Fasal-Drishti-AI/releases" target="_blank" rel="noopener noreferrer" class="footer-link">
+                📦 Release Changelogs
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom">
+        <div>
+          © 2026 Fasal Drishti AI. All rights reserved. Open-source agricultural technology.
+        </div>
+        <div class="footer-legal-links">
+          <button class="footer-legal-btn trigger-terms-modal">Terms & Conditions</button>
+          <button class="footer-legal-btn trigger-privacy-modal">Privacy Policy</button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       Modals: 1. Download Modal with Live QR & Direct Link
+       ========================================================================= -->
+  <div id="downloadModal" class="modal-backdrop">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title">Download Fasal Drishti AI</h3>
+        <button class="modal-close-btn" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="download-modal-grid">
+          <!-- QR Code Container -->
+          <div class="download-qr-pane">
+            <div id="modalQrCode" style="background:#FFF; padding:6px; border-radius:12px;"></div>
+            <div style="font-size: 0.8rem; font-weight: 800; color: var(--emerald-800); margin-top: 4px;">
+              Scan to Download on Phone
+            </div>
+          </div>
+
+          <!-- Direct Download Info & Button -->
+          <div class="download-info-pane">
+            <div style="font-size: 0.85rem; font-weight: 800; color: var(--emerald-700);">
+              RELEASE v1.0.7 • SIGNED APK
+            </div>
+            <ul class="spec-list">
+              <li>✅ <b>Target:</b> Android 8.0 to Android 15</li>
+              <li>✅ <b>Size:</b> ~36.0 MB (Optimized)</li>
+              <li>✅ <b>Offline ML:</b> Preloaded TFLite</li>
+              <li>✅ <b>Cost:</b> 100% Free Forever</li>
+            </ul>
+
+            <a href="https://neo-files-transfer.pages.dev/download/mtre516vdmlr4152f2ab" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="width: 100%; text-align: center; justify-content: center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Direct APK Download
+            </a>
+          </div>
+        </div>
+
+        <!-- Easy Installation Steps for Farmers -->
+        <div class="install-guide-box">
+          <b>📲 Quick 3-Step Installation Guide:</b>
+          <ol>
+            <li>Tap <b>Direct APK Download</b> above or scan the QR Code.</li>
+            <li>When download finishes, tap the notification to open the file.</li>
+            <li>If Android asks to <i>"Allow from this source"</i>, enable it and tap <b>Install</b>.</li>
+          </ol>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       Modals: 2. Terms & Conditions Modal
+       ========================================================================= -->
+  <div id="termsModal" class="modal-backdrop">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title">Terms & Conditions</h3>
+        <button class="modal-close-btn" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body legal-content">
+        <h4>1. Agricultural Advisory Disclaimer</h4>
+        <p>
+          Fasal Drishti AI is designed as a digital agronomic decision-support system. While our dual-layer TFLite and Gemini/NVIDIA AI vision models strive for highest precision, farmers and users are advised to verify extreme chemical applications with local agricultural extension officers or certified KVK agronomists.
+        </p>
+
+        <h4>2. Safe Chemical Usage</h4>
+        <p>
+          Always wear protective gloves and face masks when preparing and spraying chemical fungicides or pesticides. Ensure safe disposal of empty containers as per statutory environmental guidelines.
+        </p>
+
+        <h4>3. Free & Open Access</h4>
+        <p>
+          Fasal Drishti AI is distributed free of charge for Indian farmers, researchers, and students. Commercial resale of this application without open-source attribution is prohibited.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       Modals: 3. Privacy Policy Modal
+       ========================================================================= -->
+  <div id="privacyModal" class="modal-backdrop">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title">Privacy Policy</h3>
+        <button class="modal-close-btn" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body legal-content">
+        <h4>1. Offline-First Privacy Guarantee</h4>
+        <p>
+          Fasal Drishti AI prioritizes user privacy. All preliminary optical leaf scans, diagnosis histories, and conversational chats with AI Salah are stored strictly inside your phone's encrypted on-device SQLite database.
+        </p>
+
+        <h4>2. Camera & Audio Permissions</h4>
+        <p>
+          Camera access is strictly utilized in real-time to capture leaf samples inside the reticle. Audio microphone access is only triggered when you tap the voice microphone icon to speak with the AI Salahkar.
+        </p>
+
+        <h4>3. Zero Third-Party Advertising</h4>
+        <p>
+          Fasal Drishti AI contains zero third-party ads, zero tracking pixels, and does not sell or monetize farmer agricultural records.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="script.js"></script>
+</body>
+</html>

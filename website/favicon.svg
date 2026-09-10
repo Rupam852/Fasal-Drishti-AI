@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#34D399" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Glowing Aura -->
+  <circle cx="256" cy="256" r="230" fill="url(#glowGrad)"/>
+
+  <!-- Outer Tech Ring -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="#10B981" stroke-width="8" stroke-dasharray="24 16" opacity="0.6"/>
+  <circle cx="256" cy="256" r="185" fill="none" stroke="#34D399" stroke-width="4" opacity="0.4"/>
+
+  <!-- Scanner Reticle Corners -->
+  <path d="M 120 180 L 120 120 L 180 120" fill="none" stroke="#10B981" stroke-width="12" stroke-linecap="round"/>
+  <path d="M 392 180 L 392 120 L 332 120" fill="none" stroke="#10B981" stroke-width="12" stroke-linecap="round"/>
+  <path d="M 120 332 L 120 392 L 180 392" fill="none" stroke="#10B981" stroke-width="12" stroke-linecap="round"/>
+  <path d="M 392 332 L 392 392 L 332 392" fill="none" stroke="#10B981" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Main Organic Leaf -->
+  <path d="M 256 100 C 370 120 410 240 370 340 C 330 430 256 420 256 420 C 256 420 182 430 142 340 C 102 240 142 120 256 100 Z" fill="url(#leafGrad)"/>
+  
+  <!-- Leaf Central Vein (Neural Spine) -->
+  <path d="M 256 120 L 256 400" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity="0.9"/>
+  
+  <!-- Lateral Neural Vein Branches -->
+  <path d="M 256 190 Q 300 210 330 230" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+  <path d="M 256 190 Q 212 210 182 230" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+  <path d="M 256 260 Q 310 280 340 310" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+  <path d="M 256 260 Q 202 280 172 310" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- AI Optical Spark Core -->
+  <circle cx="256" cy="256" r="28" fill="url(#goldGrad)" stroke="#FFFFFF" stroke-width="6"/>
+  <circle cx="256" cy="256" r="10" fill="#FFFFFF"/>
+</svg>
