@@ -121,3 +121,35 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- 8. Backfill / Copy all existing old users from auth.users to public.users & public.profiles
+insert into public.users (id, name, email, avatar_url, created_at, updated_at)
+select 
+  id::text,
+  coalesce(raw_user_meta_data->>'full_name', raw_user_meta_data->>'name', raw_user_meta_data->>'user_name', split_part(email, '@', 1), 'Farmer') as name,
+  email,
+  raw_user_meta_data->>'avatar_url' as avatar_url,
+  created_at,
+  now() as updated_at
+from auth.users
+on conflict (id) do update set
+  name = excluded.name,
+  email = excluded.email,
+  avatar_url = excluded.avatar_url,
+  updated_at = now();
+
+insert into public.profiles (id, name, email, avatar_url, created_at, updated_at)
+select 
+  id::text,
+  coalesce(raw_user_meta_data->>'full_name', raw_user_meta_data->>'name', raw_user_meta_data->>'user_name', split_part(email, '@', 1), 'Farmer') as name,
+  email,
+  raw_user_meta_data->>'avatar_url' as avatar_url,
+  created_at,
+  now() as updated_at
+from auth.users
+on conflict (id) do update set
+  name = excluded.name,
+  email = excluded.email,
+  avatar_url = excluded.avatar_url,
+  updated_at = now();
+

@@ -45,6 +45,16 @@ class SupabaseManager(private val context: Context) {
     private val _syncStatus = MutableStateFlow(SyncStatus.IDLE)
     val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
 
+    init {
+        // Automatically sync existing logged-in user profile to Supabase on app startup
+        val savedUser = _currentUser.value
+        if (savedUser != null) {
+            CoroutineScope(Dispatchers.IO).launch {
+                syncUserProfileToCloud(savedUser)
+            }
+        }
+    }
+
     private fun loadSavedUser(): UserProfile? {
         val id = prefs.getString("user_id", null) ?: return null
         val name = prefs.getString("user_name", "Farmer") ?: "Farmer"
