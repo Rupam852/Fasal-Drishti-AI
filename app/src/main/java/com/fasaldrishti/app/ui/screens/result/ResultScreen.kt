@@ -69,7 +69,8 @@ fun ResultScreen(
         diseaseInfo?.prevention ?: "Spray 5% Neem oil extract, prune and destroy severely infected leaves, and maintain proper crop spacing."
     )
 
-    Scaffold(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
         topBar = {
             TopAppBar(
                 title = {
@@ -802,4 +803,98 @@ fun ResultScreen(
             }
         }
     }
+
+    // FULL-SCREEN GLASSMORPHIC TRANSLATION OVERLAY WITH BLUR / FROSTED EFFECT
+    AnimatedVisibility(
+        visible = uiState.isTranslating,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.68f))
+                .clickable(enabled = false) { /* Block touches */ },
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.86f)
+                    .clip(RoundedCornerShape(28.dp))
+                    .shadow(20.dp, RoundedCornerShape(28.dp), spotColor = EmeraldPrimary),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
+                ),
+                border = BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.75f))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(26.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(76.dp)
+                            .shadow(12.dp, CircleShape, spotColor = EmeraldPrimary)
+                            .clip(CircleShape)
+                            .background(
+                                brush = Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
+                            )
+                            .border(2.5.dp, Color.White.copy(alpha = 0.8f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(76.dp),
+                            color = Color.White,
+                            strokeWidth = 3.dp
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Translate,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(34.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text(
+                        text = "AI Translating Dossier ✨",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Converting pathology diagnosis, spray dosages & remedies into ${uiState.currentLanguage.nativeName} (${uiState.currentLanguage.englishName})...",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f),
+                            fontSize = 13.5.sp,
+                            lineHeight = 19.sp
+                        ),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp)),
+                        color = EmeraldPrimary,
+                        trackColor = EmeraldPrimary.copy(alpha = 0.2f)
+                    )
+                }
+            }
+        }
+    }
 }
+}
+
