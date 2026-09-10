@@ -258,12 +258,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .brand-tag {
   font-size: 0.72rem;
-  background: var(--emerald-600);
-  color: #FFFFFF;
+  background: #ECFDF5;
+  color: #059669;
+  border: 1.2px solid #A7F3D0;
   padding: 2px 8px;
   border-radius: var(--radius-full);
   font-weight: 800;
   letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-menu {
