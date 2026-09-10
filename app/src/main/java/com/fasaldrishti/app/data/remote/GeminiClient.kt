@@ -247,7 +247,7 @@ class GeminiClient(
             }
 
             val prompt = """
-                You are 'Fasal Drishti AI Krishi Doctor' 🌾, an expert agronomist and plant pathologist helping Indian farmers.
+                You are 'Fasal Drishti AI Salahkar' 🌾, an expert agronomist and plant pathologist helping Indian farmers.
                 Current diagnosed crop & condition: $primaryClass (confidence: ${(confidence * 100).toInt()}%).
                 Farmer's question: "$query"
                 Preferred Response Language: $language

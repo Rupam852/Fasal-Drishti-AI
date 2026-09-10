@@ -36,6 +36,7 @@ import com.fasaldrishti.app.ui.components.AccordionCard
 import com.fasaldrishti.app.ui.components.ConfidenceRing
 import com.fasaldrishti.app.ui.components.GradientButton
 import com.fasaldrishti.app.ui.components.SeverityBadge
+import com.fasaldrishti.app.ui.localization.LocalAppStrings
 import com.fasaldrishti.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +49,7 @@ fun ResultScreen(
     onScanAgain: () -> Unit
 ) {
     val context = LocalContext.current
+    val strings = LocalAppStrings.current
     val uiState by viewModel.uiState.collectAsState()
     var showTranslateDialog by remember { mutableStateOf(false) }
     var dotCount by remember { mutableIntStateOf(1) }
@@ -177,7 +179,7 @@ fun ResultScreen(
                     }
 
                     GradientButton(
-                        text = "Consult AI Doctor",
+                        text = strings.resultConsultAiDoctor,
                         onClick = { scan?.let { onNavigateToChat(effectiveDiseaseName) } },
                         modifier = Modifier
                             .weight(1.3f)
@@ -512,7 +514,7 @@ fun ResultScreen(
                                     Spacer(modifier = Modifier.width(14.dp))
                                     Column {
                                         Text(
-                                            text = "Consult AI Agri Doctor",
+                                            text = strings.resultConsultAiDoctor,
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 15.sp,

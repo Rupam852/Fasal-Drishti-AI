@@ -521,7 +521,7 @@ fun ChatScreen(
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "AI Krishi Doctor is thinking...",
+                            text = "AI Salahkar is thinking...",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic

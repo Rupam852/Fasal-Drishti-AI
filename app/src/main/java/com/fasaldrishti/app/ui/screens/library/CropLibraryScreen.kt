@@ -430,7 +430,7 @@ fun CropLibraryScreen(
                             Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Consult AI Agri Doctor",
+                                text = "Consult AI Salah",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )

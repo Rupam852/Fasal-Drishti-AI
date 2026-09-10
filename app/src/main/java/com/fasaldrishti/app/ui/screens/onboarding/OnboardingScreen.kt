@@ -84,8 +84,8 @@ fun OnboardingScreen(
             gradient = listOf(Color(0xFF00E5FF), Color(0xFF0091EA))
         ),
         OnboardingPage(
-            title = "Prescriptions & AI Agri Doctor",
-            description = "Get exact chemical dosages per litre, organic remedies, and chat in Hindi or English with your AI Agri Doctor.",
+            title = "Prescriptions & AI Salah",
+            description = "Get exact chemical dosages per litre, organic remedies, and chat in Hindi or English with your AI Salahkar.",
             icon = Icons.Default.CheckCircle,
             gradient = listOf(SolarGold, Color(0xFFE65100))
         )
