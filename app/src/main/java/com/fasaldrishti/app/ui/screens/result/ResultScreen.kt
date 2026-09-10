@@ -72,7 +72,7 @@ fun ResultScreen(
                                 action = Intent.ACTION_SEND
                                 putExtra(
                                     Intent.EXTRA_TEXT,
-                                    "Fasal Drishti Diagnosis Dossier:\nCrop: ${it.cropName}\nCondition: ${it.diseaseName}\nSeverity: ${it.severity}\nConfidence: ${(it.confidence * 100).toInt()}%"
+                                    "Fasal Drishti Diagnosis Dossier:\nCondition: ${it.diseaseName}\nSeverity: ${it.severity}\nConfidence: ${(it.confidence * 100).toInt()}%"
                                 )
                                 type = "text/plain"
                             }
@@ -199,29 +199,6 @@ fun ResultScreen(
                                 contentDescription = "Back",
                                 tint = Color.White
                             )
-                        }
-
-                        // Bottom Image Banner Crop Badge
-                        Row(
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(horizontal = 20.dp, vertical = 18.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                shape = RoundedCornerShape(16.dp),
-                                color = EmeraldPrimary.copy(alpha = 0.92f)
-                            ) {
-                                Text(
-                                    text = scan.cropName.uppercase(),
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = Color.Black,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        letterSpacing = 0.8.sp
-                                    )
-                                )
-                            }
                         }
                     }
                 }
@@ -399,7 +376,7 @@ fun ResultScreen(
                                 .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = EmeraldPrimary.copy(alpha = 0.35f))
                                 .clip(RoundedCornerShape(24.dp))
                                 .clickable {
-                                    val contextMsg = "Crop: ${scan.cropName}, Disease: ${scan.diseaseName} (${(scan.confidence * 100).toInt()}% confidence, Severity: ${scan.severity})"
+                                    val contextMsg = "Condition: ${scan.diseaseName} (${(scan.confidence * 100).toInt()}% confidence, Severity: ${scan.severity})"
                                     onNavigateToChat(contextMsg)
                                 },
                             shape = RoundedCornerShape(24.dp),
