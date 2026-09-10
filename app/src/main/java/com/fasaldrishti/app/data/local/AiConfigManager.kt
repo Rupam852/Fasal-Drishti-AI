@@ -150,7 +150,95 @@ class AiConfigManager(private val context: Context) {
     }
 
     /**
-     * Diagnostic live ping test for Google Gemini
+     * Diagnostic live ping test for Google Gemini with automatic fallback cascade.
+     * Tests models sequentially to verify which model is active and delivers lowest latency.
+     */
+    suspend fun testGeminiCascade(primaryModelName: String, apiKey: String): DiagnosticResult = withContext(Dispatchers.IO) {
+        if (apiKey.isBlank()) {
+            return@withContext DiagnosticResult(
+                provider = AiProvider.GEMINI,
+                model = primaryModelName,
+                isSuccess = false,
+                latencyMs = 0,
+                message = "API key is missing or blank"
+            )
+        }
+
+        val modelsToTest = listOf(
+            primaryModelName,
+            "gemini-3.7-flash",
+            "gemini-3.5-flash",
+            "gemini-3.5-flash-lite",
+            "gemini-flash-lite-latest",
+            "gemini-3.1-flash-lite",
+            "gemini-3-flash-preview"
+        ).distinct()
+
+        var lastError = "All Gemini models unavailable"
+        var lastLatency = 0L
+
+        for (model in modelsToTest) {
+            val startTime = System.currentTimeMillis()
+            try {
+                val url = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey"
+                val payload = JSONObject().apply {
+                    val contents = JSONArray().apply {
+                        val contentObj = JSONObject().apply {
+                            val parts = JSONArray().apply {
+                                put(JSONObject().put("text", "Ping: Confirm status in 2 words."))
+                            }
+                            put("parts", parts)
+                        }
+                        put(contentObj)
+                    }
+                    put("contents", contents)
+                    put("generationConfig", JSONObject().put("maxOutputTokens", 15))
+                }
+
+                val request = Request.Builder()
+                    .url(url)
+                    .post(payload.toString().toRequestBody("application/json".toMediaType()))
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val latency = System.currentTimeMillis() - startTime
+                val body = response.body?.string() ?: ""
+
+                if (response.isSuccessful && body.contains("candidates")) {
+                    val candidateModelNote = if (model == primaryModelName) "Active Primary" else "Verified Active Fallback"
+                    return@withContext DiagnosticResult(
+                        provider = AiProvider.GEMINI,
+                        model = model,
+                        isSuccess = true,
+                        latencyMs = latency,
+                        message = "Operational • $candidateModelNote ($latency ms)"
+                    )
+                } else {
+                    lastLatency = latency
+                    lastError = try {
+                        val errObj = JSONObject(body).getJSONObject("error")
+                        errObj.optString("message", "HTTP ${response.code}")
+                    } catch (_: Exception) {
+                        "HTTP ${response.code}: $body"
+                    }
+                }
+            } catch (e: Exception) {
+                lastLatency = System.currentTimeMillis() - startTime
+                lastError = e.localizedMessage ?: "Connection error"
+            }
+        }
+
+        DiagnosticResult(
+            provider = AiProvider.GEMINI,
+            model = primaryModelName,
+            isSuccess = false,
+            latencyMs = lastLatency,
+            message = lastError
+        )
+    }
+
+    /**
+     * Diagnostic live ping test for a single Google Gemini model
      */
     suspend fun testGemini(modelName: String, apiKey: String): DiagnosticResult = withContext(Dispatchers.IO) {
         val startTime = System.currentTimeMillis()
@@ -170,14 +258,14 @@ class AiConfigManager(private val context: Context) {
                 val contents = JSONArray().apply {
                     val contentObj = JSONObject().apply {
                         val parts = JSONArray().apply {
-                            put(JSONObject().put("text", "Agricultural test ping: Respond with exactly 2 words 'Fasal OK'."))
+                            put(JSONObject().put("text", "Ping: Confirm status in 2 words."))
                         }
                         put("parts", parts)
                     }
                     put(contentObj)
                 }
                 put("contents", contents)
-                put("generationConfig", JSONObject().put("maxOutputTokens", 20))
+                put("generationConfig", JSONObject().put("maxOutputTokens", 15))
             }
 
             val request = Request.Builder()
