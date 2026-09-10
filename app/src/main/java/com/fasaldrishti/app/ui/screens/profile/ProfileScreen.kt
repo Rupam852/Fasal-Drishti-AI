@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -52,10 +54,136 @@ fun ProfileScreen(
     val updateInfo by updateManager.updateInfo.collectAsState()
     var showClearDialog by remember { mutableStateOf(false) }
     var showClearChatDialog by remember { mutableStateOf(false) }
+    var showTermsDialog by remember { mutableStateOf(false) }
+    var showPrivacyDialog by remember { mutableStateOf(false) }
 
     val totalScans = scans.size
     val healthyCount = scans.count { it.severity.equals("none", ignoreCase = true) || it.diseaseName.contains("healthy", ignoreCase = true) }
     val treatedCount = scans.count { !it.severity.equals("none", ignoreCase = true) && !it.diseaseName.contains("healthy", ignoreCase = true) }
+
+    if (showTermsDialog) {
+        AlertDialog(
+            onDismissRequest = { showTermsDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Description,
+                        contentDescription = null,
+                        tint = EmeraldPrimary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Terms & Conditions", fontWeight = FontWeight.ExtraBold)
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 380.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "1. Agricultural Advisory Disclaimer",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldPrimary)
+                    )
+                    Text(
+                        text = "Fasal Drishti AI is designed as a digital agronomic decision-support system. While our dual-layer AI models strive for highest precision, farmers and users are advised to verify critical chemical applications with local agricultural extension officers or certified KVK agronomists.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f), lineHeight = 18.sp)
+                    )
+
+                    Text(
+                        text = "2. Safe Chemical Handling",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldPrimary)
+                    )
+                    Text(
+                        text = "Always wear protective gloves and masks when preparing and spraying chemical fungicides or pesticides. Dispose of empty containers safely following statutory environmental guidelines.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f), lineHeight = 18.sp)
+                    )
+
+                    Text(
+                        text = "3. Free & Open Access",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldPrimary)
+                    )
+                    Text(
+                        text = "Fasal Drishti AI is distributed completely free of charge for Indian farmers, agricultural students, and researchers. Commercial resale of this app without open-source attribution is prohibited.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f), lineHeight = 18.sp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showTermsDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                ) {
+                    Text("I Understand", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            }
+        )
+    }
+
+    if (showPrivacyDialog) {
+        AlertDialog(
+            onDismissRequest = { showPrivacyDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Security,
+                        contentDescription = null,
+                        tint = EmeraldPrimary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Privacy Policy", fontWeight = FontWeight.ExtraBold)
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 380.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "1. User Privacy & Local Data",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldPrimary)
+                    )
+                    Text(
+                        text = "Fasal Drishti AI prioritizes user privacy. All personal crop diagnostic histories and conversational chats with AI Salah are stored securely inside your phone's encrypted on-device SQLite database.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f), lineHeight = 18.sp)
+                    )
+
+                    Text(
+                        text = "2. Permissions Usage",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldPrimary)
+                    )
+                    Text(
+                        text = "Camera permission is used strictly in real-time for optical leaf inspection. Audio microphone permission is activated only when you choose to ask queries via voice to AI Salah.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f), lineHeight = 18.sp)
+                    )
+
+                    Text(
+                        text = "3. Zero Ads & Telemetry Leaks",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = EmeraldPrimary)
+                    )
+                    Text(
+                        text = "The application contains zero third-party ads, zero tracking scripts, and never monetizes or sells farmer agricultural records to commercial entities.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f), lineHeight = 18.sp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showPrivacyDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                ) {
+                    Text("Got It", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            }
+        )
+    }
 
     if (showClearDialog) {
         AlertDialog(
@@ -291,6 +419,51 @@ fun ProfileScreen(
                             subtitle = "Log out from current session",
                             onClick = onLogout,
                             tint = CrimsonCoral
+                        )
+                    }
+                }
+            }
+
+            // 5. LEGAL & SUPPORT CARD
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+                ) {
+                    Column(modifier = Modifier.padding(6.dp)) {
+                        Text(
+                            text = "Legal & Support",
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 13.sp
+                            ),
+                            modifier = Modifier.padding(start = 16.dp, top = 10.dp, bottom = 4.dp)
+                        )
+                        ProfileTile(
+                            icon = Icons.Default.Description,
+                            title = "Terms & Conditions",
+                            subtitle = "Advisory disclaimer & usage guidelines",
+                            onClick = { showTermsDialog = true },
+                            tint = EmeraldPrimary
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f), modifier = Modifier.padding(horizontal = 14.dp))
+                        ProfileTile(
+                            icon = Icons.Default.Security,
+                            title = "Privacy Policy",
+                            subtitle = "User data safety & zero telemetry",
+                            onClick = { showPrivacyDialog = true },
+                            tint = EmeraldPrimary
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f), modifier = Modifier.padding(horizontal = 14.dp))
+                        ProfileTile(
+                            icon = Icons.Default.Info,
+                            title = "About",
+                            subtitle = "Architecture, team & project credits",
+                            onClick = onNavigateToAbout,
+                            tint = EmeraldPrimary
                         )
                     }
                 }
