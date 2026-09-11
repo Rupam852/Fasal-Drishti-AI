@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 
 data class AppUpdateInfo(
-    val currentVersion: String = "1.0.8",
-    val latestVersion: String = "1.0.8",
+    val currentVersion: String = "1.0.9",
+    val latestVersion: String = "1.0.9",
     val hasUpdate: Boolean = false,
     val downloadUrl: String? = null,
     val releaseNotes: String = "",
@@ -34,16 +34,18 @@ class UpdateManager(private val context: Context) {
 
     private val _updateInfo = MutableStateFlow(
         AppUpdateInfo(
-            currentVersion = "v1.0.8",
-            latestVersion = "v1.0.8",
+            currentVersion = "v1.0.9",
+            latestVersion = "v1.0.9",
             hasUpdate = false,
             releaseNotes = """
+• 🖼️ + Icon Photo Attachment with Auto Client-Side Compression (~80KB)
+• 🎯 Targeted Plant Diagnostic Consultation vs 24x7 Agronomist Mode
+• 🛡️ Agronomic Guardrails & Non-Crop Foliage Detection
+• 💾 Dynamic Local Chat Storage Tracker in Profile Screen
 • 🎙️ Multilingual Voice Assistant (Speech-to-Text & Audio Playback)
 • 📄 One-Tap PDF Prescription & Direct WhatsApp Share
 • 🧪 Fertilizer & NPK Dosage Calculator (Acre, Bigha, Hectare)
 • 🌾 Live Mandi Bhav & APMC Rates with Smart AI Advice
-• 🏛️ Sarkari Krishi Yojanaen & PM-Kisan Portal Guide
-• 🌱 Soil Health & Crop Advisor AI (NPK & pH Testing)
 • ⚡ 120Hz Ultra-Fluid UI & Precision Disease Detection
             """.trimIndent()
         )

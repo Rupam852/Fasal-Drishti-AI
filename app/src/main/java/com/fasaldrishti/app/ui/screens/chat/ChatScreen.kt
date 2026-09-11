@@ -1,7 +1,12 @@
 package com.fasaldrishti.app.ui.screens.chat
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -31,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -41,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.graphics.graphicsLayer
+import coil.compose.AsyncImage
 import com.fasaldrishti.app.domain.model.ChatMessage
 import com.fasaldrishti.app.ui.theme.CrimsonCoral
 import com.fasaldrishti.app.ui.theme.EmeraldDark
@@ -48,6 +55,10 @@ import com.fasaldrishti.app.ui.theme.EmeraldPrimary
 import com.fasaldrishti.app.ui.theme.ObsidianVoid
 import com.fasaldrishti.app.ui.theme.SolarGold
 import com.fasaldrishti.app.util.VoiceAssistantManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 
 @Composable
 fun ChatScreen(
@@ -57,9 +68,27 @@ fun ChatScreen(
     onNavigateToAiConfig: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
+    var attachedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var attachedBase64 by remember { mutableStateOf<String?>(null) }
+    var isCompressingImage by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            attachedImageUri = uri
+            isCompressingImage = true
+            coroutineScope.launch {
+                val compressed = compressImageUriToBase64(context, uri)
+                attachedBase64 = compressed?.second
+                isCompressingImage = false
+            }
+        }
+    }
 
     val voiceAssistant = remember { VoiceAssistantManager(context) }
     val isListening by voiceAssistant.isListening.collectAsState()
@@ -122,16 +151,32 @@ fun ChatScreen(
         )
     }
 
-    val suggestedChips = listOf(
-        "🇮🇳 Explain in Hindi",
-        "🧪 Chemical Spray & Dosage",
-        "🌿 Organic & Bio Remedies",
-        "🌾 Explain in Bengali",
-        "🌾 Explain in Marathi",
-        "Is it contagious to other crops?"
-    )
+    val hasContext = !uiState.contextInfo.isNullOrBlank()
+    val suggestedChips = remember(uiState.contextInfo) {
+        if (hasContext) {
+            listOf(
+                "🧪 Exact Dosage & Spray Chart",
+                "🌿 Organic & Bio Remedies",
+                "⏳ Recovery Timeline & PHI",
+                "🌧️ Weather & Rain Precautions",
+                "🇮🇳 Explain in Hindi",
+                "🌾 Explain in Bengali",
+                "Is this disease contagious?"
+            )
+        } else {
+            listOf(
+                "🧪 Fertilizer (NPK) Dosage Help",
+                "🌾 Rice & Wheat Disease Advice",
+                "🌧️ Is today suitable for spraying?",
+                "🏛️ PM-Kisan Yojana Details",
+                "🇮🇳 Hindi me samjhaiye",
+                "🌾 বাংলা ভাষায় বলুন"
+            )
+        }
+    }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -145,16 +190,14 @@ fun ChatScreen(
                         .padding(horizontal = 16.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (contextInfo != null) {
-                        IconButton(
-                            onClick = onNavigateBack,
-                            modifier = Modifier.padding(end = 4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = strings.backButton
-                            )
-                        }
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.padding(end = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = strings.backButton
+                        )
                     }
 
                     Box(
@@ -309,8 +352,9 @@ fun ChatScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .navigationBarsPadding()
                     .imePadding()
-                    .padding(start = 14.dp, end = 14.dp, top = 2.dp, bottom = 4.dp)
+                    .padding(start = 14.dp, end = 14.dp, top = 2.dp, bottom = 8.dp)
             ) {
                 // Quick suggested reply chips
                 LazyRow(
@@ -338,6 +382,64 @@ fun ChatScreen(
                     }
                 }
 
+                // Attached Photo Preview
+                AnimatedVisibility(
+                    visible = attachedImageUri != null,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    attachedImageUri?.let { uri ->
+                        Box(
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .size(76.dp)
+                                .shadow(4.dp, RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(14.dp))
+                                .border(1.5.dp, EmeraldPrimary, RoundedCornerShape(14.dp))
+                        ) {
+                            AsyncImage(
+                                model = uri,
+                                contentDescription = "Attached crop image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                            if (isCompressingImage) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.Black.copy(alpha = 0.55f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(22.dp),
+                                        color = EmeraldPrimary,
+                                        strokeWidth = 2.5.dp
+                                    )
+                                }
+                            }
+                            IconButton(
+                                onClick = {
+                                    attachedImageUri = null
+                                    attachedBase64 = null
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(4.dp)
+                                    .size(20.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black.copy(alpha = 0.65f))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Remove photo",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
                 // Chat Input Row
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -349,9 +451,30 @@ fun ChatScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 12.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+                            .padding(start = 6.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // + Photo Attachment Button
+                        IconButton(
+                            onClick = {
+                                imagePickerLauncher.launch("image/*")
+                            },
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (attachedImageUri != null) EmeraldPrimary.copy(alpha = 0.2f)
+                                    else EmeraldPrimary.copy(alpha = 0.10f)
+                                )
+                        ) {
+                            Icon(
+                                imageVector = if (attachedImageUri != null) Icons.Default.AddPhotoAlternate else Icons.Default.Add,
+                                contentDescription = "Attach crop photo",
+                                tint = EmeraldPrimary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+
                         OutlinedTextField(
                             value = inputText,
                             onValueChange = { inputText = it },
@@ -417,27 +540,35 @@ fun ChatScreen(
                             )
                         }
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
 
+                        val canSend = (inputText.isNotBlank() || attachedImageUri != null) && !isCompressingImage
                         IconButton(
                             onClick = {
-                                if (inputText.isNotBlank()) {
-                                    viewModel.sendMessage(inputText)
+                                if (canSend) {
+                                    viewModel.sendMessage(
+                                        userText = inputText,
+                                        imageUri = attachedImageUri?.toString(),
+                                        base64Image = attachedBase64
+                                    )
                                     inputText = ""
+                                    attachedImageUri = null
+                                    attachedBase64 = null
                                 }
                             },
+                            enabled = canSend,
                             modifier = Modifier
                                 .size(38.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    if (inputText.isNotBlank()) EmeraldPrimary
+                                    if (canSend) EmeraldPrimary
                                     else Color.Transparent
                                 )
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = "Send",
-                                tint = if (inputText.isNotBlank()) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
+                                tint = if (canSend) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -455,34 +586,142 @@ fun ChatScreen(
             contentPadding = PaddingValues(top = 4.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Pinned Context Card
+            // Pinned Consultation Banner (Plant Specific vs General Mode)
             if (uiState.contextInfo != null) {
                 item {
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(18.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(4.dp, RoundedCornerShape(20.dp)),
+                        shape = RoundedCornerShape(20.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                            containerColor = MaterialTheme.colorScheme.surface
                         ),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f))
+                        border = androidx.compose.foundation.BorderStroke(1.2.dp, EmeraldPrimary.copy(alpha = 0.6f))
                     ) {
-                        Row(
-                            modifier = Modifier.padding(14.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(14.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = EmeraldDark
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(EmeraldPrimary.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Spa,
+                                        contentDescription = null,
+                                        tint = EmeraldPrimary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "Active Plant Consultation",
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                fontWeight = FontWeight.ExtraBold,
+                                                color = EmeraldPrimary,
+                                                fontSize = 12.sp
+                                            )
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = EmeraldPrimary.copy(alpha = 0.15f)
+                                        ) {
+                                            Text(
+                                                text = "TARGETED AI",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontWeight = FontWeight.ExtraBold,
+                                                    fontSize = 9.sp,
+                                                    color = EmeraldPrimary
+                                                ),
+                                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        text = uiState.contextInfo ?: "Diagnosed Crop Condition",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.5.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "Diagnosed Context: ${uiState.contextInfo}",
+                                text = "🎯 AI Salahkar is providing targeted chemical dosages, organic remedies & recovery advice specifically for this diagnosis.",
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                                    fontSize = 11.5.sp,
+                                    lineHeight = 16.sp
                                 )
                             )
+                        }
+                    }
+                }
+            } else if (uiState.messages.size <= 2) {
+                // General Mode Welcome Hero Card (when opened from Home Screen)
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(2.dp, RoundedCornerShape(20.dp)),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(42.dp)
+                                    .clip(CircleShape)
+                                    .background(EmeraldPrimary.copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Psychology,
+                                    contentDescription = null,
+                                    tint = EmeraldPrimary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "🌾 24x7 Digital Agronomist (Fasal Salah)",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 14.sp
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Ask any farming question or tap the mic 🎙️ to speak in Hindi or your mother tongue.",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                                        fontSize = 11.5.sp,
+                                        lineHeight = 15.sp
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -615,6 +854,20 @@ private fun ChatMessageBubble(
             modifier = Modifier.widthIn(max = 320.dp)
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
+                // Attached Image in Bubble (if sent by user)
+                if (!message.imageUri.isNullOrBlank()) {
+                    AsyncImage(
+                        model = message.imageUri,
+                        contentDescription = "Attached crop image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 220.dp)
+                            .padding(bottom = 8.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
                 // If it is an Error Message, show Header Badge
                 if (isError) {
                     Row(
@@ -811,3 +1064,47 @@ private fun parseMarkdownToAnnotatedString(rawText: String): AnnotatedString {
         }
     }
 }
+
+/**
+ * Downsamples and compresses high-resolution gallery/camera photos (4MB-15MB)
+ * to a lightweight max 800x800 JPEG (quality 80, ~80KB-120KB) and encodes to Base64.
+ * Prevents multimodal model payload limits, network latency & fallback failures.
+ */
+private suspend fun compressImageUriToBase64(context: Context, uri: Uri): Pair<String, String>? = withContext(Dispatchers.IO) {
+    try {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return@withContext null
+        val originalBitmap = BitmapFactory.decodeStream(inputStream)
+        inputStream.close()
+        if (originalBitmap == null) return@withContext null
+
+        val maxDimension = 800
+        val width = originalBitmap.width
+        val height = originalBitmap.height
+        val scale = if (width > maxDimension || height > maxDimension) {
+            maxDimension.toFloat() / maxOf(width, height)
+        } else {
+            1.0f
+        }
+
+        val scaledBitmap = if (scale < 1.0f) {
+            Bitmap.createScaledBitmap(
+                originalBitmap,
+                (width * scale).toInt(),
+                (height * scale).toInt(),
+                true
+            )
+        } else {
+            originalBitmap
+        }
+
+        val outputStream = ByteArrayOutputStream()
+        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+        val byteArray = outputStream.toByteArray()
+        val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
+
+        Pair(uri.toString(), base64String)
+    } catch (e: Exception) {
+        null
+    }
+}
+

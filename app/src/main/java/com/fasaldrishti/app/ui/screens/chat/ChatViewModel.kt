@@ -38,16 +38,18 @@ class ChatViewModel(
     fun initContext(context: String?) {
         val savedMessages = localChatManager.loadMessages()
 
+        val cleanContext = context?.removePrefix("Condition: ")?.trim()
+
         if (savedMessages.isNotEmpty()) {
             _uiState.value = _uiState.value.copy(
-                contextInfo = context ?: _uiState.value.contextInfo,
+                contextInfo = cleanContext ?: _uiState.value.contextInfo,
                 messages = savedMessages
             )
-            // If new diagnosis context arrives that wasn't previously greeted, add greeting
-            if (context != null && savedMessages.none { it.text.contains(context) }) {
+            // If new diagnosis context arrives that wasn't previously greeted, add a clear contextual greeting
+            if (cleanContext != null && savedMessages.none { it.text.contains(cleanContext, ignoreCase = true) }) {
                 val contextGreeting = ChatMessage(
                     id = UUID.randomUUID().toString(),
-                    text = "Namaste! I am your AI Agronomist 🌾. I see you just scanned: $context. Feel free to ask about chemical spray dosages, organic remedies, or prevention!",
+                    text = "Namaste Kisan Bhai! 🙏 I have loaded your diagnostic report for **$cleanContext**.\n\nI can assist you specifically with:\n• 🧪 Exact fungicide / pesticide spray dosages per liter water\n• 🌿 Non-toxic organic & bio-remedies\n• ⏳ Pre-harvest interval (PHI) & recovery timeline\n• 🌧️ Weather-based spray precautions\n\nWhat would you like to know about this crop condition?",
                     isUser = false
                 )
                 val updated = savedMessages + contextGreeting
@@ -55,22 +57,22 @@ class ChatViewModel(
                 localChatManager.saveMessages(updated)
             }
         } else {
-            val initialMessage = if (context != null) {
+            val initialMessage = if (cleanContext != null) {
                 ChatMessage(
                     id = UUID.randomUUID().toString(),
-                    text = "Namaste! I am your AI Agronomist 🌾. I have reviewed your scan diagnosis ($context). How can I assist you with treatment dosages, spray schedules, or soil management?",
+                    text = "Namaste Kisan Bhai! 🙏 I have loaded your diagnostic report for **$cleanContext**.\n\nI can assist you specifically with:\n• 🧪 Exact fungicide / pesticide spray dosages per liter water\n• 🌿 Non-toxic organic & bio-remedies\n• ⏳ Pre-harvest interval (PHI) & recovery timeline\n• 🌧️ Weather-based spray precautions\n\nWhat would you like to know about this crop condition?",
                     isUser = false
                 )
             } else {
                 ChatMessage(
                     id = UUID.randomUUID().toString(),
-                    text = "Namaste! I am Fasal Drishti's AI Agronomist 🌾. Ask me anything about crop diseases, pest controls, fertilizers, and organic treatments. You can also select your preferred response language from the top bar!",
+                    text = "Namaste Kisan Bhai! 🌾 I am your 24x7 Digital Agronomist (Fasal Salahkar).\n\nAsk me anything about:\n• 🌿 Crop disease diagnosis & prevention\n• 🧪 NPK fertilizer calculation & soil health\n• 🌾 Mandi rates & best harvest timings\n• 🏛️ PM-Kisan & government agriculture schemes\n\nYou can also tap the mic 🎙️ to ask queries in Hindi or your regional language!",
                     isUser = false
                 )
             }
             val initialList = listOf(initialMessage)
             _uiState.value = _uiState.value.copy(
-                contextInfo = context,
+                contextInfo = cleanContext,
                 messages = initialList
             )
             localChatManager.saveMessages(initialList)
@@ -86,23 +88,25 @@ class ChatViewModel(
         executeAiAdvisory(query)
     }
 
-    fun sendMessage(userText: String) {
-        if (userText.isBlank()) return
+    fun sendMessage(userText: String, imageUri: String? = null, base64Image: String? = null) {
+        val query = if (userText.isBlank() && imageUri != null) "Please analyze this attached crop photo and tell me the disease, symptoms, and spray treatment." else userText
+        if (query.isBlank() && imageUri == null) return
 
         val userMessage = ChatMessage(
             id = UUID.randomUUID().toString(),
-            text = userText,
-            isUser = true
+            text = query,
+            isUser = true,
+            imageUri = imageUri
         )
 
         val updatedMessages = _uiState.value.messages + userMessage
         _uiState.value = _uiState.value.copy(messages = updatedMessages, isAiTyping = true)
         localChatManager.saveMessages(updatedMessages)
 
-        executeAiAdvisory(userText)
+        executeAiAdvisory(query, base64Image)
     }
 
-    private fun executeAiAdvisory(query: String) {
+    private fun executeAiAdvisory(query: String, base64Image: String? = null) {
         viewModelScope.launch {
             delay(500)
             val primaryClass = _uiState.value.contextInfo ?: "General Crop Query"
@@ -111,7 +115,8 @@ class ChatViewModel(
                 primaryClass = primaryClass,
                 confidence = 0.94f,
                 query = query,
-                language = currentLang
+                language = currentLang,
+                base64Image = base64Image
             )
 
             result.onSuccess { aiReplyText ->

@@ -236,7 +236,8 @@ class GeminiClient(
         primaryClass: String,
         confidence: Float,
         query: String,
-        language: String
+        language: String,
+        base64Image: String? = null
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
             val apiKey = resolveApiKey()
@@ -247,18 +248,23 @@ class GeminiClient(
             }
 
             val prompt = """
-                You are 'Fasal Drishti AI Salahkar' 🌾, an expert agronomist and plant pathologist helping Indian farmers.
-                Current diagnosed crop & condition: $primaryClass (confidence: ${(confidence * 100).toInt()}%).
+                You are 'Fasal Drishti AI Salahkar' 🌾, a senior agronomist and plant pathologist helping Indian farmers.
+                Current diagnosed crop context: $primaryClass (confidence: ${(confidence * 100).toInt()}%).
                 Farmer's question: "$query"
                 Preferred Response Language: $language
 
-                Guidelines:
-                1. Give practical, farmer-friendly advice formatted cleanly with bullet points (•) and emojis.
-                2. If disease is present: State exact chemical fungicide/pesticide dosage (e.g. grams/ml per Litre of water and per 15L backpack pump tank).
-                3. Provide safe, low-cost organic / bio-control remedies (e.g. Neem oil, Trichoderma viride, Cow urine/Jeevamrutha, Crop rotation).
-                4. Give preventive cultural tips (irrigation timing, balanced NPK, avoiding water stagnation).
-                5. Keep language natural, encouraging, and easy to understand for Indian farmers.
-                6. Avoid raw asterisks/stars (no ** or *); use clear text and emojis for highlights.
+                MANDATORY AGRONOMIC GUARDRAILS & INSTRUCTIONS:
+                1. IF AN IMAGE IS ATTACHED:
+                   - Inspect the image carefully.
+                   - If it contains a crop, plant leaf, fruit, farm soil, or pest: Identify the crop, identify any visible infection/deficiency, and give precise chemical spray dosages (per Litre water and per 15L tank) + organic remedies.
+                   - If it is NOT a crop/plant (e.g. human face, selfie, car, building, animal, electronics, random object):
+                     Politely reply in $language:
+                     "🌿 Di gayi tasveer me koi fasal ya paudha nazar nahi aa raha hai. Kripya fasal ke patte, tane ya fal ki saaf photo upload karein taaki main sahi bimari aur spray bata sakoon."
+                2. IF USER'S QUESTION IS OUT-OF-SCOPE (e.g. movies, politics, coding, gossip, non-agricultural queries):
+                   Politely reply in $language:
+                   "🙏 Kisan Bhai, main Fasal Drishti ka Krishi Salahkar hoon. Main sirf fasal, kheti-badi, rog-keet, khad, mausam aur sarkari krishi yojanaon me aapki madad kar sakta hoon. Kripya kheti se juda sawal poochein."
+                3. SAFETY RULE: Never recommend applying agricultural pesticides or chemicals onto humans, children, pets, or food directly.
+                4. FORMATTING: Use clean bullet points (•) and emojis. Keep instructions clear and actionable for Indian farmers. Avoid raw markdown asterisks (no ** or *).
             """.trimIndent()
 
             val jsonBody = JSONObject().apply {
@@ -268,6 +274,15 @@ class GeminiClient(
                             put(JSONObject().apply {
                                 put("text", prompt)
                             })
+                            if (!base64Image.isNullOrBlank()) {
+                                put(JSONObject().apply {
+                                    val inlineData = JSONObject().apply {
+                                        put("mime_type", "image/jpeg")
+                                        put("data", base64Image)
+                                    }
+                                    put("inline_data", inlineData)
+                                })
+                            }
                         }
                         put("parts", parts)
                     })

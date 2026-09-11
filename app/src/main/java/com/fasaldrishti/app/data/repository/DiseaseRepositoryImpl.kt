@@ -712,7 +712,8 @@ class DiseaseRepositoryImpl(
         primaryClass: String,
         confidence: Float,
         query: String,
-        language: String
+        language: String,
+        base64Image: String?
     ): Result<String> = withContext(Dispatchers.IO) {
         // 1. PRIMARY: Try Google Gemini Multimodal AI
         if (geminiClient != null) {
@@ -720,7 +721,8 @@ class DiseaseRepositoryImpl(
                 primaryClass = primaryClass,
                 confidence = confidence,
                 query = query,
-                language = language
+                language = language,
+                base64Image = base64Image
             )
             if (geminiResult.isSuccess) {
                 return@withContext geminiResult

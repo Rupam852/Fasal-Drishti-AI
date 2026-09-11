@@ -79,7 +79,6 @@ fun AppNavHost(
     val showBottomBar = currentRoute in listOf(
         Screen.Home.route,
         Screen.History.route,
-        Screen.Chat.route,
         Screen.Profile.route
     )
 

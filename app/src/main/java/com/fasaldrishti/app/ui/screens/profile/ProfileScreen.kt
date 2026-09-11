@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,10 +49,14 @@ fun ProfileScreen(
     onClearChatHistory: () -> Unit = {},
     onLogout: () -> Unit
 ) {
+    val context = LocalContext.current
     val strings = com.fasaldrishti.app.ui.localization.LocalAppStrings.current
     val authState by authViewModel.uiState.collectAsState()
     val user = authState.user
     val updateInfo by updateManager.updateInfo.collectAsState()
+    val chatManager = remember { com.fasaldrishti.app.data.local.LocalChatManager(context) }
+    var chatStorageInfo by remember { mutableStateOf(chatManager.getChatStorageSizeFormatted()) }
+    var chatMsgCount by remember { mutableIntStateOf(chatManager.getChatMessageCount()) }
     var showClearDialog by remember { mutableStateOf(false) }
     var showClearChatDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -219,6 +224,8 @@ fun ProfileScreen(
                 Button(
                     onClick = {
                         onClearChatHistory()
+                        chatStorageInfo = "0 KB"
+                        chatMsgCount = 0
                         showClearChatDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -443,7 +450,7 @@ fun ProfileScreen(
                         ProfileTile(
                             icon = Icons.Default.ChatBubbleOutline,
                             title = "Clear AI Chat History",
-                            subtitle = "Delete local conversation messages from this device",
+                            subtitle = "Delete local conversation messages (💾 $chatStorageInfo • $chatMsgCount msgs)",
                             onClick = { showClearChatDialog = true },
                             tint = CrimsonCoral
                         )

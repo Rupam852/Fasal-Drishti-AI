@@ -69,8 +69,16 @@ class MainActivity : ComponentActivity() {
             }
             val pendingDestination by pendingDestinationState
 
+            // Normalize system font scaling so large OS font settings do not break UI layouts
+            val currentDensity = androidx.compose.ui.platform.LocalDensity.current
+            val normalizedDensity = androidx.compose.ui.unit.Density(
+                density = currentDensity.density,
+                fontScale = 1.0f
+            )
+
             FasalDrishtiTheme(darkTheme = isDarkTheme) {
                 androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.ui.platform.LocalDensity provides normalizedDensity,
                     com.fasaldrishti.app.ui.localization.LocalAppStrings provides com.fasaldrishti.app.ui.localization.getAppStrings(currentLanguage)
                 ) {
                     Surface(
@@ -100,6 +108,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val config = newBase.resources.configuration
+        config.fontScale = 1.0f
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -15,6 +15,7 @@ data class ChatMessage(
     val text: String,
     val isUser: Boolean,
     val timestamp: Long = System.currentTimeMillis(),
+    val imageUri: String? = null,
     val isError: Boolean = false,
     val isApiKeyError: Boolean = false,
     val failedQuery: String? = null
