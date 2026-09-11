@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 
 data class AppUpdateInfo(
-    val currentVersion: String = "1.0.9",
-    val latestVersion: String = "1.0.9",
+    val currentVersion: String = "1.1.0",
+    val latestVersion: String = "1.1.0",
     val hasUpdate: Boolean = false,
     val downloadUrl: String? = null,
     val releaseNotes: String = "",
@@ -34,19 +34,18 @@ class UpdateManager(private val context: Context) {
 
     private val _updateInfo = MutableStateFlow(
         AppUpdateInfo(
-            currentVersion = "v1.0.9",
-            latestVersion = "v1.0.9",
+            currentVersion = "v1.1.0",
+            latestVersion = "v1.1.0",
             hasUpdate = false,
             releaseNotes = """
-• 🖼️ + Icon Photo Attachment with Auto Client-Side Compression (~80KB)
-• 🎯 Targeted Plant Diagnostic Consultation vs 24x7 Agronomist Mode
-• 🛡️ Agronomic Guardrails & Non-Crop Foliage Detection
-• 💾 Dynamic Local Chat Storage Tracker in Profile Screen
-• 🎙️ Multilingual Voice Assistant (Speech-to-Text & Audio Playback)
-• 📄 One-Tap PDF Prescription & Direct WhatsApp Share
-• 🧪 Fertilizer & NPK Dosage Calculator (Acre, Bigha, Hectare)
-• 🌾 Live Mandi Bhav & APMC Rates with Smart AI Advice
-• ⚡ 120Hz Ultra-Fluid UI & Precision Disease Detection
+• 🧠 Smart Multi-Turn Conversational Memory (AI remembers ongoing chat & follow-up questions)
+• 🌾 5-Section In-Depth Diagnostic Dossiers (Crop/Disease, Causes, Chemical Dose per L/15L pump, Organic remedies, Recovery schedule)
+• 🎯 Context-Aware Multi-Angle Photo Analysis in Plant Consultations
+• 🖼️ Multi-Photo Attachments (Up to 3 Photos with Tap-to-Zoom & Safe Deletion)
+• 🌐 Seamless 12-Language Support with Auto-Synced Greetings
+• 💾 Isolated Multi-Session Local Storage per Plant & Clean Top Bar
+• 📄 PDF Diagnostic Prescription & WhatsApp Share
+• 🧪 Fertilizer NPK Calculator & Mandi Bhav Rates
             """.trimIndent()
         )
     )

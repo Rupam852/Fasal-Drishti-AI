@@ -714,7 +714,8 @@ class DiseaseRepositoryImpl(
         query: String,
         language: String,
         base64Image: String?,
-        base64Images: List<String>
+        base64Images: List<String>,
+        conversationHistory: List<com.fasaldrishti.app.domain.model.ChatMessage>
     ): Result<String> = withContext(Dispatchers.IO) {
         // 1. PRIMARY: Try Google Gemini Multimodal AI
         if (geminiClient != null) {
@@ -724,7 +725,8 @@ class DiseaseRepositoryImpl(
                 query = query,
                 language = language,
                 base64Image = base64Image,
-                base64Images = base64Images
+                base64Images = base64Images,
+                conversationHistory = conversationHistory
             )
             if (geminiResult.isSuccess) {
                 return@withContext geminiResult
@@ -736,7 +738,8 @@ class DiseaseRepositoryImpl(
             primaryClass = primaryClass,
             confidence = confidence,
             query = query,
-            language = language
+            language = language,
+            conversationHistory = conversationHistory
         )
     }
 }

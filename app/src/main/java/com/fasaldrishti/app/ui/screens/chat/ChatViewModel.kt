@@ -176,11 +176,22 @@ class ChatViewModel(
         val allUris = if (imageUris.isNotEmpty()) imageUris else if (!imageUri.isNullOrBlank()) listOf(imageUri) else emptyList()
         val allBase64 = if (base64Images.isNotEmpty()) base64Images else if (!base64Image.isNullOrBlank()) listOf(base64Image) else emptyList()
 
+        val currentLang = _uiState.value.selectedLanguage.lowercase()
+        val displayUserText = if (userText.isBlank() && allUris.isNotEmpty()) {
+            when {
+                currentLang.contains("bengali") || currentLang.contains("বাংলা") -> "🌾 অনুগ্রহ করে এই ফসলের পাতার ছবিটি পরীক্ষা করে রোগ, লক্ষণ ও স্প্রে ওষুধের সঠিক মাত্রা জানান।"
+                currentLang.contains("hindi") || currentLang.contains("हिन्दी") -> "🌾 कृपया इस फसल/पत्ते की फोटो देखकर बीमारी का नाम, लक्षण और छिड़काव की सही दवा व मात्रा बताएं।"
+                currentLang.contains("hinglish") -> "🌾 Kripya is fasal ki photo dekhkar bimari, lakshan aur spray dawai ki sahi matra batayein."
+                currentLang.contains("marathi") || currentLang.contains("मराठी") -> "🌾 कृपया या पिकाच्या फोटोचे परीक्षण करून रोग, लक्षणे आणि फवारणी औषधांचे प्रमाण सांगा."
+                else -> "🌾 Please analyze this crop photo and provide complete diagnosis, symptoms, and exact spray dosages."
+            }
+        } else userText
+
         val query = if (userText.isBlank() && allUris.isNotEmpty()) {
             if (allUris.size > 1) {
-                "Please examine these ${allUris.size} attached crop photos (cross-referencing upper/lower foliage, stem & symptoms) and provide an accurate diagnosis with chemical dosages and organic remedies."
+                "Please thoroughly analyze these ${allUris.size} attached crop photos. Identify the crop species, detect any disease/pest/deficiency, and provide a full 5-section agronomic report with exact chemical spray dosages (per L and per 15L tank) and organic remedies."
             } else {
-                "Please analyze this attached crop photo and tell me the disease, symptoms, and spray treatment."
+                "Please thoroughly analyze this attached crop photo. Identify the crop, diagnose any disease or pest, and provide a complete 5-section agronomic advisory with exact chemical dosages per litre and per 15L tank, organic remedies, and recovery timeline."
             }
         } else userText
 
@@ -188,7 +199,7 @@ class ChatViewModel(
 
         val userMessage = ChatMessage(
             id = UUID.randomUUID().toString(),
-            text = query,
+            text = displayUserText,
             isUser = true,
             imageUri = allUris.firstOrNull(),
             imageUris = allUris
@@ -207,13 +218,15 @@ class ChatViewModel(
             val sessionId = _uiState.value.currentSessionId
             val primaryClass = _uiState.value.contextInfo ?: "General Crop Query"
             val currentLang = _uiState.value.selectedLanguage
+            val recentHistory = _uiState.value.messages.dropLast(1).takeLast(6)
             val result = diseaseRepository.askAiAdvisory(
                 primaryClass = primaryClass,
                 confidence = 0.94f,
                 query = query,
                 language = currentLang,
                 base64Image = base64Images.firstOrNull(),
-                base64Images = base64Images
+                base64Images = base64Images,
+                conversationHistory = recentHistory
             )
 
             result.onSuccess { aiReplyText ->

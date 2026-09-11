@@ -11,6 +11,7 @@ interface DiseaseRepository {
         query: String,
         language: String,
         base64Image: String? = null,
-        base64Images: List<String> = emptyList()
+        base64Images: List<String> = emptyList(),
+        conversationHistory: List<com.fasaldrishti.app.domain.model.ChatMessage> = emptyList()
     ): Result<String>
 }

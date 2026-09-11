@@ -224,7 +224,8 @@ class NvidiaClient(
         primaryClass: String,
         confidence: Float,
         query: String,
-        language: String = "en"
+        language: String = "en",
+        conversationHistory: List<com.fasaldrishti.app.domain.model.ChatMessage> = emptyList()
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
             val apiKey = resolveApiKey()
@@ -236,36 +237,41 @@ class NvidiaClient(
                 )
             }
 
+            val historySnippet = if (conversationHistory.isNotEmpty()) {
+                val recentTurns = conversationHistory.filterNot { it.isError || it.text.isBlank() }.takeLast(6)
+                if (recentTurns.isNotEmpty()) {
+                    "RECENT CONVERSATION CONTEXT (Last ${recentTurns.size} messages in this thread):\n" +
+                    recentTurns.joinToString("\n") { msg ->
+                        val sender = if (msg.isUser) "Farmer" else "AI Salahkar"
+                        val imageNote = if (msg.imageUris.isNotEmpty()) " [Attached ${msg.imageUris.size} crop photo(s)]" else ""
+                        "- $sender$imageNote: ${msg.text.take(300)}"
+                    } + "\n\n"
+                } else ""
+            } else ""
+
             val prompt = """
-                You are 'Fasal Drishti' (फसल दृष्टि) Senior Crop Agronomist and Plant Pathologist AI.
+                You are 'Fasal Drishti' (फसल दृष्टि) Senior Crop Agronomist and Plant Pathologist AI helping Indian farmers.
                 Context:
-                - Crop / Disease: ${primaryClass.replace("___", " ")}
+                - Active Diagnosed Crop/Condition: ${primaryClass.replace("___", " ")}
                 - AI Diagnostic Confidence: ${(confidence * 100).toInt()}%
 
-                User Message/Query: $query
+                Farmer's Message / Query: $query
 
-                CRITICAL RESPONSE LANGUAGE REQUIREMENT:
+                $historySnippet
+                CRITICAL RESPONSE PROTOCOL:
                 - Target Response Language: $language
-                - The user may write or ask questions in ANY language or script (English, Hindi, Bengali, Hinglish, etc.), but your advisory reply MUST STRICTLY be written in '$language'.
-                - If Target Language is 'Hinglish', respond in natural conversational Hindi written in English/Latin letters (e.g. "Aapke tamatar ke paudhe me Late Blight laga hai. Iske upchar ke liye Mancozeb 2.5g per litre paani me milakar spray karein...").
-                - If Target Language contains 'Hindi' or 'हिन्दी', write in Hindi (Devanagari script).
-                - If Target Language contains 'Bengali' or 'বাংলা', write in Bengali script.
-                - If Target Language contains 'Marathi' or 'मराठी', write in Marathi script.
-                - If Target Language contains 'Punjabi' or 'ਪੰਜਾਬੀ', write in Punjabi Gurmukhi script.
-                - If Target Language contains 'Gujarati' or 'ગુજરાતી', write in Gujarati script.
-                - If Target Language contains 'Telugu' or 'తెలుగు', write in Telugu script.
-                - If Target Language contains 'Tamil' or 'தமிழ்', write in Tamil script.
-                - If Target Language contains 'Kannada' or 'ಕನ್ನಡ', write in Kannada script.
-                - If Target Language contains 'Malayalam' or 'മലയാളം', write in Malayalam script.
-                - If Target Language contains 'Odia' or 'ଓଡ଼ିଆ', write in Odia script.
-                - If Target Language is 'English', write in plain English.
+                - If Target Language is 'Hinglish': Respond in conversational Hindi in Latin alphabet.
+                - If Target Language is 'Hindi', 'Bengali', 'Marathi', etc.: Write in the respective native script.
+                - Smart Follow-up Memory: If the farmer is asking a follow-up question (e.g. spray dosage, frequency, remedy), refer to the RECENT CONVERSATION CONTEXT to answer with full knowledge of the discussed crop.
 
-                ADVICE STRUCTURE:
-                1. 🔍 Problem & Cause (कारण)
-                2. 🧪 Chemical Treatment (दवा का नाम और सटीक मात्रा प्रति लीटर पानी)
-                3. 🌿 Organic / Desi Remedy (जैविक व देसी उपाय)
-                4. 🛡️ Prevention / Bachav (रोकथाम व सावधानियां)
-                Keep the vocabulary friendly, clear, and actionable for farmers.
+                MANDATORY 5-SECTION ADVICE STRUCTURE:
+                🌾 1. Fasal & Rog ki Pehchan (Crop & Condition Identification)
+                🔍 2. Karan aur Phailav (Root Cause & Weather Factors)
+                🧪 3. Chemical Spray Upchar (Standard Fungicide/Insecticide, EXACT dosage per 1 Litre AND per 15L spray tank)
+                🌿 4. Jaivik & Desi Upchar (Neem oil 5ml/L, bio-agents, pruning)
+                🛡️ 5. Theek Hone ka Samay & Mausam Savdhani (Recovery timeline, best spray time, weather precautions)
+
+                Provide a thorough, practical, and highly detailed agricultural response. Do not give a one-line answer.
             """.trimIndent()
 
             val jsonBody = JSONObject().apply {
@@ -273,7 +279,7 @@ class NvidiaClient(
                 val messages = JSONArray().apply {
                     put(JSONObject().apply {
                         put("role", "system")
-                        put("content", "You are an expert plant pathologist and agronomist for Indian agriculture.")
+                        put("content", "You are an expert plant pathologist and chief crop agronomist for Indian agriculture.")
                     })
                     put(JSONObject().apply {
                         put("role", "user")
@@ -281,8 +287,8 @@ class NvidiaClient(
                     })
                 }
                 put("messages", messages)
-                put("temperature", 0.2)
-                put("max_tokens", 600)
+                put("temperature", 0.25)
+                put("max_tokens", 1500)
             }
 
             val request = Request.Builder()
