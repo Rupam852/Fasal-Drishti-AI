@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -47,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.fasaldrishti.app.domain.model.ChatMessage
 import com.fasaldrishti.app.ui.theme.CrimsonCoral
@@ -71,20 +74,36 @@ fun ChatScreen(
     val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
-    var attachedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var attachedBase64 by remember { mutableStateOf<String?>(null) }
+    var attachedImages by remember { mutableStateOf<List<Pair<Uri, String>>>(emptyList()) }
     var isCompressingImage by remember { mutableStateOf(false) }
+    var previewFullscreenUri by remember { mutableStateOf<String?>(null) }
     val listState = rememberLazyListState()
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            attachedImageUri = uri
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        if (uris.isNotEmpty()) {
+            val remainingSlots = 3 - attachedImages.size
+            if (remainingSlots <= 0) {
+                Toast.makeText(context, "Maximum 3 photos allowed. Remove a photo to attach another.", Toast.LENGTH_SHORT).show()
+                return@rememberLauncherForActivityResult
+            }
+
+            val toProcess = uris.take(remainingSlots)
+            if (uris.size > remainingSlots) {
+                Toast.makeText(context, "Added $remainingSlots photo(s) (Maximum 3 photos limit).", Toast.LENGTH_SHORT).show()
+            }
+
             isCompressingImage = true
             coroutineScope.launch {
-                val compressed = compressImageUriToBase64(context, uri)
-                attachedBase64 = compressed?.second
+                val newlyCompressed = mutableListOf<Pair<Uri, String>>()
+                for (uri in toProcess) {
+                    val compressed = compressImageUriToBase64(context, uri)
+                    if (compressed != null) {
+                        newlyCompressed.add(Pair(uri, compressed.second))
+                    }
+                }
+                attachedImages = (attachedImages + newlyCompressed).take(3)
                 isCompressingImage = false
             }
         }
@@ -152,26 +171,63 @@ fun ChatScreen(
     }
 
     val hasContext = !uiState.contextInfo.isNullOrBlank()
-    val suggestedChips = remember(uiState.contextInfo) {
+    val currentLang = uiState.selectedLanguage.lowercase()
+    val suggestedChips = remember(uiState.contextInfo, currentLang) {
         if (hasContext) {
-            listOf(
-                "🧪 Exact Dosage & Spray Chart",
-                "🌿 Organic & Bio Remedies",
-                "⏳ Recovery Timeline & PHI",
-                "🌧️ Weather & Rain Precautions",
-                "🇮🇳 Explain in Hindi",
-                "🌾 Explain in Bengali",
-                "Is this disease contagious?"
-            )
+            when {
+                currentLang.contains("bengali") || currentLang.contains("বাংলা") -> listOf(
+                    "🧪 স্প্রে ডোজ ও ওষুধের তালিকা",
+                    "🌿 জৈব ও দেশি প্রতিকার",
+                    "⏳ ফসল তোলা ও সেরে ওঠার সময়",
+                    "🌧️ বৃষ্টি ও আবহাওয়ার সতর্কতা",
+                    "❓ এই রোগ কি অন্য গাছে ছড়ায়?"
+                )
+                currentLang.contains("hindi") || currentLang.contains("हिन्दी") -> listOf(
+                    "🧪 सही दवा और छिड़काव की मात्रा",
+                    "🌿 जैविक एवं देसी उपचार",
+                    "⏳ फसल ठीक होने का समय (PHI)",
+                    "🌧️ बारिश और मौसम सावधानियां",
+                    "❓ क्या यह बीमारी दूसरे पौधों में फैलेगी?"
+                )
+                currentLang.contains("hinglish") -> listOf(
+                    "🧪 Sahi spray dose & dawai",
+                    "🌿 Organic & desi ilaj",
+                    "⏳ Theek hone ka timeline",
+                    "🌧️ Mausam aur barish precautions",
+                    "❓ Kya ye baki paudho me failegi?"
+                )
+                else -> listOf(
+                    "🧪 Exact Dosage & Spray Chart",
+                    "🌿 Organic & Bio Remedies",
+                    "⏳ Recovery Timeline & PHI",
+                    "🌧️ Weather & Rain Precautions",
+                    "❓ Is this disease contagious?"
+                )
+            }
         } else {
-            listOf(
-                "🧪 Fertilizer (NPK) Dosage Help",
-                "🌾 Rice & Wheat Disease Advice",
-                "🌧️ Is today suitable for spraying?",
-                "🏛️ PM-Kisan Yojana Details",
-                "🇮🇳 Hindi me samjhaiye",
-                "🌾 বাংলা ভাষায় বলুন"
-            )
+            when {
+                currentLang.contains("bengali") || currentLang.contains("বাংলা") -> listOf(
+                    "🧪 সার (NPK) প্রয়োগের সঠিক নিয়ম",
+                    "🌾 ধান ও গমের রোগের প্রতিকার",
+                    "🌧️ আজ কি স্প্রে করার উপযুক্ত দিন?",
+                    "🏛️ পিএম-কিষাণ যোজনার তথ্য",
+                    "🌱 মাটির স্বাস্থ্য ও পিএইচ পরীক্ষা"
+                )
+                currentLang.contains("hindi") || currentLang.contains("हिन्दी") -> listOf(
+                    "🧪 NPK खाद की सही मात्रा",
+                    "🌾 धान और गेहूं रोग सलाह",
+                    "🌧️ क्या आज छिड़काव के लिए सही दिन है?",
+                    "🏛️ पीएम-किसान योजना विवरण",
+                    "🌱 मिट्टी की जांच और उर्वरता"
+                )
+                else -> listOf(
+                    "🧪 Fertilizer (NPK) Dosage Help",
+                    "🌾 Rice & Wheat Disease Advice",
+                    "🌧️ Is today suitable for spraying?",
+                    "🏛️ PM-Kisan Yojana Details",
+                    "🌱 Soil Health & pH Advice"
+                )
+            }
         }
     }
 
@@ -181,18 +237,18 @@ fun ChatScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 4.dp
+                shadowElevation = 3.dp
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                        .padding(start = 4.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
                         onClick = onNavigateBack,
-                        modifier = Modifier.padding(end = 4.dp)
+                        modifier = Modifier.size(38.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -202,8 +258,8 @@ fun ChatScreen(
 
                     Box(
                         modifier = Modifier
-                            .size(38.dp)
-                            .shadow(4.dp, CircleShape, spotColor = EmeraldPrimary)
+                            .size(34.dp)
+                            .shadow(3.dp, CircleShape, spotColor = EmeraldPrimary)
                             .clip(CircleShape)
                             .background(
                                 Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
@@ -214,18 +270,21 @@ fun ChatScreen(
                             imageVector = Icons.Default.Psychology,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(19.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
 
                     Text(
-                        text = strings.chatTitle,
+                        text = "AI Salahkar",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            fontSize = 17.sp
-                        )
+                            fontSize = 15.sp
+                        ),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -382,59 +441,103 @@ fun ChatScreen(
                     }
                 }
 
-                // Attached Photo Preview
+                // Attached Photos Preview Row (Supports up to 3 photos with individual remove & zoom)
                 AnimatedVisibility(
-                    visible = attachedImageUri != null,
+                    visible = attachedImages.isNotEmpty(),
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    attachedImageUri?.let { uri ->
-                        Box(
-                            modifier = Modifier
-                                .padding(bottom = 8.dp)
-                                .size(76.dp)
-                                .shadow(4.dp, RoundedCornerShape(14.dp))
-                                .clip(RoundedCornerShape(14.dp))
-                                .border(1.5.dp, EmeraldPrimary, RoundedCornerShape(14.dp))
+                    Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
                         ) {
-                            AsyncImage(
-                                model = uri,
-                                contentDescription = "Attached crop image",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
+                            Text(
+                                text = "Attached Photos (${attachedImages.size}/3)",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = EmeraldPrimary,
+                                    fontSize = 11.5.sp
+                                )
                             )
-                            if (isCompressingImage) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(Color.Black.copy(alpha = 0.55f)),
-                                    contentAlignment = Alignment.Center
+                            if (attachedImages.size >= 3) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = SolarGold.copy(alpha = 0.15f)
                                 ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(22.dp),
-                                        color = EmeraldPrimary,
-                                        strokeWidth = 2.5.dp
+                                    Text(
+                                        text = "MAX LIMIT (3)",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = SolarGold,
+                                            fontSize = 9.5.sp,
+                                            fontWeight = FontWeight.ExtraBold
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                                     )
                                 }
                             }
-                            IconButton(
-                                onClick = {
-                                    attachedImageUri = null
-                                    attachedBase64 = null
-                                },
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(4.dp)
-                                    .size(20.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Black.copy(alpha = 0.65f))
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Remove photo",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(12.dp)
-                                )
+                        }
+
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(attachedImages) { item ->
+                                val uri = item.first
+                                Box(
+                                    modifier = Modifier
+                                        .size(76.dp)
+                                        .shadow(3.dp, RoundedCornerShape(14.dp))
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .border(1.5.dp, EmeraldPrimary, RoundedCornerShape(14.dp))
+                                        .clickable {
+                                            previewFullscreenUri = uri.toString()
+                                        }
+                                ) {
+                                    AsyncImage(
+                                        model = uri,
+                                        contentDescription = "Attached crop image (tap to zoom)",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    // Remove Button (Only removes this specific photo)
+                                    IconButton(
+                                        onClick = {
+                                            attachedImages = attachedImages.filterNot { it.first == uri }
+                                        },
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(3.dp)
+                                            .size(20.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.Black.copy(alpha = 0.7f))
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Remove photo",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (isCompressingImage) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(76.dp)
+                                            .clip(RoundedCornerShape(14.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(22.dp),
+                                            color = EmeraldPrimary,
+                                            strokeWidth = 2.5.dp
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -454,24 +557,25 @@ fun ChatScreen(
                             .padding(start = 6.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // + Photo Attachment Button
+                        // + Photo Attachment Button (Enforces Max 3 Limit)
                         IconButton(
                             onClick = {
-                                imagePickerLauncher.launch("image/*")
+                                if (attachedImages.size >= 3) {
+                                    Toast.makeText(context, "Maximum 3 photos allowed. Please remove a photo to add another.", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    imagePickerLauncher.launch("image/*")
+                                }
                             },
                             modifier = Modifier
-                                .size(38.dp)
+                                .size(36.dp)
                                 .clip(CircleShape)
-                                .background(
-                                    if (attachedImageUri != null) EmeraldPrimary.copy(alpha = 0.2f)
-                                    else EmeraldPrimary.copy(alpha = 0.10f)
-                                )
+                                .background(Color.Transparent)
                         ) {
                             Icon(
-                                imageVector = if (attachedImageUri != null) Icons.Default.AddPhotoAlternate else Icons.Default.Add,
+                                imageVector = if (attachedImages.isNotEmpty()) Icons.Default.AddPhotoAlternate else Icons.Default.Add,
                                 contentDescription = "Attach crop photo",
                                 tint = EmeraldPrimary,
-                                modifier = Modifier.size(22.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         }
 
@@ -542,18 +646,17 @@ fun ChatScreen(
 
                         Spacer(modifier = Modifier.width(4.dp))
 
-                        val canSend = (inputText.isNotBlank() || attachedImageUri != null) && !isCompressingImage
+                        val canSend = (inputText.isNotBlank() || attachedImages.isNotEmpty()) && !isCompressingImage
                         IconButton(
                             onClick = {
                                 if (canSend) {
                                     viewModel.sendMessage(
                                         userText = inputText,
-                                        imageUri = attachedImageUri?.toString(),
-                                        base64Image = attachedBase64
+                                        imageUris = attachedImages.map { it.first.toString() },
+                                        base64Images = attachedImages.map { it.second }
                                     )
                                     inputText = ""
-                                    attachedImageUri = null
-                                    attachedBase64 = null
+                                    attachedImages = emptyList()
                                 }
                             },
                             enabled = canSend,
@@ -738,7 +841,10 @@ fun ChatScreen(
                     onRetry = { id, query ->
                         viewModel.retryFailedMessage(id, query)
                     },
-                    onNavigateToAiConfig = onNavigateToAiConfig
+                    onNavigateToAiConfig = onNavigateToAiConfig,
+                    onPreviewImage = { uriStr ->
+                        previewFullscreenUri = uriStr
+                    }
                 )
             }
 
@@ -776,6 +882,52 @@ fun ChatScreen(
             }
         }
     }
+
+    // Full-Screen Image Popup Dialog (Interactive Zoom View)
+    if (previewFullscreenUri != null) {
+        Dialog(
+            onDismissRequest = { previewFullscreenUri = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.94f))
+                    .clickable { previewFullscreenUri = null },
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = previewFullscreenUri,
+                    contentDescription = "Full photo preview",
+                    modifier = Modifier
+                        .fillMaxWidth(0.92f)
+                        .clip(RoundedCornerShape(18.dp))
+                        .border(1.5.dp, EmeraldPrimary.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
+                        .clickable(enabled = false) {},
+                    contentScale = ContentScale.Fit
+                )
+
+                // Close Button (Only dismisses fullscreen preview, does NOT remove photo from chat)
+                IconButton(
+                    onClick = { previewFullscreenUri = null },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .statusBarsPadding()
+                        .padding(16.dp)
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.75f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close preview",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -784,7 +936,8 @@ private fun ChatMessageBubble(
     isSpeaking: Boolean = false,
     onToggleSpeak: (String, String) -> Unit = { _, _ -> },
     onRetry: (String, String) -> Unit = { _, _ -> },
-    onNavigateToAiConfig: () -> Unit = {}
+    onNavigateToAiConfig: () -> Unit = {},
+    onPreviewImage: (String) -> Unit = {}
 ) {
     val isUser = message.isUser
     val isError = message.isError
@@ -854,18 +1007,44 @@ private fun ChatMessageBubble(
             modifier = Modifier.widthIn(max = 320.dp)
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
-                // Attached Image in Bubble (if sent by user)
-                if (!message.imageUri.isNullOrBlank()) {
-                    AsyncImage(
-                        model = message.imageUri,
-                        contentDescription = "Attached crop image",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 220.dp)
-                            .padding(bottom = 8.dp)
-                            .clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+                // Attached Images in Bubble (Supports 1, 2, or 3 images with clickable zoom)
+                if (message.allImages.isNotEmpty()) {
+                    if (message.allImages.size == 1) {
+                        val uriStr = message.allImages.first()
+                        AsyncImage(
+                            model = uriStr,
+                            contentDescription = "Attached crop image (tap to zoom)",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 220.dp)
+                                .padding(bottom = 8.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { onPreviewImage(uriStr) },
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) {
+                            items(message.allImages) { uriStr ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f), RoundedCornerShape(10.dp))
+                                        .clickable { onPreviewImage(uriStr) }
+                                ) {
+                                    AsyncImage(
+                                        model = uriStr,
+                                        contentDescription = "Attached crop image (tap to zoom)",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // If it is an Error Message, show Header Badge

@@ -16,7 +16,11 @@ data class ChatMessage(
     val isUser: Boolean,
     val timestamp: Long = System.currentTimeMillis(),
     val imageUri: String? = null,
+    val imageUris: List<String> = emptyList(),
     val isError: Boolean = false,
     val isApiKeyError: Boolean = false,
     val failedQuery: String? = null
-)
+) {
+    val allImages: List<String>
+        get() = if (imageUris.isNotEmpty()) imageUris else if (!imageUri.isNullOrBlank()) listOf(imageUri) else emptyList()
+}

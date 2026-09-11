@@ -237,7 +237,8 @@ class GeminiClient(
         confidence: Float,
         query: String,
         language: String,
-        base64Image: String? = null
+        base64Image: String? = null,
+        base64Images: List<String> = emptyList()
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
             val apiKey = resolveApiKey()
@@ -247,17 +248,20 @@ class GeminiClient(
                 return@withContext Result.failure(Exception("Gemini API key not configured"))
             }
 
+            val allImages = if (base64Images.isNotEmpty()) base64Images else if (!base64Image.isNullOrBlank()) listOf(base64Image) else emptyList()
+
             val prompt = """
                 You are 'Fasal Drishti AI Salahkar' 🌾, a senior agronomist and plant pathologist helping Indian farmers.
                 Current diagnosed crop context: $primaryClass (confidence: ${(confidence * 100).toInt()}%).
                 Farmer's question: "$query"
+                Number of crop photos attached: ${allImages.size}
                 Preferred Response Language: $language
 
                 MANDATORY AGRONOMIC GUARDRAILS & INSTRUCTIONS:
-                1. IF AN IMAGE IS ATTACHED:
-                   - Inspect the image carefully.
-                   - If it contains a crop, plant leaf, fruit, farm soil, or pest: Identify the crop, identify any visible infection/deficiency, and give precise chemical spray dosages (per Litre water and per 15L tank) + organic remedies.
-                   - If it is NOT a crop/plant (e.g. human face, selfie, car, building, animal, electronics, random object):
+                1. IF CROP PHOTO(S) ARE ATTACHED (${allImages.size} photos):
+                   - Inspect ALL attached images carefully (cross-correlate multiple angles: upper leaf, underside spots, stem/field context).
+                   - If photos contain a crop, plant leaf, fruit, farm soil, or pest: Identify the crop, detect any infection/deficiency/pest, and provide precise chemical spray dosages (per Litre water and per 15L tank) + organic bio-remedies.
+                   - If images are NOT crop/plant (e.g. human face, selfie, car, building, animal, electronics, random object):
                      Politely reply in $language:
                      "🌿 Di gayi tasveer me koi fasal ya paudha nazar nahi aa raha hai. Kripya fasal ke patte, tane ya fal ki saaf photo upload karein taaki main sahi bimari aur spray bata sakoon."
                 2. IF USER'S QUESTION IS OUT-OF-SCOPE (e.g. movies, politics, coding, gossip, non-agricultural queries):
@@ -274,14 +278,16 @@ class GeminiClient(
                             put(JSONObject().apply {
                                 put("text", prompt)
                             })
-                            if (!base64Image.isNullOrBlank()) {
-                                put(JSONObject().apply {
-                                    val inlineData = JSONObject().apply {
-                                        put("mime_type", "image/jpeg")
-                                        put("data", base64Image)
-                                    }
-                                    put("inline_data", inlineData)
-                                })
+                            for (imgBase64 in allImages) {
+                                if (imgBase64.isNotBlank()) {
+                                    put(JSONObject().apply {
+                                        val inlineData = JSONObject().apply {
+                                            put("mime_type", "image/jpeg")
+                                            put("data", imgBase64)
+                                        }
+                                        put("inline_data", inlineData)
+                                    })
+                                }
                             }
                         }
                         put("parts", parts)

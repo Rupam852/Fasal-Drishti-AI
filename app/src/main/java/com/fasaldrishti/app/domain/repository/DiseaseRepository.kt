@@ -10,6 +10,7 @@ interface DiseaseRepository {
         confidence: Float,
         query: String,
         language: String,
-        base64Image: String? = null
+        base64Image: String? = null,
+        base64Images: List<String> = emptyList()
     ): Result<String>
 }
