@@ -450,7 +450,8 @@ fun ProfileScreen(
                         ProfileTile(
                             icon = Icons.Default.ChatBubbleOutline,
                             title = "Clear AI Chat History",
-                            subtitle = "Delete local conversation messages (💾 $chatStorageInfo • $chatMsgCount msgs)",
+                            subtitle = "Delete local conversation messages",
+                            extraSubtitle = "💾 $chatStorageInfo  •  $chatMsgCount messages",
                             onClick = { showClearChatDialog = true },
                             tint = CrimsonCoral
                         )
@@ -570,6 +571,7 @@ private fun ProfileTile(
     icon: ImageVector,
     title: String,
     subtitle: String,
+    extraSubtitle: String? = null,
     onClick: () -> Unit,
     tint: Color = MaterialTheme.colorScheme.primary
 ) {
@@ -614,6 +616,17 @@ private fun ProfileTile(
                     lineHeight = 16.sp
                 )
             )
+            if (!extraSubtitle.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = extraSubtitle,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+            }
         }
         Spacer(modifier = Modifier.width(8.dp))
         Icon(

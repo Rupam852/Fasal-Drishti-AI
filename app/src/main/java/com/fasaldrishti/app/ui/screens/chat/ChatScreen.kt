@@ -134,8 +134,6 @@ fun ChatScreen(
         viewModel.initContext(contextInfo)
     }
 
-    var showClearConfirmDialog by remember { mutableStateOf(false) }
-
     LaunchedEffect(uiState.messages.size, uiState.isAiTyping) {
         if (uiState.messages.isNotEmpty()) {
             kotlinx.coroutines.delay(100)
@@ -144,31 +142,6 @@ fun ChatScreen(
     }
 
     val strings = com.fasaldrishti.app.ui.localization.LocalAppStrings.current
-    var showClearDialog by remember { mutableStateOf(false) }
-
-    if (showClearDialog) {
-        AlertDialog(
-            onDismissRequest = { showClearDialog = false },
-            title = { Text(strings.chatClearHistoryTitle, fontWeight = FontWeight.Bold) },
-            text = { Text(strings.chatClearHistoryConfirm) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.clearChat()
-                        showClearDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text(strings.chatClearHistoryButton, color = Color.White)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showClearDialog = false }) {
-                    Text(strings.chatCancelButton)
-                }
-            }
-        )
-    }
 
     val hasContext = !uiState.contextInfo.isNullOrBlank()
     val currentLang = uiState.selectedLanguage.lowercase()
@@ -389,20 +362,6 @@ fun ChatScreen(
                                 )
                             }
                         }
-                    }
-
-                    Spacer(modifier = Modifier.width(6.dp))
-
-                    IconButton(
-                        onClick = { showClearConfirmDialog = true },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DeleteOutline,
-                            contentDescription = "Clear Chat",
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.size(20.dp)
-                        )
                     }
                 }
             }
