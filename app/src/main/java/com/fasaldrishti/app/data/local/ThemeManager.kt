@@ -19,11 +19,21 @@ class ThemeManager(context: Context) {
     val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
 
     private fun loadThemeMode(): ThemeMode {
-        val saved = prefs.getString("selected_theme_mode", ThemeMode.SYSTEM.name)
+        // One-time migration for v1.1.0 to set default Light Mode for all existing & new users
+        val isMigrated = prefs.getBoolean("v1_1_0_light_theme_migrated", false)
+        if (!isMigrated) {
+            prefs.edit()
+                .putString("selected_theme_mode", ThemeMode.LIGHT.name)
+                .putBoolean("v1_1_0_light_theme_migrated", true)
+                .apply()
+            return ThemeMode.LIGHT
+        }
+
+        val saved = prefs.getString("selected_theme_mode", ThemeMode.LIGHT.name)
         return try {
-            ThemeMode.valueOf(saved ?: ThemeMode.SYSTEM.name)
+            ThemeMode.valueOf(saved ?: ThemeMode.LIGHT.name)
         } catch (_: Exception) {
-            ThemeMode.SYSTEM
+            ThemeMode.LIGHT
         }
     }
 
