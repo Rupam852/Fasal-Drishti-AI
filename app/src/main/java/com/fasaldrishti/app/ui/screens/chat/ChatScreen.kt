@@ -1240,7 +1240,12 @@ private suspend fun compressImageUriToBase64(context: Context, uri: Uri): Pair<S
         val byteArray = outputStream.toByteArray()
         val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
 
-        Pair(uri.toString(), base64String)
+        // Save persistent local copy in app's internal storage so photos never expire or turn blank
+        val imagesDir = java.io.File(context.filesDir, "chat_images").apply { if (!exists()) mkdirs() }
+        val persistentFile = java.io.File(imagesDir, "chat_${System.currentTimeMillis()}_${java.util.UUID.randomUUID().toString().take(6)}.jpg")
+        persistentFile.writeBytes(byteArray)
+
+        Pair(persistentFile.absolutePath, base64String)
     } catch (e: Exception) {
         null
     }

@@ -12,7 +12,8 @@ import org.json.JSONObject
  */
 class LocalChatManager(context: Context) {
 
-    private val prefs = context.applicationContext.getSharedPreferences("fasal_local_chat_db", Context.MODE_PRIVATE)
+    private val appContext = context.applicationContext
+    private val prefs = appContext.getSharedPreferences("fasal_local_chat_db", Context.MODE_PRIVATE)
 
     private fun getSessionKey(sessionId: String): String {
         val sanitized = sessionId.lowercase().trim().replace(Regex("[^a-z0-9_]"), "_").take(60)
@@ -96,17 +97,45 @@ class LocalChatManager(context: Context) {
     fun clearChat(sessionId: String? = null) {
         val editor = prefs.edit()
         if (sessionId != null) {
+            try {
+                val messages = loadMessages(sessionId)
+                for (msg in messages) {
+                    msg.imageUris.forEach { path ->
+                        try {
+                            val file = java.io.File(path)
+                            if (file.exists() && file.absolutePath.contains("chat_images")) {
+                                file.delete()
+                            }
+                        } catch (_: Exception) {}
+                    }
+                    msg.imageUri?.let { path ->
+                        try {
+                            val file = java.io.File(path)
+                            if (file.exists() && file.absolutePath.contains("chat_images")) {
+                                file.delete()
+                            }
+                        } catch (_: Exception) {}
+                    }
+                }
+            } catch (_: Exception) {}
+
             editor.remove(getSessionKey(sessionId))
             if (sessionId == "general") editor.remove("chat_messages")
         } else {
             val keysToRemove = prefs.all.keys.filter { it.startsWith("chat_session_") || it == "chat_messages" }
             keysToRemove.forEach { editor.remove(it) }
+            try {
+                val chatImagesDir = java.io.File(appContext.filesDir, "chat_images")
+                if (chatImagesDir.exists()) {
+                    chatImagesDir.deleteRecursively()
+                }
+            } catch (_: Exception) {}
         }
         editor.apply()
     }
 
     fun getChatStorageSizeFormatted(): String {
-        var totalBytes = 0
+        var totalBytes: Long = 0
         val sessionKeys = prefs.all.keys.filter { it.startsWith("chat_session_") || it == "chat_messages" }
         for (key in sessionKeys) {
             val jsonStr = prefs.getString(key, null)
@@ -114,6 +143,13 @@ class LocalChatManager(context: Context) {
                 totalBytes += jsonStr.toByteArray(Charsets.UTF_8).size
             }
         }
+        try {
+            val chatImagesDir = java.io.File(appContext.filesDir, "chat_images")
+            if (chatImagesDir.exists()) {
+                chatImagesDir.walkTopDown().filter { it.isFile }.forEach { totalBytes += it.length() }
+            }
+        } catch (_: Exception) {}
+
         return if (totalBytes < 1024) {
             "$totalBytes B"
         } else if (totalBytes < 1024 * 1024) {
