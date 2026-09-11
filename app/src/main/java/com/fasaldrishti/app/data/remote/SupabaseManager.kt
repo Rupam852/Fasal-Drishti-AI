@@ -191,9 +191,17 @@ class SupabaseManager(private val context: Context) {
         }
     }
 
-    suspend fun signOut() {
+    suspend fun signOut() = withContext(Dispatchers.IO) {
         prefs.edit().clear().apply()
         _currentUser.value = null
+        try {
+            val googleSignInOptions = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
+                com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
+            ).build()
+            val googleSignInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(context, googleSignInOptions)
+            googleSignInClient.signOut()
+            googleSignInClient.revokeAccess()
+        } catch (_: Exception) {}
     }
 
     suspend fun syncUserProfileToCloud(user: UserProfile) = withContext(Dispatchers.IO) {

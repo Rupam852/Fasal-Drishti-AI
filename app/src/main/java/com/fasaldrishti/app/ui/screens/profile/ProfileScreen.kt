@@ -54,6 +54,7 @@ fun ProfileScreen(
     val updateInfo by updateManager.updateInfo.collectAsState()
     var showClearDialog by remember { mutableStateOf(false) }
     var showClearChatDialog by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
     var showTermsDialog by remember { mutableStateOf(false) }
     var showPrivacyDialog by remember { mutableStateOf(false) }
 
@@ -228,6 +229,40 @@ fun ProfileScreen(
             dismissButton = {
                 TextButton(onClick = { showClearChatDialog = false }) {
                     Text(strings.chatCancelButton)
+                }
+            }
+        )
+    }
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = null,
+                        tint = CrimsonCoral,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Sign Out", fontWeight = FontWeight.ExtraBold)
+                }
+            },
+            text = { Text("Are you sure you want to sign out from your account?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showLogoutDialog = false
+                        onLogout()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Sign Out", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancel")
                 }
             }
         )
@@ -417,7 +452,7 @@ fun ProfileScreen(
                             icon = Icons.AutoMirrored.Filled.Logout,
                             title = "Sign Out",
                             subtitle = "Log out from current session",
-                            onClick = onLogout,
+                            onClick = { showLogoutDialog = true },
                             tint = CrimsonCoral
                         )
                     }

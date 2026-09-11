@@ -27,6 +27,11 @@ scratch/
 # OS
 Thumbs.db
 
+# Logs
+*.log
+hs_err_pid*.log
+replay_pid*.log
+
 # Secrets
 supabase/insert_gemini_key.sql
 *.secret

@@ -33,8 +33,29 @@ class AuthViewModel(
                         isLoading = false,
                         user = user
                     )
+                } else {
+                    _uiState.value = AuthUiState(
+                        isLoading = false,
+                        isSuccess = false,
+                        errorMessage = null,
+                        user = null
+                    )
                 }
             }
+        }
+    }
+
+    fun signOut(onSuccess: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            authRepository.signOut()
+            _uiState.value = AuthUiState(
+                isLoading = false,
+                isSuccess = false,
+                errorMessage = null,
+                user = null
+            )
+            onSuccess?.invoke()
         }
     }
 

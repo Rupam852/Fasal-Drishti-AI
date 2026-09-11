@@ -312,8 +312,10 @@ fun AppNavHost(
                         localChatManager.clearChat()
                     },
                     onLogout = {
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(0) { inclusive = true }
+                        authViewModel.signOut {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
                         }
                     }
                 )
