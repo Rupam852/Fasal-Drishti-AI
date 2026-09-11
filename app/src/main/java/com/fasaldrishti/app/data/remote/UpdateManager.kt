@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 
 data class AppUpdateInfo(
-    val currentVersion: String = "1.1.0",
-    val latestVersion: String = "1.1.0",
+    val currentVersion: String = "1.2.0",
+    val latestVersion: String = "1.2.0",
     val hasUpdate: Boolean = false,
     val downloadUrl: String? = null,
     val releaseNotes: String = "",
@@ -34,14 +34,15 @@ class UpdateManager(private val context: Context) {
 
     private val _updateInfo = MutableStateFlow(
         AppUpdateInfo(
-            currentVersion = "v1.1.0",
-            latestVersion = "v1.1.0",
+            currentVersion = "v1.2.0",
+            latestVersion = "v1.2.0",
             hasUpdate = false,
             releaseNotes = """
-• 🧠 Smart Multi-Turn Conversational Memory (AI remembers ongoing chat & follow-up questions)
-• 🌾 5-Section In-Depth Diagnostic Dossiers (Crop/Disease, Causes, Chemical Dose per L/15L pump, Organic remedies, Recovery schedule)
-• 🎯 Context-Aware Multi-Angle Photo Analysis in Plant Consultations
-• 🖼️ Multi-Photo Attachments (Up to 3 Photos with Tap-to-Zoom & Safe Deletion)
+• 📸 Permanent On-Device Chat Photo Storage (No blank/green image issues)
+• 🧠 Smart Multi-Turn Agronomic Conversational Memory
+• 🌾 5-Section In-Depth Diagnostic Dossiers (Dosages per L / 15L tank)
+• 🧹 Complete AI Chat History & Storage Cleanup in Profile
+• 🎨 Default Light Mode Migration & User Theme Preference Retention
 • 🌐 Seamless 12-Language Support with Auto-Synced Greetings
 • 💾 Isolated Multi-Session Local Storage per Plant & Clean Top Bar
 • 📄 PDF Diagnostic Prescription & WhatsApp Share
