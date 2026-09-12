@@ -32,7 +32,14 @@ Thumbs.db
 hs_err_pid*.log
 replay_pid*.log
 
-# Secrets
+# Secrets & Environment
 supabase/insert_gemini_key.sql
 *.secret
 *.keystore
+.env
+.env.local
+.env.*.local
+*.env
+admin-portal/.env*
+admin-portal/node_modules/
+admin-portal/dist/
