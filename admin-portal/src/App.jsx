@@ -18,21 +18,13 @@ import ScanDetailModal from './components/scans/ScanDetailModal';
 
 import { getCurrentAdminSession, logoutAdmin } from './services/auth';
 import { 
-  fetchAppConfigs, 
+  fetchLiveAppConfigs, 
   fetchLiveScans, 
-  fetchLiveFarmers 
+  fetchLiveFarmers,
+  fetchLiveDiseaseInfo,
+  computeLiveMetrics,
+  subscribeToRealtimeTable
 } from './services/supabase';
-
-import {
-  INITIAL_STATS,
-  CROP_DISTRIBUTION,
-  WEEKLY_SCAN_TRENDS,
-  INDIA_OUTBREAK_ZONES,
-  MOCK_SCANS,
-  MOCK_MANDI_RATES,
-  MOCK_BROADCASTS,
-  AI_ENGINES_CONFIG
-} from './data/mockData';
 
 export default function App() {
   const [adminSession, setAdminSession] = useState(getCurrentAdminSession());
@@ -40,61 +32,91 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Core Data State
-  const [stats, setStats] = useState(INITIAL_STATS);
-  const [scans, setScans] = useState(MOCK_SCANS);
-  const [mandiRates, setMandiRates] = useState(MOCK_MANDI_RATES);
-  const [broadcasts, setBroadcasts] = useState(MOCK_BROADCASTS);
+  // 100% Live Supabase Data State
   const [farmers, setFarmers] = useState([]);
-  const [selectedScanForModal, setSelectedScanForModal] = useState(null);
+  const [scans, setScans] = useState([]);
+  const [diseaseInfo, setDiseaseInfo] = useState([]);
   const [appConfigMap, setAppConfigMap] = useState({});
+  const [metrics, setMetrics] = useState({
+    totalFarmers: 0,
+    totalScans: 0,
+    totalHealthy: 0,
+    totalDiseased: 0,
+    cropDistribution: [],
+    weeklyTrends: [],
+    totalPathologyClasses: 0
+  });
 
-  // Fetch live Supabase data on mount
+  const [mandiRates, setMandiRates] = useState([]);
+  const [broadcasts, setBroadcasts] = useState([]);
+  const [selectedScanForModal, setSelectedScanForModal] = useState(null);
+
+  // Fetch live Supabase data on mount & subscribe to realtime changes
   useEffect(() => {
     if (adminSession) {
       loadLiveData();
+
+      // Setup live Realtime listeners on Supabase PostgreSQL tables
+      const unsubscribeUsers = subscribeToRealtimeTable('users', () => loadLiveData(), () => loadLiveData());
+      const unsubscribeScans = subscribeToRealtimeTable('scans', () => loadLiveData(), () => loadLiveData());
+      const unsubscribeConfigs = subscribeToRealtimeTable('app_config', () => loadLiveData(), () => loadLiveData());
+
+      return () => {
+        if (unsubscribeUsers) unsubscribeUsers();
+        if (unsubscribeScans) unsubscribeScans();
+        if (unsubscribeConfigs) unsubscribeConfigs();
+      };
     }
   }, [adminSession]);
 
   const loadLiveData = async () => {
     setIsRefreshing(true);
     try {
-      const [configs, liveScans, liveFarmers] = await Promise.all([
-        fetchAppConfigs(),
-        fetchLiveScans(50),
-        fetchLiveFarmers(50)
+      const [liveConfigs, liveScans, liveFarmers, liveDiseases] = await Promise.all([
+        fetchLiveAppConfigs(),
+        fetchLiveScans(),
+        fetchLiveFarmers(),
+        fetchLiveDiseaseInfo()
       ]);
 
-      if (configs) {
-        setAppConfigMap(configs);
+      if (liveConfigs) {
+        setAppConfigMap(liveConfigs);
       }
 
-      if (liveScans && liveScans.length > 0) {
-        // Map Supabase scan records to dashboard format
+      if (liveDiseases) {
+        setDiseaseInfo(liveDiseases);
+      }
+
+      if (liveFarmers) {
+        setFarmers(liveFarmers);
+      }
+
+      if (liveScans) {
         const formattedScans = liveScans.map(s => ({
           id: s.id,
-          farmerName: s.farmer_name || 'Farmer',
+          farmerName: s.farmer_name || s.user_name || 'Farmer',
           farmerPhone: s.farmer_phone || '+91 98XXX XXXXX',
           location: s.location || 'India',
-          cropName: s.crop_name,
-          diseaseName: s.disease_name,
+          cropName: s.crop_name || 'Crop',
+          diseaseName: s.disease_name || s.predicted_class || 'Leaf Analysis',
           confidence: Number(s.confidence) || 0.95,
           severity: s.severity || 'Moderate',
           status: s.is_synced ? 'Verified' : 'Pending',
           imageUrl: s.image_url || 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=600&q=80',
           symptoms: s.symptoms,
           treatment: s.treatment,
-          createdAt: new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          verified: s.is_synced
+          createdAt: s.created_at ? new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent',
+          verified: s.is_synced || false
         }));
-        setScans([...formattedScans, ...MOCK_SCANS]);
+        setScans(formattedScans);
       }
 
-      if (liveFarmers && liveFarmers.length > 0) {
-        setFarmers(liveFarmers);
-      }
+      // Compute dynamic analytics purely from real Supabase records
+      const computed = computeLiveMetrics(liveFarmers || [], liveScans || [], liveDiseases || []);
+      setMetrics(computed);
+
     } catch (e) {
-      console.warn('Using mock dataset as fallback:', e);
+      console.error('Error fetching live data from Supabase:', e);
     } finally {
       setIsRefreshing(false);
     }
@@ -113,7 +135,7 @@ export default function App() {
     setActiveTab('broadcast');
   };
 
-  // If user is not logged in, show high-tech Login Page
+  // If user is not logged in, show dark glassmorphic Login Screen
   if (!adminSession) {
     return <LoginPage onLoginSuccess={(session) => setAdminSession(session)} />;
   }
@@ -145,26 +167,26 @@ export default function App() {
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
           {activeTab === 'dashboard' && (
             <div className="space-y-6 animate-in fade-in">
-              {/* Stat Metric Cards */}
-              <OverviewMetrics stats={stats} />
+              {/* Dynamic Metric Cards computed from live DB */}
+              <OverviewMetrics metrics={metrics} appConfigs={appConfigMap} />
 
-              {/* Charts Grid */}
+              {/* Realtime Velocity & Crop Share Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div className="lg:col-span-8">
-                  <DiseaseAnalyticsChart data={WEEKLY_SCAN_TRENDS} />
+                  <DiseaseAnalyticsChart data={metrics.weeklyTrends} />
                 </div>
                 <div className="lg:col-span-4">
-                  <CropDistributionChart data={CROP_DISTRIBUTION} />
+                  <CropDistributionChart data={metrics.cropDistribution} />
                 </div>
               </div>
 
-              {/* India Outbreak Radar Map */}
+              {/* India Outbreak Knowledge Radar (from Supabase disease_info) */}
               <IndiaOutbreakHeatmap 
-                zones={INDIA_OUTBREAK_ZONES} 
+                diseaseInfo={diseaseInfo} 
                 onBroadcastZone={handleBroadcastZone} 
               />
 
-              {/* Recent Scans Feed */}
+              {/* Realtime Farmer Scan Telemetry Feed */}
               <RecentScansFeed
                 scans={scans}
                 onViewScan={(scan) => setSelectedScanForModal(scan)}
@@ -185,7 +207,7 @@ export default function App() {
           {activeTab === 'outbreaks' && (
             <div className="animate-in fade-in space-y-6">
               <IndiaOutbreakHeatmap 
-                zones={INDIA_OUTBREAK_ZONES} 
+                diseaseInfo={diseaseInfo} 
                 onBroadcastZone={handleBroadcastZone} 
               />
             </div>
@@ -205,13 +227,13 @@ export default function App() {
           {activeTab === 'updater' && (
             <div className="animate-in fade-in">
               <AppUpdateManager
-                currentAppVersion={appConfigMap['latest_app_version'] || '1.2.0'}
-                downloadUrl={appConfigMap['app_download_url'] || 'https://github.com/Rupam852/Fasal-Drishti-AI/releases/latest'}
+                currentAppVersion={appConfigMap['latest_app_version']?.value || '1.2.0'}
+                downloadUrl={appConfigMap['app_download_url']?.value || 'https://github.com/Rupam852/Fasal-Drishti-AI/releases/latest'}
                 onUpdateSuccess={(res) => {
                   setAppConfigMap({
                     ...appConfigMap,
-                    latest_app_version: res.version,
-                    app_download_url: res.url
+                    latest_app_version: { value: res.version },
+                    app_download_url: { value: res.url }
                   });
                 }}
               />
@@ -229,7 +251,10 @@ export default function App() {
 
           {activeTab === 'ai-hub' && (
             <div className="animate-in fade-in">
-              <AiHubManager enginesConfig={AI_ENGINES_CONFIG} />
+              <AiHubManager 
+                appConfigs={appConfigMap} 
+                onConfigUpdated={loadLiveData}
+              />
             </div>
           )}
 
