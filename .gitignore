@@ -40,6 +40,3 @@ supabase/insert_gemini_key.sql
 .env.local
 .env.*.local
 *.env
-admin-portal/.env*
-admin-portal/node_modules/
-admin-portal/dist/
