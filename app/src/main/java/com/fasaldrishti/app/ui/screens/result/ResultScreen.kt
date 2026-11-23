@@ -25,11 +25,16 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import coil.compose.AsyncImage
 import com.fasaldrishti.app.data.local.AppLanguage
 import com.fasaldrishti.app.ui.components.AccordionCard
@@ -109,7 +114,9 @@ fun ResultScreen(
                 title = {
                     Text(
                         "Diagnosis Result",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 },
                 navigationIcon = {
@@ -147,29 +154,35 @@ fun ResultScreen(
                                 }
                             }
 
-                            // Tooltip bubble auto-fades in 2-3 sec
-                            androidx.compose.animation.AnimatedVisibility(
-                                visible = showTooltip,
-                                enter = androidx.compose.animation.fadeIn(),
-                                exit = androidx.compose.animation.fadeOut(),
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .offset(y = 42.dp)
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = MaterialTheme.colorScheme.inverseSurface,
-                                    shadowElevation = 6.dp
-                                ) {
-                                    Text(
-                                        text = strings.secondVerificationTooltip,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            color = MaterialTheme.colorScheme.inverseOnSurface,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Medium
-                                        ),
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                            // Tooltip bubble floating overlay (independent popup window, does NOT squeeze TopAppBar title)
+                            if (showTooltip) {
+                                val density = LocalDensity.current
+                                Popup(
+                                    alignment = Alignment.TopCenter,
+                                    offset = IntOffset(0, with(density) { 46.dp.roundToPx() }),
+                                    onDismissRequest = { showTooltip = false },
+                                    properties = PopupProperties(
+                                        focusable = false,
+                                        dismissOnBackPress = false,
+                                        dismissOnClickOutside = true
                                     )
+                                ) {
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.inverseSurface,
+                                        shadowElevation = 8.dp,
+                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f))
+                                    ) {
+                                        Text(
+                                            text = strings.secondVerificationTooltip,
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = MaterialTheme.colorScheme.inverseOnSurface,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Medium
+                                            ),
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
