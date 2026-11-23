@@ -109,7 +109,8 @@ data class Strings(
     val btnCancel: String = "Cancel",
     val btnGoToSettings: String = "Go to Settings",
     val btnClose: String = "Close",
-    val chatOfflineNotice: String = "Please connect to the internet to chat with AI Agronomist."
+    val chatOfflineNotice: String = "Please connect to the internet to chat with AI Agronomist.",
+    val offlineLeafModelNotice: String = "Offline AI model is specialized for crop leaves. For best accuracy on tubers or fruits, scan a crop leaf or use 2nd Online Verification."
 )
 
 val EnglishStrings = Strings(
@@ -287,7 +288,8 @@ val HindiStrings = Strings(
     btnCancel = "रद्द करें",
     btnGoToSettings = "सेटिंग्स पर जाएं",
     btnClose = "बंद करें",
-    chatOfflineNotice = "AI कृषि सलाहकार से चैट करने के लिए कृपया इंटरनेट से कनेक्ट करें।"
+    chatOfflineNotice = "AI कृषि सलाहकार से चैट करने के लिए कृपया इंटरनेट से कनेक्ट करें।",
+    offlineLeafModelNotice = "ऑफ़लाइन AI मॉडल फसल की पत्तियों के लिए विशेष रूप से बना है। कंद या फलों के सटीक परिणाम के लिए पत्ती स्कैन करें या 2nd ऑनलाइन सत्यापन का उपयोग करें।"
 )
 
 val BengaliStrings = Strings(
@@ -365,7 +367,8 @@ val BengaliStrings = Strings(
 
     backButton = "পেছনে",
     closeButton = "বন্ধ",
-    applyButton = "প্রয়োগ করুন"
+    applyButton = "প্রয়োগ করুন",
+    offlineLeafModelNotice = "অফলাইন এআই মডেলটি ফসলের পাতার জন্য তৈরি। কন্দ বা ফলের সঠিক ফলাফলের জন্য পাতা স্ক্যান করুন বা ২য় অনলাইন যাচাইকরণ ব্যবহার করুন।"
 )
 
 val PunjabiStrings = Strings(
@@ -443,7 +446,8 @@ val PunjabiStrings = Strings(
 
     backButton = "ਪਿੱਛੇ",
     closeButton = "ਬੰਦ ਕਰੋ",
-    applyButton = "ਲਾਗੂ ਕਰੋ"
+    applyButton = "ਲਾਗੂ ਕਰੋ",
+    offlineLeafModelNotice = "ਔਫਲਾਈਨ AI ਮਾਡਲ ਖਾਸ ਤੌਰ 'ਤੇ ਫਸਲਾਂ ਦੇ ਪੱਤਿਆਂ ਲਈ ਤਿਆਰ ਕੀਤਾ ਗਿਆ ਹੈ। ਕੰਦਾਂ ਜਾਂ ਫਲਾਂ ਦੇ ਸਹੀ ਨਤੀਜੇ ਲਈ ਪੱਤਾ ਸਕੈਨ ਕਰੋ ਜਾਂ 2nd ਔਨਲਾਈਨ ਤਸਦੀਕ ਵਰਤੋ।"
 )
 
 val MarathiStrings = Strings(
@@ -521,7 +525,8 @@ val MarathiStrings = Strings(
 
     backButton = "मागे",
     closeButton = "बंद करा",
-    applyButton = "लागू करा"
+    applyButton = "लागू करा",
+    offlineLeafModelNotice = "ऑफलाइन AI मॉडेल पिकांच्या पानांसाठी विशेषतः बनवले आहे. कंद किंवा फळांच्या अचूक परिणामासाठी पान स्कॅन करा किंवा 2nd ऑनलाइन पडताळणी वापरा."
 )
 
 val TeluguStrings = Strings(
@@ -599,7 +604,8 @@ val TeluguStrings = Strings(
 
     backButton = "వెనుకకు",
     closeButton = "మూసివేయి",
-    applyButton = "వర్తించు"
+    applyButton = "వర్తించు",
+    offlineLeafModelNotice = "ఆఫ్‌లైన్ AI మోడల్ పంట ఆకుల కోసం ప్రత్యేకంగా రూపొందించబడింది. దుంపలు లేదా పండ్ల ఖచ్చితమైన ఫలితాల కోసం ఆకును స్కాన్ చేయండి లేదా 2nd ఆన్‌లైన్ ధృవీకరణను ఉపయోగించండి."
 )
 
 val TamilStrings = Strings(
@@ -677,7 +683,8 @@ val TamilStrings = Strings(
 
     backButton = "பின்செல்",
     closeButton = "மூடு",
-    applyButton = "பயன்படுத்து"
+    applyButton = "பயன்படுத்து",
+    offlineLeafModelNotice = "ஆஃப்லைன் AI மாதிரி பயிர் இலைகளுக்காக சிறப்பாக வடிவமைக்கப்பட்டுள்ளது. கிழங்குகள் அல்லது பழங்களின் துல்லியத்திற்கு இலையை ஸ்கேன் செய்யவும் அல்லது 2nd ஆன்லைன் சரிபார்ப்பைப் பயன்படுத்தவும்."
 )
 
 val GujaratiStrings = Strings(
@@ -755,7 +762,8 @@ val GujaratiStrings = Strings(
 
     backButton = "પાછા",
     closeButton = "બંધ કરો",
-    applyButton = "લાગુ કરો"
+    applyButton = "લાગુ કરો",
+    offlineLeafModelNotice = "ઓફલાઇન AI મોડેલ પાકના પાંદડાઓ માટે ખાસ બનાવવામાં આવ્યું છે. કંદ અથવા ફળોના સચોટ પરિણામ માટે પાંદડું સ્કેન કરો અથવા 2nd ઓનલાઇન ચકાસણીનો ઉપયોગ કરો."
 )
 
 val KannadaStrings = Strings(
@@ -833,7 +841,8 @@ val KannadaStrings = Strings(
 
     backButton = "ಹಿಂದೆ",
     closeButton = "ಮುಚ್ಚಿ",
-    applyButton = "ಅನ್ವಯಿಸು"
+    applyButton = "ಅನ್ವಯಿಸು",
+    offlineLeafModelNotice = "ಆಫ್‌ಲೈನ್ AI ಮಾದರಿಯು ಬೆಳೆಗಳ ಎಲೆಗಳಿಗಾಗಿ ವಿಶೇಷವಾಗಿ ವಿನ್ಯಾಸಗೊಳಿಸಲಾಗಿದೆ. ಗೆಡ್ಡೆಗಳು ಅಥವಾ ಹಣ್ಣುಗಳ ನಿಖರವಾದ ಫಲಿತಾಂಶಕ್ಕಾಗಿ ಎಲೆಯನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಅಥವಾ 2nd ಆನ್‌ಲೈನ್ ಪರಿಶೀಲನೆಯನ್ನು ಬಳಸಿ."
 )
 
 val OdiaStrings = Strings(
@@ -911,7 +920,8 @@ val OdiaStrings = Strings(
 
     backButton = "ପଛକୁ",
     closeButton = "ବନ୍ଦ",
-    applyButton = "ଲାଗୁ କରନ୍ତୁ"
+    applyButton = "ଲାଗୁ କରନ୍ତୁ",
+    offlineLeafModelNotice = "ଅଫଲାଇନ୍ AI ମଡେଲ୍ ଫସଲର ପତ୍ର ପାଇଁ ବିଶେଷ ଭାବରେ ପ୍ରସ୍ତୁତ | କନ୍ଦ ବା ଫଳର ସଠିକ୍ ଫଳାଫଳ ପାଇଁ ପତ୍ର ସ୍କାନ୍ କରନ୍ତୁ କିମ୍ବା 2nd ଅନଲାଇନ୍ ଯାଞ୍ଚ ବ୍ୟବହାର କରନ୍ତୁ |"
 )
 
 fun getAppStrings(language: AppLanguage): Strings {

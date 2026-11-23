@@ -64,8 +64,8 @@ fun ResultScreen(
     val isOnlineVerificationEnabled by (settingsMgr?.isOnlineVerificationEnabled ?: kotlinx.coroutines.flow.MutableStateFlow(true)).collectAsState()
     val isConnected by (netMon?.isConnected ?: kotlinx.coroutines.flow.MutableStateFlow(true)).collectAsState()
 
-    val strings = LocalAppStrings.current
     val uiState by viewModel.uiState.collectAsState()
+    val strings = com.fasaldrishti.app.ui.localization.getAppStrings(uiState.currentLanguage)
     var showTranslateDialog by remember { mutableStateOf(false) }
     var showTooltip by remember { mutableStateOf(false) }
     var showSettingsDisabledDialog by remember { mutableStateOf(false) }
@@ -539,6 +539,41 @@ fun ResultScreen(
                                     size = 84.dp,
                                     strokeWidth = 8.dp
                                 )
+                            }
+                        }
+                    }
+
+                    // 2.1 OFFLINE LEAF MODEL NOTICE (Only shown if scan was offline / unverified)
+                    if (!scan.isVerified) {
+                        item {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.45f),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.35f))
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = "Notice",
+                                        tint = MaterialTheme.colorScheme.tertiary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = strings.offlineLeafModelNotice,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                            fontSize = 12.sp,
+                                            lineHeight = 16.sp
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
