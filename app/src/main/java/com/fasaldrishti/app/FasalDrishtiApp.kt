@@ -42,6 +42,8 @@ class FasalDrishtiApp : Application() {
         private set
     lateinit var themeManager: com.fasaldrishti.app.data.local.ThemeManager
         private set
+    lateinit var scanSettingsManager: com.fasaldrishti.app.data.local.ScanSettingsManager
+        private set
     lateinit var languageManager: com.fasaldrishti.app.data.local.LanguageManager
         private set
     lateinit var networkMonitor: com.fasaldrishti.app.util.NetworkMonitor
@@ -64,6 +66,7 @@ class FasalDrishtiApp : Application() {
         themeManager = com.fasaldrishti.app.data.local.ThemeManager(this)
         languageManager = com.fasaldrishti.app.data.local.LanguageManager(this)
         scanTranslationManager = com.fasaldrishti.app.data.local.ScanTranslationManager(this)
+        scanSettingsManager = com.fasaldrishti.app.data.local.ScanSettingsManager(this)
 
         // 2. Initialize Networking (Retrofit)
         val logging = HttpLoggingInterceptor().apply {
@@ -126,7 +129,8 @@ class FasalDrishtiApp : Application() {
             diseaseRepository = diseaseRepository,
             geminiClient = geminiClient,
             nvidiaClient = nvidiaClient,
-            aiConfigManager = aiConfigManager
+            aiConfigManager = aiConfigManager,
+            scanSettingsManager = scanSettingsManager
         )
 
         authRepository = AuthRepositoryImpl(supabaseManager = supabaseManager)

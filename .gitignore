@@ -40,3 +40,7 @@ supabase/insert_gemini_key.sql
 .env.local
 .env.*.local
 *.env
+
+# Large ML Datasets & Training Folders
+Fasal-Drishti-ML-DB/
+Fasal-Drishti-ML-Model-Train/

@@ -26,4 +26,5 @@ sealed class Screen(val route: String) {
     object GovtSchemes : Screen("govt_schemes")
     object SoilHealth : Screen("soil_health")
     object AiConfig : Screen("ai_config")
+    object ScanSettings : Screen("scan_settings")
 }

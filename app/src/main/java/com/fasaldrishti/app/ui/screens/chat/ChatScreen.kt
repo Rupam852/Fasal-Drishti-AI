@@ -14,6 +14,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -71,6 +72,9 @@ fun ChatScreen(
     onNavigateToAiConfig: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val app = context.applicationContext as? com.fasaldrishti.app.FasalDrishtiApp
+    val netMonitor = app?.networkMonitor
+    val isConnected by (netMonitor?.isConnected ?: kotlinx.coroutines.flow.MutableStateFlow(true)).collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
@@ -374,6 +378,55 @@ fun ChatScreen(
                     .imePadding()
                     .padding(start = 14.dp, end = 14.dp, top = 2.dp, bottom = 8.dp)
             ) {
+                // Offline notice banner
+                AnimatedVisibility(visible = !isConnected) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.85f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.WifiOff,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = strings.chatOfflineNotice,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        netMonitor?.verifyConnection()
+                                    }
+                                },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = "Retry",
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
                 // Quick suggested reply chips
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -542,8 +595,9 @@ fun ChatScreen(
                             value = inputText,
                             onValueChange = { inputText = it },
                             placeholder = {
-                                Text(if (isListening) "🎙️ Listening..." else strings.chatTypePlaceholder)
+                                Text(if (!isConnected) strings.offlineStatus else if (isListening) "🎙️ Listening..." else strings.chatTypePlaceholder)
                             },
+                            enabled = isConnected,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(24.dp),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -605,7 +659,7 @@ fun ChatScreen(
 
                         Spacer(modifier = Modifier.width(4.dp))
 
-                        val canSend = (inputText.isNotBlank() || attachedImages.isNotEmpty()) && !isCompressingImage
+                        val canSend = isConnected && (inputText.isNotBlank() || attachedImages.isNotEmpty()) && !isCompressingImage
                         IconButton(
                             onClick = {
                                 if (canSend) {

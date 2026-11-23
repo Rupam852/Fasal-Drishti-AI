@@ -58,25 +58,18 @@ fun AnalyzingScreen(
     onAnalysisError: (String) -> Unit,
     onNavigateToAiConfig: () -> Unit = {}
 ) {
-    val statusMessages = listOf(
-        "🌿 Extracting Leaf Vein Topology...",
-        "⚡ Running On-Device Neural Vision Model...",
-        "🤖 AI Multimodal Pathologist Cross-Verification...",
-        "🩺 Computing Precise Treatment & Spray Dosages..."
-    )
-
-    var currentMessageIndex by remember { mutableIntStateOf(0) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isApiKeyError by remember { mutableStateOf(false) }
     var isUnreachableError by remember { mutableStateOf(false) }
     var retryTrigger by remember { mutableIntStateOf(0) }
+    var dotCount by remember { mutableIntStateOf(1) }
 
-    // Cycle through telemetry steps while analyzing
+    // Cycle through dots: . -> .. -> ... -> .... -> .
     LaunchedEffect(errorMessage) {
         if (errorMessage == null) {
             while (true) {
-                delay(1100)
-                currentMessageIndex = (currentMessageIndex + 1) % statusMessages.size
+                delay(350)
+                dotCount = (dotCount % 4) + 1
             }
         }
     }
@@ -108,28 +101,6 @@ fun AnalyzingScreen(
             }
         }
     }
-
-    // Rotating Radar Sweep Angle
-    val infiniteTransition = rememberInfiniteTransition(label = "RadarSweep")
-    val sweepAngle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1800, easing = LinearEasing)
-        ),
-        label = "SweepAngle"
-    )
-
-    // Pulsing Rings Scale
-    val rippleScale by infiniteTransition.animateFloat(
-        initialValue = 0.85f,
-        targetValue = 1.15f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1400, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "RippleScale"
-    )
 
     Box(
         modifier = Modifier
@@ -304,102 +275,37 @@ fun AnalyzingScreen(
                     }
                 }
             } else {
-                // Bio-Scanner Holographic Radar
-                Box(
-                    modifier = Modifier
-                        .size(200.dp)
-                        .scale(rippleScale),
-                    contentAlignment = Alignment.Center
+                // 1. Futuristic Dot Grid Wave Animation
+                DotGridWaveAnimation(
+                    modifier = Modifier.size(220.dp),
+                    gridSize = 7,
+                    dotColor = EmeraldPrimary
+                )
+
+                Spacer(modifier = Modifier.height(36.dp))
+
+                // 2. Stationary "Analyzing..." text with fixed position and pulsing dots
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Canvas(modifier = Modifier.size(200.dp)) {
-                        // Outer Glow Rings
-                        drawCircle(
-                            color = EmeraldPrimary.copy(alpha = 0.15f),
-                            radius = size.minDimension / 2,
-                            style = Stroke(width = 2.dp.toPx())
-                        )
-                        drawCircle(
-                            color = EmeraldPrimary.copy(alpha = 0.25f),
-                            radius = size.minDimension / 2.8f,
-                            style = Stroke(width = 1.5.dp.toPx())
-                        )
-                        // Rotating Radar Sweep Line
-                        drawArc(
-                            brush = Brush.sweepGradient(
-                                listOf(Color.Transparent, EmeraldPrimary.copy(alpha = 0.7f), EmeraldPrimary)
-                            ),
-                            startAngle = sweepAngle,
-                            sweepAngle = 90f,
-                            useCenter = true
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .size(90.dp)
-                            .clip(CircleShape)
-                            .background(
-                                brush = Brush.radialGradient(
-                                    listOf(EmeraldPrimary.copy(alpha = 0.4f), Color.Transparent)
-                                )
-                            )
-                            .border(2.dp, EmeraldPrimary, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Psychology,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(46.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(48.dp))
-
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = EmeraldDark.copy(alpha = 0.25f),
-                    border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.4f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            tint = EmeraldPrimary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "HYBRID AI VISION ENGINE",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                color = EmeraldPrimary,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.2.sp
-                            )
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Dynamic Step Ticker
-                AnimatedContent(
-                    targetState = statusMessages[currentMessageIndex],
-                    transitionSpec = { fadeIn(tween(350)) togetherWith fadeOut(tween(350)) },
-                    label = "AnalyzingStatus"
-                ) { msg ->
                     Text(
-                        text = msg,
-                        style = MaterialTheme.typography.titleMedium.copy(
+                        text = "Analyzing",
+                        style = MaterialTheme.typography.titleLarge.copy(
                             color = Color.White,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                    Text(
+                        text = ".".repeat(dotCount),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            color = EmeraldPrimary,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 24.sp
                         ),
-                        textAlign = TextAlign.Center
+                        modifier = Modifier.width(42.dp) // Fixed width so 'Analyzing' never jumps!
                     )
                 }
             }
@@ -421,6 +327,66 @@ fun AnalyzingScreen(
                         .clip(CircleShape),
                     color = EmeraldPrimary,
                     trackColor = Color.White.copy(alpha = 0.15f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DotGridWaveAnimation(
+    modifier: Modifier = Modifier,
+    gridSize: Int = 7,
+    dotColor: Color = EmeraldPrimary
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "DotGridWave")
+    val wavePhase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2.0 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2200, easing = LinearEasing)
+        ),
+        label = "WavePhase"
+    )
+
+    Canvas(modifier = modifier) {
+        val width = size.width
+        val height = size.height
+        val cellWidth = width / (gridSize + 1)
+        val cellHeight = height / (gridSize + 1)
+        val centerX = width / 2f
+        val centerY = height / 2f
+        val maxDist = kotlin.math.hypot(centerX, centerY)
+
+        for (row in 0 until gridSize) {
+            for (col in 0 until gridSize) {
+                val x = cellWidth * (col + 1)
+                val y = cellHeight * (row + 1)
+                val dist = kotlin.math.hypot(x - centerX, y - centerY)
+
+                // 2D Wave radiating from center
+                val wave = kotlin.math.sin((dist / maxDist) * 6.5f - wavePhase)
+                val normalizedWave = ((wave + 1f) / 2f) // 0.0 to 1.0
+
+                // Radius scales smoothly with wave
+                val radius = (2.5f + normalizedWave * 4.2f).dp.toPx()
+                // Alpha pulses with wave
+                val alpha = 0.20f + normalizedWave * 0.80f
+
+                // Peaked dot halo
+                if (normalizedWave > 0.65f) {
+                    drawCircle(
+                        color = dotColor.copy(alpha = (normalizedWave - 0.65f) * 0.5f),
+                        radius = radius * 1.9f,
+                        center = androidx.compose.ui.geometry.Offset(x, y)
+                    )
+                }
+
+                // Main Core Dot
+                drawCircle(
+                    color = dotColor.copy(alpha = alpha),
+                    radius = radius,
+                    center = androidx.compose.ui.geometry.Offset(x, y)
                 )
             }
         }

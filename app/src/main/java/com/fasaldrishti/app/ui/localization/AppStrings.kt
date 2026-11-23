@@ -86,7 +86,30 @@ data class Strings(
     // General
     val backButton: String,
     val closeButton: String,
-    val applyButton: String
+    val applyButton: String,
+
+    // Offline, Verification & Scan Settings
+    val offlineStatus: String = "Offline",
+    val scanSettingsTitle: String = "Scan Option Settings",
+    val scanSettingsSubtitle: String = "Configure how crop diseases are detected using on-device neural network and cloud AI verification.",
+    val scanSettingsCardSubtitle: String = "Offline TFLite Model & Online Verification Toggles",
+    val offlineModelToggleTitle: String = "Offline Model (TFLite)",
+    val offlineModelToggleSubtitle: String = "Ultra-fast on-device neural model. Works 100% without internet.",
+    val onlineVerificationToggleTitle: String = "Online 2nd-Tier Verification",
+    val onlineVerificationToggleSubtitle: String = "Cross-checks diagnosis with Gemini Vision AI when internet is connected.",
+    val scanSettingsLockHint: String = "Locked: At least one detection method must remain active.",
+    val secondVerificationTooltip: String = "Tap for 2nd Online Verification",
+    val verifiedKeepTitle: String = "2nd Verification Complete",
+    val verifiedKeepDesc: String = "Online verification successfully confirmed diagnosis. Keep this updated result?",
+    val verificationDisabledTitle: String = "Online Verification Disabled",
+    val verificationDisabledDesc: String = "Online Verification is turned OFF in your Scan Settings. Please enable it in Settings to verify.",
+    val offlineNoticeTitle: String = "No Internet Connection",
+    val offlineNoticeDesc: String = "Please connect to the internet to perform 2nd step verification.",
+    val btnKeep: String = "Keep",
+    val btnCancel: String = "Cancel",
+    val btnGoToSettings: String = "Go to Settings",
+    val btnClose: String = "Close",
+    val chatOfflineNotice: String = "Please connect to the internet to chat with AI Agronomist."
 )
 
 val EnglishStrings = Strings(
@@ -242,7 +265,29 @@ val HindiStrings = Strings(
 
     backButton = "पीछे",
     closeButton = "बंद करें",
-    applyButton = "लागू करें"
+    applyButton = "लागू करें",
+
+    offlineStatus = "ऑफ़लाइन",
+    scanSettingsTitle = "स्कैन विकल्प सेटिंग्स",
+    scanSettingsSubtitle = "ऑन-डिवाइस न्यूरल नेटवर्क और क्लाउड AI सत्यापन का उपयोग करके फसल रोगों का पता लगाने के तरीके को कॉन्फ़िगर करें।",
+    scanSettingsCardSubtitle = "ऑफलाइन TFLite मॉडल एवं ऑनलाइन सत्यापन टॉगल",
+    offlineModelToggleTitle = "ऑफलाइन मॉडल (TFLite)",
+    offlineModelToggleSubtitle = "अल्ट्रा-फास्ट ऑन-डिवाइस न्यूरल मॉडल। बिना इंटरनेट के 100% काम करता है।",
+    onlineVerificationToggleTitle = "ऑनलाइन द्वितीय-स्तरीय सत्यापन",
+    onlineVerificationToggleSubtitle = "इंटरनेट कनेक्ट होने पर Gemini Vision AI के साथ निदान की जांच करता है।",
+    scanSettingsLockHint = "लॉक: कम से कम एक पहचान विधि सक्रिय रहनी चाहिए।",
+    secondVerificationTooltip = "द्वितीय ऑनलाइन सत्यापन के लिए टैप करें",
+    verifiedKeepTitle = "द्वितीय सत्यापन पूर्ण",
+    verifiedKeepDesc = "ऑनलाइन सत्यापन ने सफलतापूर्वक निदान की पुष्टि की। क्या आप यह परिणाम रखना चाहते हैं?",
+    verificationDisabledTitle = "ऑनलाइन सत्यापन बंद है",
+    verificationDisabledDesc = "आपकी स्कैन सेटिंग्स में ऑनलाइन सत्यापन बंद है। कृपया सत्यापित करने के लिए सेटिंग्स में इसे चालू करें।",
+    offlineNoticeTitle = "इंटरनेट कनेक्शन नहीं है",
+    offlineNoticeDesc = "कृपया द्वितीय चरण सत्यापन करने के लिए इंटरनेट से कनेक्ट करें।",
+    btnKeep = "रखें",
+    btnCancel = "रद्द करें",
+    btnGoToSettings = "सेटिंग्स पर जाएं",
+    btnClose = "बंद करें",
+    chatOfflineNotice = "AI कृषि सलाहकार से चैट करने के लिए कृपया इंटरनेट से कनेक्ट करें।"
 )
 
 val BengaliStrings = Strings(

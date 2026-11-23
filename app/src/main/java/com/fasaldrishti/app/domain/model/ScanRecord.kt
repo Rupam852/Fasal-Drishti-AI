@@ -10,5 +10,6 @@ data class ScanRecord(
     val severity: String,
     val symptoms: String,
     val treatment: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val isVerified: Boolean = false
 )

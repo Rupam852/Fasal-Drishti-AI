@@ -93,17 +93,13 @@ class MainActivity : ComponentActivity() {
                             weatherManager = app.weatherManager,
                             themeManager = app.themeManager,
                             languageManager = app.languageManager,
+                            scanSettingsManager = app.scanSettingsManager,
+                            networkMonitor = app.networkMonitor,
+                            geminiClient = app.geminiClient,
+                            nvidiaClient = app.nvidiaClient,
                             pendingDestination = pendingDestination,
                             onClearPendingDestination = { pendingDestinationState.value = null }
                         )
-
-                        if (!isConnected) {
-                            com.fasaldrishti.app.ui.components.NoInternetDialog(
-                                onRetry = {
-                                    app.networkMonitor.verifyConnection()
-                                }
-                            )
-                        }
                     }
                 }
             }

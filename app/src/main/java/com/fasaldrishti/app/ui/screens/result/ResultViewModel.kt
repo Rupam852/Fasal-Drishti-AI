@@ -23,7 +23,11 @@ data class ResultUiState(
     val currentLanguage: AppLanguage = AppLanguage.ENGLISH,
     val translatedDossier: TranslatedDossier? = null,
     val isTranslating: Boolean = false,
-    val translationMessage: String? = null
+    val translationMessage: String? = null,
+    val isVerifying: Boolean = false,
+    val verificationError: String? = null,
+    val showKeepDialog: Boolean = false,
+    val pendingVerifiedRecord: ScanRecord? = null
 )
 
 class ResultViewModel(
@@ -156,5 +160,50 @@ class ResultViewModel(
                 )
             }
         }
+    }
+
+    fun runOnlineVerification(onFailure: (String) -> Unit = {}) {
+        if (currentScanId.isBlank()) return
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isVerifying = true, verificationError = null)
+            val result = scanRepository.verifyExistingScan(currentScanId)
+            if (result.isSuccess) {
+                val verified = result.getOrThrow()
+                _uiState.value = _uiState.value.copy(
+                    isVerifying = false,
+                    showKeepDialog = true,
+                    pendingVerifiedRecord = verified
+                )
+            } else {
+                val err = result.exceptionOrNull()?.message ?: "Verification failed"
+                _uiState.value = _uiState.value.copy(
+                    isVerifying = false,
+                    verificationError = err
+                )
+                onFailure(err)
+            }
+        }
+    }
+
+    fun keepVerifiedRecord() {
+        val pending = _uiState.value.pendingVerifiedRecord ?: return
+        viewModelScope.launch {
+            scanRepository.saveScan(pending)
+            val diseaseInfoResult = diseaseRepository.getDiseaseInfo(pending.predictedClass)
+            val diseaseInfo = diseaseInfoResult.getOrNull()
+            _uiState.value = _uiState.value.copy(
+                scanRecord = pending,
+                diseaseInfo = diseaseInfo,
+                showKeepDialog = false,
+                pendingVerifiedRecord = null
+            )
+        }
+    }
+
+    fun dismissKeepDialog() {
+        _uiState.value = _uiState.value.copy(
+            showKeepDialog = false,
+            pendingVerifiedRecord = null
+        )
     }
 }

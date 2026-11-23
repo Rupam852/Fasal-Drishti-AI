@@ -29,7 +29,8 @@ class ScanRepositoryImpl(
     private val diseaseRepository: DiseaseRepository,
     private val geminiClient: GeminiClient? = null,
     private val nvidiaClient: NvidiaClient? = null,
-    private val aiConfigManager: com.fasaldrishti.app.data.local.AiConfigManager? = null
+    private val aiConfigManager: com.fasaldrishti.app.data.local.AiConfigManager? = null,
+    private val scanSettingsManager: com.fasaldrishti.app.data.local.ScanSettingsManager? = null
 ) : ScanRepository {
 
     override val syncStatus: Flow<SyncStatus> = supabaseManager.syncStatus
@@ -79,6 +80,17 @@ class ScanRepositoryImpl(
             var symptoms = localDiseaseInfo?.symptoms ?: "Visual foliar lesions or discoloration observed on crop leaf surface."
             var treatment = localDiseaseInfo?.treatment ?: "Apply recommended fungicide and maintain proper plant spacing."
             var finalPredictedClass = preliminaryClass
+
+            // Guard for Non-Crop / Random objects in offline detection:
+            // If model confidence is low, mark as Invalid_Crop / No Plant Leaf Detected
+            if (preliminaryConfidence < 0.45f) {
+                cropName = "Non-Crop Object"
+                diseaseName = "No Plant Leaf Detected"
+                severity = "Invalid"
+                finalPredictedClass = "Invalid_Crop"
+                symptoms = "No recognized agricultural crop leaf was detected. The photo may contain a non-plant object, person, animal, vehicle, or is blurry."
+                treatment = "Please align a real diseased agricultural crop leaf inside the camera reticle in good lighting and scan again."
+            }
 
             var verificationSuccess = false
 
@@ -140,21 +152,26 @@ class ScanRepositoryImpl(
                 } else false
             }
 
-            // Execute in user-configured priority order (Primary -> Secondary fallback)
-            if (primaryEngine == com.fasaldrishti.app.data.local.AiProvider.NVIDIA) {
-                verificationSuccess = verifyWithNvidia()
-                if (!verificationSuccess) {
-                    verificationSuccess = verifyWithGemini()
-                }
-            } else {
-                verificationSuccess = verifyWithGemini()
-                if (!verificationSuccess) {
+            val isOfflineEnabled = scanSettingsManager?.isOfflineModelEnabled?.value ?: true
+            val isOnlineEnabled = scanSettingsManager?.isOnlineVerificationEnabled?.value ?: true
+
+            // Execute in user-configured priority order (Primary -> Secondary fallback) if online verification is enabled
+            if (isOnlineEnabled) {
+                if (primaryEngine == com.fasaldrishti.app.data.local.AiProvider.NVIDIA) {
                     verificationSuccess = verifyWithNvidia()
+                    if (!verificationSuccess) {
+                        verificationSuccess = verifyWithGemini()
+                    }
+                } else {
+                    verificationSuccess = verifyWithGemini()
+                    if (!verificationSuccess) {
+                        verificationSuccess = verifyWithNvidia()
+                    }
                 }
             }
 
-            // Strict rule: Do not proceed without successful 2nd-layer Cloud AI verification
-            if (!verificationSuccess) {
+            // If online verification failed and offline model was disabled by user, fail
+            if (!verificationSuccess && !isOfflineEnabled) {
                 val isCustomKey = aiConfigManager?.configState?.value?.isCustomMode == true
                 if (isCustomKey) {
                     return@withContext Result.failure(
@@ -182,7 +199,8 @@ class ScanRepositoryImpl(
                 severity = severity,
                 symptoms = symptoms,
                 treatment = treatment,
-                timestamp = System.currentTimeMillis()
+                timestamp = System.currentTimeMillis(),
+                isVerified = verificationSuccess
             )
 
             scanDao.insertScan(ScanEntity.fromDomain(scanRecord))
@@ -193,6 +211,101 @@ class ScanRepositoryImpl(
             }
 
             Result.success(scanRecord)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun verifyExistingScan(scanId: String): Result<ScanRecord> = withContext(Dispatchers.IO) {
+        try {
+            val scan = scanDao.getScanById(scanId)?.toDomain() 
+                ?: return@withContext Result.failure(Exception("Scan record not found"))
+
+            val imageFile = File(scan.imageUrl)
+            if (!imageFile.exists()) {
+                return@withContext Result.failure(Exception("Local image file not found for verification"))
+            }
+
+            val primaryEngine = aiConfigManager?.configState?.value?.primaryProvider ?: com.fasaldrishti.app.data.local.AiProvider.GEMINI
+
+            var verifiedCrop = scan.cropName
+            var verifiedDisease = scan.diseaseName
+            var verifiedSeverity = scan.severity
+            var verifiedConfidence = scan.confidence
+            var verifiedSymptoms = scan.symptoms
+            var verifiedTreatment = scan.treatment
+            var verifiedClass = scan.predictedClass
+
+            var success = false
+
+            val runGemini: suspend () -> Boolean = {
+                if (geminiClient != null) {
+                    val res = geminiClient.verifyCropDiagnosis(
+                        imageFile = imageFile,
+                        initialCropName = scan.cropName,
+                        initialDiseaseName = scan.diseaseName,
+                        initialConfidence = scan.confidence
+                    )
+                    val data = res.getOrNull()
+                    if (data != null) {
+                        verifiedCrop = data.cropName
+                        verifiedDisease = data.diseaseName
+                        verifiedSeverity = data.severity
+                        verifiedConfidence = data.confidence
+                        verifiedSymptoms = data.symptoms
+                        verifiedTreatment = data.treatment
+                        verifiedClass = "${data.cropName}___${data.diseaseName}".replace(" ", "_")
+                        true
+                    } else false
+                } else false
+            }
+
+            val runNvidia: suspend () -> Boolean = {
+                if (nvidiaClient != null) {
+                    val res = nvidiaClient.verifyCropDiagnosis(
+                        imageFile = imageFile,
+                        initialCropName = scan.cropName,
+                        initialDiseaseName = scan.diseaseName,
+                        initialConfidence = scan.confidence
+                    )
+                    val data = res.getOrNull()
+                    if (data != null) {
+                        verifiedCrop = data.cropName
+                        verifiedDisease = data.diseaseName
+                        verifiedSeverity = data.severity
+                        verifiedConfidence = data.confidence
+                        verifiedSymptoms = data.symptoms
+                        verifiedTreatment = data.treatment
+                        verifiedClass = "${data.cropName}___${data.diseaseName}".replace(" ", "_")
+                        true
+                    } else false
+                } else false
+            }
+
+            if (primaryEngine == com.fasaldrishti.app.data.local.AiProvider.NVIDIA) {
+                success = runNvidia()
+                if (!success) success = runGemini()
+            } else {
+                success = runGemini()
+                if (!success) success = runNvidia()
+            }
+
+            if (!success) {
+                return@withContext Result.failure(com.fasaldrishti.app.domain.model.AiUnreachableException())
+            }
+
+            val verifiedScanRecord = scan.copy(
+                cropName = verifiedCrop,
+                diseaseName = verifiedDisease,
+                severity = verifiedSeverity,
+                confidence = verifiedConfidence,
+                symptoms = verifiedSymptoms,
+                treatment = verifiedTreatment,
+                predictedClass = verifiedClass,
+                isVerified = true
+            )
+
+            Result.success(verifiedScanRecord)
         } catch (e: Exception) {
             Result.failure(e)
         }

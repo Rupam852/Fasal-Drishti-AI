@@ -59,6 +59,10 @@ fun AppNavHost(
     weatherManager: WeatherManager,
     themeManager: com.fasaldrishti.app.data.local.ThemeManager,
     languageManager: com.fasaldrishti.app.data.local.LanguageManager,
+    scanSettingsManager: com.fasaldrishti.app.data.local.ScanSettingsManager? = null,
+    networkMonitor: com.fasaldrishti.app.util.NetworkMonitor? = null,
+    geminiClient: com.fasaldrishti.app.data.remote.GeminiClient? = null,
+    nvidiaClient: com.fasaldrishti.app.data.remote.NvidiaClient? = null,
     navController: NavHostController = rememberNavController(),
     pendingDestination: String? = null,
     onClearPendingDestination: () -> Unit = {}
@@ -164,7 +168,8 @@ fun AppNavHost(
                     onNavigateToMandi = { navController.navigate(Screen.MandiBhav.route) },
                     onNavigateToFertilizer = { navController.navigate(Screen.FertilizerCalculator.route) },
                     onNavigateToSchemes = { navController.navigate(Screen.GovtSchemes.route) },
-                    onNavigateToSoilHealth = { navController.navigate(Screen.SoilHealth.route) }
+                    onNavigateToSoilHealth = { navController.navigate(Screen.SoilHealth.route) },
+                    networkMonitor = networkMonitor
                 )
             }
 
@@ -240,7 +245,10 @@ fun AppNavHost(
                         navController.navigate(Screen.Scan.route) {
                             popUpTo(Screen.Home.route)
                         }
-                    }
+                    },
+                    onNavigateToSettings = { navController.navigate(Screen.ScanSettings.route) },
+                    scanSettingsManager = scanSettingsManager ?: app?.scanSettingsManager,
+                    networkMonitor = networkMonitor ?: app?.networkMonitor
                 )
             }
 
@@ -328,7 +336,18 @@ fun AppNavHost(
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
                     onNavigateToUpdater = { navController.navigate(Screen.Updater.route) },
-                    onNavigateToAiConfig = { navController.navigate(Screen.AiConfig.route) }
+                    onNavigateToAiConfig = { navController.navigate(Screen.AiConfig.route) },
+                    onNavigateToScanSettings = { navController.navigate(Screen.ScanSettings.route) }
+                )
+            }
+
+            composable(Screen.ScanSettings.route) {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val app = context.applicationContext as? com.fasaldrishti.app.FasalDrishtiApp
+                val manager = scanSettingsManager ?: app?.scanSettingsManager ?: remember { com.fasaldrishti.app.data.local.ScanSettingsManager(context) }
+                com.fasaldrishti.app.ui.screens.settings.ScanSettingsScreen(
+                    scanSettingsManager = manager,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 

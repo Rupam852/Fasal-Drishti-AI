@@ -46,8 +46,13 @@ fun HomeScreen(
     onNavigateToMandi: () -> Unit = {},
     onNavigateToFertilizer: () -> Unit = {},
     onNavigateToSchemes: () -> Unit = {},
-    onNavigateToSoilHealth: () -> Unit = {}
+    onNavigateToSoilHealth: () -> Unit = {},
+    networkMonitor: com.fasaldrishti.app.util.NetworkMonitor? = null
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val app = context.applicationContext as? com.fasaldrishti.app.FasalDrishtiApp
+    val netMonitor = networkMonitor ?: app?.networkMonitor
+    val isConnected by (netMonitor?.isConnected ?: kotlinx.coroutines.flow.MutableStateFlow(true)).collectAsState()
     val user by viewModel.user.collectAsState()
     val recentScans by viewModel.recentScans.collectAsState()
     val syncStatus by viewModel.syncStatus.collectAsState()
@@ -114,14 +119,27 @@ fun HomeScreen(
                         }
                         Spacer(modifier = Modifier.width(14.dp))
                         Column {
-                            Text(
-                                text = "${strings.homeGreeting}, ${user?.name?.substringBefore(" ") ?: "Kisan"}",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 19.sp,
-                                    color = MaterialTheme.colorScheme.onBackground
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "${strings.homeGreeting}, ${user?.name?.substringBefore(" ") ?: "Kisan"}",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 19.sp,
+                                        color = MaterialTheme.colorScheme.onBackground
+                                    )
                                 )
-                            )
+                                if (!isConnected) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = strings.offlineStatus,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp,
+                                            color = Color(0xFFE53935)
+                                        )
+                                    )
+                                }
+                            }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier

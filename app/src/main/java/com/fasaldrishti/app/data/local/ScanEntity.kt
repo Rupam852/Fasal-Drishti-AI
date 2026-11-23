@@ -16,7 +16,8 @@ data class ScanEntity(
     val severity: String,
     val symptoms: String,
     val treatment: String,
-    val timestamp: Long
+    val timestamp: Long,
+    val isVerified: Boolean = false
 ) {
     fun toDomain(): ScanRecord = ScanRecord(
         id = id,
@@ -28,7 +29,8 @@ data class ScanEntity(
         severity = severity,
         symptoms = symptoms,
         treatment = treatment,
-        timestamp = timestamp
+        timestamp = timestamp,
+        isVerified = isVerified
     )
 
     companion object {
@@ -42,7 +44,8 @@ data class ScanEntity(
             severity = record.severity,
             symptoms = record.symptoms,
             treatment = record.treatment,
-            timestamp = record.timestamp
+            timestamp = record.timestamp,
+            isVerified = record.isVerified
         )
     }
 }

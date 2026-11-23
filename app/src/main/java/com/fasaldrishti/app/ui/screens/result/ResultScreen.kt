@@ -46,12 +46,25 @@ fun ResultScreen(
     viewModel: ResultViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToChat: (String) -> Unit,
-    onScanAgain: () -> Unit
+    onScanAgain: () -> Unit,
+    onNavigateToSettings: () -> Unit = {},
+    scanSettingsManager: com.fasaldrishti.app.data.local.ScanSettingsManager? = null,
+    networkMonitor: com.fasaldrishti.app.util.NetworkMonitor? = null
 ) {
     val context = LocalContext.current
+    val app = context.applicationContext as? com.fasaldrishti.app.FasalDrishtiApp
+    val settingsMgr = scanSettingsManager ?: app?.scanSettingsManager
+    val netMon = networkMonitor ?: app?.networkMonitor
+
+    val isOnlineVerificationEnabled by (settingsMgr?.isOnlineVerificationEnabled ?: kotlinx.coroutines.flow.MutableStateFlow(true)).collectAsState()
+    val isConnected by (netMon?.isConnected ?: kotlinx.coroutines.flow.MutableStateFlow(true)).collectAsState()
+
     val strings = LocalAppStrings.current
     val uiState by viewModel.uiState.collectAsState()
     var showTranslateDialog by remember { mutableStateOf(false) }
+    var showTooltip by remember { mutableStateOf(false) }
+    var showSettingsDisabledDialog by remember { mutableStateOf(false) }
+    var showOfflineNoticeDialog by remember { mutableStateOf(false) }
     var dotCount by remember { mutableIntStateOf(1) }
 
     LaunchedEffect(uiState.isTranslating) {
@@ -69,6 +82,14 @@ fun ResultScreen(
 
     val scan = uiState.scanRecord
     val diseaseInfo = uiState.diseaseInfo
+
+    LaunchedEffect(scan?.isVerified) {
+        if (scan != null && !scan.isVerified) {
+            showTooltip = true
+            kotlinx.coroutines.delay(2500)
+            showTooltip = false
+        }
+    }
 
     val effectiveDiseaseName = uiState.translatedDossier?.diseaseName ?: (scan?.diseaseName ?: "")
     val effectiveSymptoms = uiState.translatedDossier?.symptoms ?: (scan?.symptoms?.ifBlank {
@@ -97,6 +118,65 @@ fun ResultScreen(
                     }
                 },
                 actions = {
+                    // 2nd Step Online Verification Icon (Only visible when not yet verified)
+                    if (scan != null && !scan.isVerified) {
+                        Box {
+                            IconButton(
+                                onClick = {
+                                    if (!isOnlineVerificationEnabled) {
+                                        showSettingsDisabledDialog = true
+                                    } else if (!isConnected) {
+                                        showOfflineNoticeDialog = true
+                                    } else {
+                                        viewModel.runOnlineVerification()
+                                    }
+                                }
+                            ) {
+                                if (uiState.isVerifying) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        strokeWidth = 2.dp,
+                                        color = EmeraldPrimary
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.CloudSync,
+                                        contentDescription = "2nd Step Online Verification",
+                                        tint = EmeraldPrimary
+                                    )
+                                }
+                            }
+
+                            // Tooltip bubble auto-fades in 2-3 sec
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = showTooltip,
+                                enter = androidx.compose.animation.fadeIn(),
+                                exit = androidx.compose.animation.fadeOut(),
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .offset(y = 42.dp)
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.inverseSurface,
+                                    shadowElevation = 6.dp
+                                ) {
+                                    Text(
+                                        text = strings.secondVerificationTooltip,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = MaterialTheme.colorScheme.inverseOnSurface,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Medium
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+
                     // Translate button with language flag / name
                     Surface(
                         onClick = { showTranslateDialog = true },
@@ -247,24 +327,6 @@ fun ResultScreen(
                                     )
                                 )
                         )
-
-                        // Top Floating Back Button
-                        IconButton(
-                            onClick = onNavigateBack,
-                            modifier = Modifier
-                                .statusBarsPadding()
-                                .padding(16.dp)
-                                .size(42.dp)
-                                .clip(CircleShape)
-                                .background(Color.Black.copy(alpha = 0.6f))
-                                .border(1.dp, Color.White.copy(alpha = 0.25f), CircleShape)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
-                                tint = Color.White
-                            )
-                        }
                     }
                 }
 
@@ -908,6 +970,106 @@ fun ResultScreen(
                     )
                 }
             }
+        }
+
+        // Dialog 1: Keep Verified Diagnosis
+        if (uiState.showKeepDialog && uiState.pendingVerifiedRecord != null) {
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissKeepDialog() },
+                title = {
+                    Text(
+                        text = strings.verifiedKeepTitle,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = "${strings.verifiedKeepDesc}\n\n• Crop: ${uiState.pendingVerifiedRecord?.cropName}\n• Disease: ${uiState.pendingVerifiedRecord?.diseaseName}\n• Confidence: ${((uiState.pendingVerifiedRecord?.confidence ?: 0f) * 100).toInt()}%",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { viewModel.keepVerifiedRecord() },
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                    ) {
+                        Text(strings.btnKeep)
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = { viewModel.dismissKeepDialog() }
+                    ) {
+                        Text(strings.btnCancel)
+                    }
+                }
+            )
+        }
+
+        // Dialog 2: Settings Disabled Dialog
+        if (showSettingsDisabledDialog) {
+            AlertDialog(
+                onDismissRequest = { showSettingsDisabledDialog = false },
+                title = {
+                    Text(
+                        text = strings.verificationDisabledTitle,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = strings.verificationDisabledDesc,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showSettingsDisabledDialog = false
+                            onNavigateToSettings()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                    ) {
+                        Text(strings.btnGoToSettings)
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = { showSettingsDisabledDialog = false }
+                    ) {
+                        Text(strings.btnClose)
+                    }
+                }
+            )
+        }
+
+        // Dialog 3: Offline Notice Dialog
+        if (showOfflineNoticeDialog) {
+            AlertDialog(
+                onDismissRequest = { showOfflineNoticeDialog = false },
+                title = {
+                    Text(
+                        text = strings.offlineNoticeTitle,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = strings.offlineNoticeDesc,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showOfflineNoticeDialog = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                    ) {
+                        Text(strings.btnClose)
+                    }
+                }
+            )
         }
     }
 }
