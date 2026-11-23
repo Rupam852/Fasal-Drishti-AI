@@ -1084,6 +1084,33 @@ fun ResultScreen(
                 }
             )
         }
+
+        // Dialog 4: Verification Failure Notice
+        if (uiState.verificationError != null) {
+            AlertDialog(
+                onDismissRequest = { viewModel.clearVerificationError() },
+                title = {
+                    Text(
+                        text = "Verification Notice",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = uiState.verificationError ?: "Could not complete online verification. Please try again.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { viewModel.clearVerificationError() },
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                    ) {
+                        Text(strings.btnClose)
+                    }
+                }
+            )
+        }
     }
 }
 }

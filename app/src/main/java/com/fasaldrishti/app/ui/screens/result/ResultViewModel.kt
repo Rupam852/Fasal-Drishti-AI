@@ -206,4 +206,8 @@ class ResultViewModel(
             pendingVerifiedRecord = null
         )
     }
+
+    fun clearVerificationError() {
+        _uiState.value = _uiState.value.copy(verificationError = null)
+    }
 }

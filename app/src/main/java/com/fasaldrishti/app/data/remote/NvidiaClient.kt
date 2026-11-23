@@ -46,7 +46,11 @@ class NvidiaClient(
         if (config?.isCustomMode == true && config.nvidiaModel.isNotBlank()) {
             return config.nvidiaModel
         }
-        return supabaseManager?.getRemoteConfig("nvidia_model_name", "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
+        val remote = supabaseManager?.getRemoteConfig("nvidia_model_name", "") ?: ""
+        if (remote.isNotBlank() && !remote.contains("llama-3.2-11b-vision")) {
+            return remote
+        }
+        return "nvidia/nemotron-3.5-super-vl-120b-a12b"
     }
 
     private fun compressAndEncodeImage(imageFile: File): String {
@@ -163,7 +167,7 @@ class NvidiaClient(
                 }
                 put("messages", messages)
                 put("temperature", 0.2)
-                put("max_tokens", 450)
+                put("max_tokens", 2048)
             }
 
             val request = Request.Builder()
@@ -177,9 +181,12 @@ class NvidiaClient(
             if (response.isSuccessful) {
                 val responseString = response.body?.string() ?: ""
                 val jsonObj = JSONObject(responseString)
-                val choices = jsonObj.getJSONArray("choices")
-                if (choices.length() > 0) {
-                    val rawText = choices.getJSONObject(0).getJSONObject("message").getString("content")
+                val choices = jsonObj.optJSONArray("choices")
+                if (choices != null && choices.length() > 0) {
+                    val msgObj = choices.getJSONObject(0).optJSONObject("message")
+                    val contentStr = msgObj?.optString("content", "") ?: ""
+                    val reasoningStr = msgObj?.optString("reasoning_content", "") ?: ""
+                    val rawText = if (contentStr.isNotBlank() && contentStr != "null") contentStr else reasoningStr
                     val parsed = parseDiagnosisJson(rawText)
                     if (parsed != null) {
                         return@withContext Result.success(parsed)

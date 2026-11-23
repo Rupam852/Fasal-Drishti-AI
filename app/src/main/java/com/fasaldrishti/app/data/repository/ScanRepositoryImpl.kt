@@ -221,9 +221,20 @@ class ScanRepositoryImpl(
             val scan = scanDao.getScanById(scanId)?.toDomain() 
                 ?: return@withContext Result.failure(Exception("Scan record not found"))
 
-            val imageFile = File(scan.imageUrl)
-            if (!imageFile.exists()) {
-                return@withContext Result.failure(Exception("Local image file not found for verification"))
+            val localCandidate = File(scan.imageUrl)
+            val imageFile = if (localCandidate.exists()) {
+                localCandidate
+            } else if (scan.imageUrl.startsWith("http://") || scan.imageUrl.startsWith("https://")) {
+                val tempFile = File.createTempFile("verify_scan_", ".jpg")
+                val url = java.net.URL(scan.imageUrl)
+                url.openStream().use { input ->
+                    tempFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                tempFile
+            } else {
+                return@withContext Result.failure(Exception("Image file not found for verification"))
             }
 
             val primaryEngine = aiConfigManager?.configState?.value?.primaryProvider ?: com.fasaldrishti.app.data.local.AiProvider.GEMINI
