@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // Capture notification deep link destination if present
-        pendingDestinationState.value = intent?.getStringExtra("navigate_to")
+        pendingDestinationState.value = intent?.getStringExtra("navigate_to") ?: intent?.getStringExtra("destination")
 
         // Request notification permission on Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -89,6 +89,7 @@ class MainActivity : ComponentActivity() {
                             scanRepository = app.scanRepository,
                             authRepository = app.authRepository,
                             diseaseRepository = app.diseaseRepository,
+                            reminderRepository = app.reminderRepository,
                             updateManager = app.updateManager,
                             weatherManager = app.weatherManager,
                             themeManager = app.themeManager,

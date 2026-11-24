@@ -32,6 +32,7 @@ import com.fasaldrishti.app.data.remote.UpdateManager
 import com.fasaldrishti.app.ui.localization.LocalAppStrings
 import com.fasaldrishti.app.ui.theme.EmeraldPrimary
 import com.fasaldrishti.app.ui.theme.SolarGold
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
@@ -42,15 +43,21 @@ fun SettingsScreen(
     onNavigateToAbout: () -> Unit = {},
     onNavigateToUpdater: () -> Unit,
     onNavigateToAiConfig: () -> Unit = {},
-    onNavigateToScanSettings: () -> Unit = {}
+    onNavigateToScanSettings: () -> Unit = {},
+    onNavigateToReminders: () -> Unit = {},
+    hasUntranslatedReminders: Boolean = false,
+    reminderRepository: com.fasaldrishti.app.domain.repository.ReminderRepository? = null
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+    val settingsPrefs = remember { context.getSharedPreferences("fasal_settings_prefs", android.content.Context.MODE_PRIVATE) }
     val strings = LocalAppStrings.current
     val selectedTheme by themeManager.themeMode.collectAsState()
     val selectedLanguage by languageManager.currentLanguage.collectAsState()
     var showLanguageDialog by remember { mutableStateOf(false) }
 
-    var scanRemindersEnabled by remember { mutableStateOf(true) }
-    var tipsEnabled by remember { mutableStateOf(true) }
+    var scanRemindersEnabled by remember { mutableStateOf(settingsPrefs.getBoolean("scan_reminders_enabled", true)) }
+    var sprayAlertsEnabled by remember { mutableStateOf(settingsPrefs.getBoolean("spray_alerts_enabled", true)) }
 
     val updateInfo by updateManager.updateInfo.collectAsState()
 
@@ -517,20 +524,89 @@ fun SettingsScreen(
                         SettingsSwitchTile(
                             icon = Icons.Default.NotificationsActive,
                             title = strings.settingsSprayAlerts,
-                            subtitle = "Weekly monitoring reminders",
+                            subtitle = "Weekly field monitoring alerts",
                             checked = scanRemindersEnabled,
-                            onCheckedChange = { scanRemindersEnabled = it }
+                            onCheckedChange = {
+                                scanRemindersEnabled = it
+                                settingsPrefs.edit().putBoolean("scan_reminders_enabled", it).apply()
+                            }
                         )
 
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 10.dp))
 
                         SettingsSwitchTile(
-                            icon = Icons.Default.Lightbulb,
-                            title = strings.settingsAgronomyTips,
-                            subtitle = "Weather-optimized crop advisories",
-                            checked = tipsEnabled,
-                            onCheckedChange = { tipsEnabled = it }
+                            icon = Icons.Default.MedicalServices,
+                            title = "Spray & Disease Alerts",
+                            subtitle = "Timely chemical & organic dose reminders",
+                            checked = sprayAlertsEnabled,
+                            onCheckedChange = {
+                                sprayAlertsEnabled = it
+                                settingsPrefs.edit().putBoolean("spray_alerts_enabled", it).apply()
+                            }
                         )
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 10.dp))
+
+                        Surface(
+                            onClick = onNavigateToReminders,
+                            shape = RoundedCornerShape(14.dp),
+                            color = Color.Transparent,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(EmeraldPrimary.copy(alpha = 0.14f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.EventNote,
+                                        contentDescription = null,
+                                        tint = EmeraldPrimary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(14.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "Manage Farm Reminders",
+                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                        if (hasUntranslatedReminders) {
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(8.dp)
+                                                    .clip(CircleShape)
+                                                    .background(Color(0xFFE53935))
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "View, pause, or translate your scheduled alerts",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            fontSize = 12.sp
+                                        )
+                                    )
+                                }
+                                Icon(
+                                    imageVector = Icons.Default.ChevronRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -671,6 +747,9 @@ fun SettingsScreen(
                                 onClick = {
                                     languageManager.setLanguage(lang)
                                     showLanguageDialog = false
+                                    coroutineScope.launch {
+                                        reminderRepository?.markAllForTranslation("", lang.code, lang.code != "en")
+                                    }
                                 },
                                 shape = RoundedCornerShape(16.dp),
                                 color = if (isSelected) EmeraldPrimary.copy(alpha = 0.16f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),

@@ -53,6 +53,7 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit = {},
     onNavigateToUpdater: () -> Unit = {},
     onSignOut: () -> Unit = {},
+    hasUntranslatedReminders: Boolean = false,
     updateManager: com.fasaldrishti.app.data.remote.UpdateManager? = null,
     networkMonitor: com.fasaldrishti.app.util.NetworkMonitor? = null
 ) {
@@ -135,8 +136,8 @@ fun HomeScreen(
                                 }
                             }
 
-                            // 🔴 Red Update Alert Dot attached to the top-right corner of the avatar
-                            if (hasUpdate) {
+                            // 🔴 Red Alert Dot attached to the top-right corner of the avatar (Updates or Untranslated Reminders)
+                            if (hasUpdate || hasUntranslatedReminders) {
                                 Box(
                                     modifier = Modifier
                                         .size(13.dp)
@@ -1280,6 +1281,8 @@ fun HomeScreen(
                             icon = Icons.Default.Settings,
                             title = "Settings",
                             subtitle = "Theme, Language & AI Configurations",
+                            hasBadge = hasUntranslatedReminders,
+                            badgeText = if (hasUntranslatedReminders) "Action" else null,
                             onClick = {
                                 showAccountDialog = false
                                 onNavigateToSettings()

@@ -45,6 +45,8 @@ fun ProfileScreen(
     onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToAbout: () -> Unit,
+    onNavigateToReminders: () -> Unit = {},
+    hasUntranslatedReminders: Boolean = false,
     onClearAllScans: () -> Unit = {},
     onClearChatHistory: () -> Unit = {},
     onLogout: () -> Unit
@@ -433,6 +435,15 @@ fun ProfileScreen(
                 ) {
                     Column(modifier = Modifier.padding(6.dp)) {
                         ProfileTile(
+                            icon = Icons.Default.NotificationsActive,
+                            title = "Farm Reminders",
+                            subtitle = "Crop spray schedules & field monitoring",
+                            hasBadge = hasUntranslatedReminders,
+                            onClick = onNavigateToReminders,
+                            tint = EmeraldPrimary
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f), modifier = Modifier.padding(horizontal = 14.dp))
+                        ProfileTile(
                             icon = Icons.Default.History,
                             title = "My Scan History",
                             subtitle = "View past diagnoses & prescriptions",
@@ -572,6 +583,7 @@ private fun ProfileTile(
     title: String,
     subtitle: String,
     extraSubtitle: String? = null,
+    hasBadge: Boolean = false,
     onClick: () -> Unit,
     tint: Color = MaterialTheme.colorScheme.primary
 ) {
@@ -599,14 +611,25 @@ private fun ProfileTile(
         }
         Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.5.sp,
-                    color = MaterialTheme.colorScheme.onSurface
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.5.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 )
-            )
+                if (hasBadge) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE53935))
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,

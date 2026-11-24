@@ -141,5 +141,8 @@ dependencies {
     // Chrome Custom Tabs for OAuth
     implementation("androidx.browser:browser:1.8.0")
 
+    // WorkManager for robust background scheduling
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     debugImplementation(libs.androidx.ui.tooling)
 }

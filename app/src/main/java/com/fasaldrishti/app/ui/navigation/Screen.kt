@@ -29,4 +29,5 @@ sealed class Screen(val route: String) {
     object AiConfig : Screen("ai_config")
     object ScanSettings : Screen("scan_settings")
     object OfflineModelInfo : Screen("offline_model_info")
+    object Reminders : Screen("reminders")
 }

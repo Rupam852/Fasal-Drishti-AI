@@ -28,6 +28,8 @@ class FasalDrishtiApp : Application() {
 
     lateinit var scanRepository: ScanRepository
         private set
+    lateinit var reminderRepository: com.fasaldrishti.app.domain.repository.ReminderRepository
+        private set
     lateinit var authRepository: AuthRepository
         private set
     lateinit var diseaseRepository: DiseaseRepository
@@ -134,6 +136,10 @@ class FasalDrishtiApp : Application() {
         )
 
         authRepository = AuthRepositoryImpl(supabaseManager = supabaseManager)
+        reminderRepository = com.fasaldrishti.app.data.repository.ReminderRepositoryImpl(database.reminderDao())
+
+        // Schedule background smart farm reminders
+        com.fasaldrishti.app.worker.CropReminderWorker.schedule(this)
 
         // 9. Initialize In-App Update Manager & run auto-check on startup
         updateManager = UpdateManager(this)

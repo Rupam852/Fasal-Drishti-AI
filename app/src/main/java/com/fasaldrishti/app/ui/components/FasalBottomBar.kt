@@ -37,7 +37,8 @@ import com.fasaldrishti.app.ui.theme.EmeraldGradientStart
 fun FasalBottomBar(
     currentRoute: String,
     onNavigate: (String) -> Unit,
-    onScanClick: () -> Unit
+    onScanClick: () -> Unit,
+    hasProfileBadge: Boolean = false
 ) {
     Box(
         modifier = Modifier
@@ -100,6 +101,7 @@ fun FasalBottomBar(
                     icon = Icons.Default.Person,
                     label = strings.navProfile,
                     selected = currentRoute == Screen.Profile.route,
+                    hasBadge = hasProfileBadge,
                     onClick = { onNavigate(Screen.Profile.route) },
                     modifier = Modifier.weight(1f)
                 )
@@ -133,6 +135,7 @@ private fun BottomNavItem(
     icon: ImageVector,
     label: String,
     selected: Boolean,
+    hasBadge: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -165,6 +168,17 @@ private fun BottomNavItem(
                 tint = animatedTint,
                 modifier = Modifier.size(22.dp)
             )
+
+            if (hasBadge) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .align(Alignment.TopEnd)
+                        .offset(x = 2.dp, y = (-2).dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFE53935))
+                )
+            }
         }
         Spacer(modifier = Modifier.height(2.dp))
         Text(

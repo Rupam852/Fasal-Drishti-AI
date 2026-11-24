@@ -7,9 +7,10 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [ScanEntity::class], version = 2, exportSchema = false)
+@Database(entities = [ScanEntity::class, ReminderEntity::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun scanDao(): ScanDao
+    abstract fun reminderDao(): ReminderDao
 
     companion object {
         @Volatile

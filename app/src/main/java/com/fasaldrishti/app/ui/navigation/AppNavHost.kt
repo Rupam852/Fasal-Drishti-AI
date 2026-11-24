@@ -55,6 +55,7 @@ fun AppNavHost(
     scanRepository: ScanRepository,
     authRepository: AuthRepository,
     diseaseRepository: DiseaseRepository,
+    reminderRepository: com.fasaldrishti.app.domain.repository.ReminderRepository,
     updateManager: UpdateManager,
     weatherManager: WeatherManager,
     themeManager: com.fasaldrishti.app.data.local.ThemeManager,
@@ -69,11 +70,27 @@ fun AppNavHost(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Splash.route
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val remindersViewModel = remember {
+        com.fasaldrishti.app.ui.screens.reminders.RemindersViewModel(
+            reminderRepository = reminderRepository,
+            authRepository = authRepository,
+            context = context
+        )
+    }
+    val untranslatedCount by remindersViewModel.untranslatedCount.collectAsState()
+    val hasUntranslated = untranslatedCount > 0
 
     // Direct deep-link navigation if notification tapped while app is running
     androidx.compose.runtime.LaunchedEffect(pendingDestination) {
         if (pendingDestination == "updater") {
             navController.navigate(Screen.Updater.route) {
+                launchSingleTop = true
+            }
+            onClearPendingDestination()
+        } else if (pendingDestination == "reminders") {
+            navController.navigate(Screen.Reminders.route) {
                 launchSingleTop = true
             }
             onClearPendingDestination()
@@ -92,6 +109,7 @@ fun AppNavHost(
             if (showBottomBar) {
                 FasalBottomBar(
                     currentRoute = currentRoute,
+                    hasProfileBadge = hasUntranslated,
                     onNavigate = { route ->
                         if (route != currentRoute) {
                             navController.navigate(route) {
@@ -121,6 +139,11 @@ fun AppNavHost(
                         if (pendingDestination == "updater") {
                             onClearPendingDestination()
                             navController.navigate(Screen.Updater.route) {
+                                popUpTo(Screen.Splash.route) { inclusive = true }
+                            }
+                        } else if (pendingDestination == "reminders") {
+                            onClearPendingDestination()
+                            navController.navigate(Screen.Reminders.route) {
                                 popUpTo(Screen.Splash.route) { inclusive = true }
                             }
                         } else if (currentUser != null) {
@@ -180,6 +203,7 @@ fun AppNavHost(
                         }
                     },
                     updateManager = updateManager,
+                    hasUntranslatedReminders = hasUntranslated,
                     networkMonitor = networkMonitor
                 )
             }
@@ -261,6 +285,9 @@ fun AppNavHost(
                         }
                     },
                     onNavigateToSettings = { navController.navigate(Screen.ScanSettings.route) },
+                    onSetSprayReminder = { crop, disease ->
+                        remindersViewModel.addSprayReminder(crop, disease, 7)
+                    },
                     scanSettingsManager = scanSettingsManager ?: app?.scanSettingsManager,
                     networkMonitor = networkMonitor ?: app?.networkMonitor
                 )
@@ -324,6 +351,8 @@ fun AppNavHost(
                     },
                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
+                    onNavigateToReminders = { navController.navigate(Screen.Reminders.route) },
+                    hasUntranslatedReminders = hasUntranslated,
                     onClearAllScans = {
                         coroutineScope.launch {
                             scanRepository.clearAllScans()
@@ -351,7 +380,17 @@ fun AppNavHost(
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
                     onNavigateToUpdater = { navController.navigate(Screen.Updater.route) },
                     onNavigateToAiConfig = { navController.navigate(Screen.AiConfig.route) },
-                    onNavigateToScanSettings = { navController.navigate(Screen.ScanSettings.route) }
+                    onNavigateToScanSettings = { navController.navigate(Screen.ScanSettings.route) },
+                    onNavigateToReminders = { navController.navigate(Screen.Reminders.route) },
+                    hasUntranslatedReminders = hasUntranslated,
+                    reminderRepository = reminderRepository
+                )
+            }
+
+            composable(Screen.Reminders.route) {
+                com.fasaldrishti.app.ui.screens.reminders.RemindersScreen(
+                    viewModel = remindersViewModel,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 

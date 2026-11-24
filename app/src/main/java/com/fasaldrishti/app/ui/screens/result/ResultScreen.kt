@@ -53,6 +53,7 @@ fun ResultScreen(
     onNavigateToChat: (String) -> Unit,
     onScanAgain: () -> Unit,
     onNavigateToSettings: () -> Unit = {},
+    onSetSprayReminder: (cropName: String, diseaseName: String) -> Unit = { _, _ -> },
     scanSettingsManager: com.fasaldrishti.app.data.local.ScanSettingsManager? = null,
     networkMonitor: com.fasaldrishti.app.util.NetworkMonitor? = null
 ) {
@@ -883,6 +884,93 @@ fun ResultScreen(
                                             )
                                         )
                                     }
+                                }
+                            }
+                        }
+                    }
+
+                    // 3B. SET SPRAY / INSPECTION REMINDER CARD
+                    item {
+                        var reminderScheduled by remember { mutableStateOf(false) }
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .clip(RoundedCornerShape(22.dp))
+                                .clickable {
+                                    if (!reminderScheduled) {
+                                        val isHealthy = scan.severity.equals("none", ignoreCase = true) || scan.diseaseName.contains("healthy", ignoreCase = true)
+                                        onSetSprayReminder(
+                                            scan.cropName.ifBlank { "Crop" },
+                                            if (isHealthy) "Healthy Crop" else effectiveDiseaseName
+                                        )
+                                        reminderScheduled = true
+                                        android.widget.Toast.makeText(context, "⏰ Reminder added to Farm Reminders!", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                            shape = RoundedCornerShape(22.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.2.dp, if (reminderScheduled) EmeraldPrimary else Color(0xFF0284C7).copy(alpha = 0.5f)),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(46.dp)
+                                            .clip(RoundedCornerShape(14.dp))
+                                            .background(if (reminderScheduled) Color(0xFFECFDF5) else Color(0xFFE0F2FE)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = if (reminderScheduled) Icons.Default.CheckCircle else Icons.Default.NotificationsActive,
+                                            contentDescription = null,
+                                            tint = if (reminderScheduled) EmeraldPrimary else Color(0xFF0284C7),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(14.dp))
+                                    Column {
+                                        Text(
+                                            text = if (reminderScheduled) "Reminder Scheduled ✅" else "Set 7-Day Spray Reminder ⏰",
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 15.sp,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        )
+                                        Text(
+                                            text = if (reminderScheduled) "Alert set in Farm Reminders" else "Smart alerts for second dose spray schedule",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                                                fontSize = 12.sp
+                                            )
+                                        )
+                                    }
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (reminderScheduled) Color(0xFFD1FAE5) else Color(0xFF0284C7)
+                                ) {
+                                    Text(
+                                        text = if (reminderScheduled) "Scheduled" else "Set Alert",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (reminderScheduled) Color(0xFF047857) else Color.White,
+                                            fontSize = 12.sp
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                    )
                                 }
                             }
                         }
