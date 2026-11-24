@@ -117,7 +117,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        pendingDestinationState.value = intent.getStringExtra("navigate_to")
+        pendingDestinationState.value = intent.getStringExtra("navigate_to") ?: intent.getStringExtra("destination")
         val app = application as FasalDrishtiApp
         handleAuthDeepLink(intent, app)
     }

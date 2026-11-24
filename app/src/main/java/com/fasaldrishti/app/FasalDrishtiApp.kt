@@ -148,5 +148,8 @@ class FasalDrishtiApp : Application() {
                 updateManager.checkForUpdates(isAutoCheck = true)
             }
         }
+
+        // 10. Schedule periodic background update checks (every ~20 minutes)
+        com.fasaldrishti.app.worker.AppUpdateWorker.schedule(this)
     }
 }

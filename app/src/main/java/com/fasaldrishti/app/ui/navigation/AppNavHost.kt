@@ -136,16 +136,19 @@ fun AppNavHost(
                 val currentUser by authRepository.currentUser.collectAsState(initial = null)
                 SplashScreen(
                     onTimeout = {
+                        val baseRoute = if (currentUser != null) Screen.Home.route else Screen.Onboarding.route
                         if (pendingDestination == "updater") {
                             onClearPendingDestination()
-                            navController.navigate(Screen.Updater.route) {
+                            navController.navigate(baseRoute) {
                                 popUpTo(Screen.Splash.route) { inclusive = true }
                             }
+                            navController.navigate(Screen.Updater.route)
                         } else if (pendingDestination == "reminders") {
                             onClearPendingDestination()
-                            navController.navigate(Screen.Reminders.route) {
+                            navController.navigate(baseRoute) {
                                 popUpTo(Screen.Splash.route) { inclusive = true }
                             }
+                            navController.navigate(Screen.Reminders.route)
                         } else if (currentUser != null) {
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.Splash.route) { inclusive = true }

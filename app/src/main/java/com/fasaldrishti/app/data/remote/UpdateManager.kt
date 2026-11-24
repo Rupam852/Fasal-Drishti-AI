@@ -198,18 +198,58 @@ class UpdateManager(private val context: Context) {
 
     fun sendUpdateNotification(newVersion: String) {
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("navigate_to", "updater")
+            putExtra("destination", "updater")
         }
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
             context, 1001, intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val langPrefs = context.getSharedPreferences("language_prefs", Context.MODE_PRIVATE)
+        val currentLang = langPrefs.getString("app_language", "en") ?: "en"
+
+        val (title, text) = when (currentLang) {
+            "hi" -> Pair(
+                "🌾 फसल दृष्टि नया अपडेट उपलब्ध!",
+                "वर्ज़न $newVersion तैयार है! नए फीचर्स, दवा की खुराक और AI मॉडल के लिए टैप करके अपडेट करें।"
+            )
+            "bn" -> Pair(
+                "🌾 ফসল দৃষ্টি নতুন আপডেট উপলব্ধ!",
+                "ভার্সন $newVersion প্রস্তুত! নতুন বৈশিষ্ট্য এবং রোগ নির্ণয় এআই মডেলের জন্য ট্যাপ করে আপডেট করুন।"
+            )
+            "mr" -> Pair(
+                "🌾 पीक दृष्टी नवीन अपडेट उपलब्ध!",
+                "आवृत्ती $newVersion उपलब्ध आहे! नवीन वैशिष्ट्ये आणि एआय मॉडेल्ससाठी टॅप करून अपडेट करा."
+            )
+            "pa" -> Pair(
+                "🌾 ਫਸਲ ਦ੍ਰਿਸ਼ਟੀ ਨਵਾਂ ਅੱਪਡੇਟ ਉਪਲਬਧ!",
+                "ਵਰਜਨ $newVersion ਤਿਆਰ ਹੈ! ਨਵੇਂ ਫੀਚਰਾਂ ਲਈ ਟੈਪ ਕਰਕੇ ਅੱਪਡੇਟ ਕਰੋ।"
+            )
+            "te" -> Pair(
+                "🌾 పంట దృష్టి కొత్త అప్‌డేట్ అందుబాటులో ఉంది!",
+                "వెర్షన్ $newVersion సిద్ధంగా ఉంది! కొత్త ఫీచర్ల కోసం ఇక్కడ ట్యాప్ చేయండి."
+            )
+            "ta" -> Pair(
+                "🌾 பயிர் பார்வை புதிய புதுப்பிப்பு கிடைக்கிறது!",
+                "பதிப்பு $newVersion தயாராக உள்ளது! புதிய அம்சங்களுக்கு தட்டவும்."
+            )
+            "gu" -> Pair(
+                "🌾 પાક દ્રષ્ટિ નવું અપડેટ ઉપલબ્ધ!",
+                "આવૃત્તિ $newVersion તૈયાર છે! નવા ફીચર્સ માટે ટેપ કરો."
+            )
+            else -> Pair(
+                "Fasal Drishti Update Available! 🌾",
+                "Version $newVersion is ready. Tap to view update details and download latest AI features."
+            )
+        }
+
         val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.stat_sys_download_done)
-            .setContentTitle("Fasal Drishti Update Available! 🌾")
-            .setContentText("Version $newVersion is ready. Tap to download new features and disease model updates.")
+            .setSmallIcon(com.fasaldrishti.app.R.drawable.app_logo)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setContentIntent(pendingIntent)
