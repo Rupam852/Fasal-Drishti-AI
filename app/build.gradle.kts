@@ -13,8 +13,8 @@ android {
         applicationId = "com.fasaldrishti.app"
         minSdk = 33
         targetSdk = 34
-        versionCode = 12
-        versionName = "1.2.0"
+        versionCode = 13
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

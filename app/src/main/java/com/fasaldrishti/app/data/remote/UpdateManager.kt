@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 
 data class AppUpdateInfo(
-    val currentVersion: String = "1.2.0",
-    val latestVersion: String = "1.2.0",
+    val currentVersion: String = "1.3.0",
+    val latestVersion: String = "1.3.0",
     val hasUpdate: Boolean = false,
     val downloadUrl: String? = null,
     val releaseNotes: String = "",
@@ -34,19 +34,16 @@ class UpdateManager(private val context: Context) {
 
     private val _updateInfo = MutableStateFlow(
         AppUpdateInfo(
-            currentVersion = "v1.2.0",
-            latestVersion = "v1.2.0",
+            currentVersion = "v1.3.0",
+            latestVersion = "v1.3.0",
             hasUpdate = false,
             releaseNotes = """
-• 📸 Permanent On-Device Chat Photo Storage (No blank/green image issues)
-• 🧠 Smart Multi-Turn Agronomic Conversational Memory
-• 🌾 5-Section In-Depth Diagnostic Dossiers (Dosages per L / 15L tank)
-• 🧹 Complete AI Chat History & Storage Cleanup in Profile
-• 🎨 Default Light Mode Migration & User Theme Preference Retention
-• 🌐 Seamless 12-Language Support with Auto-Synced Greetings
-• 💾 Isolated Multi-Session Local Storage per Plant & Clean Top Bar
-• 📄 PDF Diagnostic Prescription & WhatsApp Share
-• 🧪 Fertilizer NPK Calculator & Mandi Bhav Rates
+1. 🌾 Instant Offline Crop Library: 100% fast native translation for 8 Indian languages (বাংলা, हिन्दी, मराठी, etc.) with zero AI loading delays.
+2. ⏰ Precision Hardware Reminders: AlarmManager with WakeLock ensures spray and inspection alerts ring on time on Android 14 & 15 even when app is closed.
+3. 🔄 Background Update Checker: WorkManager checks for new app releases every 1 hour in background and sends direct notification to the update screen.
+4. ✨ Modern Floating Dropdowns: Redesigned dropdowns across all screens with smooth 180° animated chevrons, floating rounded corners, and emerald checkmarks.
+5. 🔔 Smart Inactivity Re-Engagement: Automatically reminds farmers in their selected language if they haven't scanned crops in 5+ days, with auto-dismiss on scan.
+6. 🔋 Battery Optimization Helper: One-click card to whitelist background activity and prevent OS power-saving from killing alarms.
             """.trimIndent()
         )
     )
@@ -125,16 +122,15 @@ class UpdateManager(private val context: Context) {
                     val isNewerAvailable = isVersionGreater(serverVer, normCurrentVer)
 
                     val customNotes = json.optString("release_notes").ifBlank { json.optString("changelog") }
-                    val v104Highlights = """
-• 🎙️ Multilingual Voice Assistant (Speech-to-Text & Audio Playback)
-• 📄 One-Tap PDF Prescription & Direct WhatsApp Share
-• 🧪 Fertilizer & NPK Dosage Calculator (Acre, Bigha, Hectare)
-• 🌾 Live Mandi Bhav & APMC Rates with Smart AI Advice
-• 🏛️ Sarkari Krishi Yojanaen & PM-Kisan Portal Guide
-• 🌱 Soil Health & Crop Advisor AI (NPK & pH Testing)
-• ⚡ 120Hz Ultra-Fluid UI & Precision Disease Detection
+                    val v130Highlights = """
+1. 🌾 Instant Offline Crop Library: 100% fast native translation for 8 Indian languages (বাংলা, हिन्दी, मराठी, etc.) without AI delay.
+2. ⏰ Precision Hardware Reminders: AlarmManager with WakeLock ensures spray and inspection alerts ring on time on Android 14 & 15.
+3. 🔄 1-Hour Background Update Worker: Checks for new app releases every 1 hour in background and sends direct notification to the update screen.
+4. ✨ Modern Floating Dropdowns: Redesigned dropdowns across all screens with smooth 180° animated chevrons and floating rounded corners.
+5. 🔔 Smart Inactivity Re-Engagement: Automatically reminds farmers in their selected language if they haven't scanned crops in 5+ days.
+6. 🔋 Battery Optimization Guide: One-click card to prevent OS power-saving from killing background reminders.
                     """.trimIndent()
-                    val activeReleaseNotes = if (customNotes.isNotBlank()) customNotes else v104Highlights
+                    val activeReleaseNotes = if (customNotes.isNotBlank()) customNotes else v130Highlights
 
                     val result = if (isNewerAvailable) {
                         AppUpdateInfo(
