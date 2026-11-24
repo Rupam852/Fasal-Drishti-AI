@@ -794,7 +794,15 @@ fun ResultScreen(
                                 .padding(horizontal = 20.dp)
                                 .clip(RoundedCornerShape(22.dp))
                                 .clickable {
-                                    val pdfFile = com.fasaldrishti.app.util.PdfPrescriptionGenerator.generatePrescriptionPdf(context, scan)
+                                    val pdfFile = com.fasaldrishti.app.util.PdfPrescriptionGenerator.generatePrescriptionPdf(
+                                        context = context,
+                                        scan = scan,
+                                        customDiseaseName = effectiveDiseaseName,
+                                        customSymptoms = effectiveSymptoms,
+                                        customTreatment = effectiveTreatment,
+                                        customPrevention = effectivePrevention,
+                                        languageCode = uiState.currentLanguage.code
+                                    )
                                     if (pdfFile != null) {
                                         com.fasaldrishti.app.util.PdfPrescriptionGenerator.sharePrescription(context, pdfFile)
                                     } else {

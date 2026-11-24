@@ -18,9 +18,40 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+data class PdfReportStrings(
+    val appSubtitle: String,
+    val appSubDesc: String,
+    val reportIdPrefix: String,
+    val targetCropLabel: String,
+    val diagnosedConditionLabel: String,
+    val severityPrefix: String,
+    val aiMatchPrefix: String,
+    val verifiedText: String,
+    val unverifiedText: String,
+    val symptomsTitle: String,
+    val chemicalTitle: String,
+    val chemicalSubtitle: String,
+    val organicTitle: String,
+    val organicSubtitle: String,
+    val advisoryTitle: String,
+    val advisory1: String,
+    val advisory2: String,
+    val advisory3: String,
+    val footerText: String,
+    val pageText: String
+)
+
 object PdfPrescriptionGenerator {
 
-    fun generatePrescriptionPdf(context: Context, scan: ScanRecord): File? {
+    fun generatePrescriptionPdf(
+        context: Context,
+        scan: ScanRecord,
+        customDiseaseName: String? = null,
+        customSymptoms: String? = null,
+        customTreatment: String? = null,
+        customPrevention: String? = null,
+        languageCode: String = "en"
+    ): File? {
         val document = PdfDocument()
         val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // Standard A4 (595 x 842 points)
         val page = document.startPage(pageInfo)
@@ -28,6 +59,8 @@ object PdfPrescriptionGenerator {
 
         val paint = Paint().apply { isAntiAlias = true }
         val dateStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date(scan.timestamp))
+
+        val labels = getLocalizedLabels(languageCode)
 
         val leftMargin = 28f
         val rightMargin = 567f
@@ -53,11 +86,11 @@ object PdfPrescriptionGenerator {
         paint.textSize = 9f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         paint.color = Color.parseColor("#a7f3d0")
-        canvas.drawText("Precision Agronomy & Crop Vision Medical Dossier", leftMargin, 50f, paint)
-        canvas.drawText("Digital Pathology Report & Spray Advisory for Agri Shops", leftMargin, 65f, paint)
+        canvas.drawText(labels.appSubtitle, leftMargin, 50f, paint)
+        canvas.drawText(labels.appSubDesc, leftMargin, 65f, paint)
 
         // Right side of Header: Report ID & Date
-        val reportIdText = "REPORT ID: #${scan.id.take(8).uppercase()}"
+        val reportIdText = "${labels.reportIdPrefix}: #${scan.id.take(8).uppercase()}"
         paint.textSize = 10f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         paint.color = Color.parseColor("#6ee7b7")
@@ -139,8 +172,8 @@ object PdfPrescriptionGenerator {
         paint.textSize = 9.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         paint.color = Color.parseColor("#475569")
-        canvas.drawText("TARGET CROP:", infoStartX, curY + 22f, paint)
-        val cropLabelWidth = paint.measureText("TARGET CROP: ")
+        canvas.drawText(labels.targetCropLabel, infoStartX, curY + 22f, paint)
+        val cropLabelWidth = paint.measureText("${labels.targetCropLabel} ")
 
         paint.textSize = 10.5f
         paint.color = Color.parseColor("#0f172a")
@@ -156,7 +189,7 @@ object PdfPrescriptionGenerator {
             "MEDIUM", "MODERATE" -> Pair("#fef3c7", "#b45309")
             else -> Pair("#d1fae5", "#047857")
         }
-        val sevBadgeText = "SEV: $severityStr"
+        val sevBadgeText = "${labels.severityPrefix}: $severityStr"
         paint.textSize = 8f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         val sevTextW = paint.measureText(sevBadgeText)
@@ -170,13 +203,13 @@ object PdfPrescriptionGenerator {
         paint.textSize = 8.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         paint.color = Color.parseColor("#64748b")
-        canvas.drawText("DIAGNOSED CONDITION / DISEASE:", infoStartX, curY + 41f, paint)
+        canvas.drawText(labels.diagnosedConditionLabel, infoStartX, curY + 41f, paint)
 
-        // Line 3: Identified Disease Name (Wrapped within textBoundWidth so it NEVER overlaps!)
+        // Line 3: Identified Disease Name (supports localized custom name & wraps safely)
         paint.textSize = 12.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         paint.color = Color.parseColor("#0f172a")
-        val diseaseDisplayName = scan.diseaseName.ifBlank { scan.predictedClass }
+        val diseaseDisplayName = (customDiseaseName ?: scan.diseaseName).ifBlank { scan.predictedClass }
         val diseaseLines = wrapSimple(diseaseDisplayName, textBoundWidth, paint)
         var diseaseY = curY + 58f
         for (line in diseaseLines.take(2)) {
@@ -189,7 +222,7 @@ object PdfPrescriptionGenerator {
 
         // Confidence Pill
         val confPct = (scan.confidence * 100).toInt()
-        val confBadgeText = "AI Match: $confPct%"
+        val confBadgeText = "${labels.aiMatchPrefix}: $confPct%"
         paint.textSize = 8.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         val confTextW = paint.measureText(confBadgeText)
@@ -201,7 +234,7 @@ object PdfPrescriptionGenerator {
 
         // Verification Pill
         val verBadgeX = infoStartX + confTextW + 22f
-        val verText = if (scan.isVerified) "✓ Verified with 2nd Multimodal AI" else "⚡ Rapid On-Device Screening"
+        val verText = if (scan.isVerified) labels.verifiedText else labels.unverifiedText
         val (verBg, verColor) = if (scan.isVerified) Pair("#dcfce7", "#15803d") else Pair("#ffedd5", "#c2410c")
         val verTextW = paint.measureText(verText)
         val verRect = RectF(verBadgeX, bottomBadgesY - 12f, verBadgeX + verTextW + 14f, bottomBadgesY + 4f)
@@ -218,10 +251,10 @@ object PdfPrescriptionGenerator {
         paint.textSize = 10.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         paint.color = Color.parseColor("#1e293b")
-        canvas.drawText("📋 OBSERVED PATHOLOGY & SYMPTOMS", leftMargin + 4f, curY, paint)
+        canvas.drawText(labels.symptomsTitle, leftMargin + 4f, curY, paint)
         curY += 14f
 
-        val rawSymptoms = scan.symptoms.ifBlank {
+        val rawSymptoms = (customSymptoms ?: scan.symptoms).ifBlank {
             "Concentric dark spots, chlorotic foliar lesions, and tissue necrosis observed on leaf surface."
         }
         val symptomPoints = splitIntoBullets(rawSymptoms)
@@ -245,20 +278,20 @@ object PdfPrescriptionGenerator {
         // 4. RX: CHEMICAL SPRAY PRESCRIPTION BOX
         // ==========================================
         val chemBoxStartY = curY
-        val rawTreatment = scan.treatment.ifBlank {
-            "• Recommended Chemical: Mancozeb 75% WP @ 2.5g/L or Azoxystrobin 18.2% + Difenoconazole 11.4% SC @ 1ml/L.\n• 15-Liter Knapsack Tank Dose: 35-40g per 15-liter pump.\n• Spray Timing: Early morning or late evening."
+        val chemicalPart = if (!customTreatment.isNullOrBlank()) {
+            if (customTreatment.contains("[ORGANIC]")) customTreatment.substringBefore("[ORGANIC]").trim() else customTreatment.trim()
+        } else {
+            val raw = scan.treatment.ifBlank {
+                "• Recommended Chemical: Mancozeb 75% WP @ 2.5g/L or Azoxystrobin 18.2% + Difenoconazole 11.4% SC @ 1ml/L.\n• 15-Liter Knapsack Tank Dose: 35-40g per 15-liter pump.\n• Spray Timing: Early morning or late evening."
+            }
+            raw.substringBefore("[ORGANIC]").trim()
         }
-        // Extract ONLY the chemical portion before [ORGANIC]
-        val chemicalPart = rawTreatment.substringBefore("[ORGANIC]").trim()
         val chemicalItems = splitIntoBullets(chemicalPart)
 
         // Calculate height dynamically
         var estimatedChemHeight = 38f
         for (item in chemicalItems) {
-            val isTankDose = item.contains("15L", ignoreCase = true) ||
-                    item.contains("15-Liter", ignoreCase = true) ||
-                    item.contains("Tank Dose", ignoreCase = true) ||
-                    item.contains("लीटर", ignoreCase = true)
+            val isTankDose = isTankDoseKeyword(item)
             val subLines = wrapSimple(item, contentWidth - 36f, paint)
             estimatedChemHeight += (subLines.size * 13.5f) + (if (isTankDose) 8f else 4f)
         }
@@ -280,20 +313,17 @@ object PdfPrescriptionGenerator {
         paint.color = Color.parseColor("#065f46")
         paint.textSize = 11f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("🧪 RX: CHEMICAL SPRAY PRESCRIPTION & DOSAGE GUIDE", leftMargin + 12f, chemBoxStartY + 18f, paint)
+        canvas.drawText(labels.chemicalTitle, leftMargin + 12f, chemBoxStartY + 18f, paint)
 
         paint.color = Color.parseColor("#047857")
         paint.textSize = 8f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
-        canvas.drawText("(Show this exact formulation & active salt to your certified Krishi Kendra / Agri Shop)", leftMargin + 12f, chemBoxStartY + 30f, paint)
+        canvas.drawText(labels.chemicalSubtitle, leftMargin + 12f, chemBoxStartY + 30f, paint)
 
         var chemItemY = chemBoxStartY + 45f
         for (item in chemicalItems) {
             if (chemItemY > chemBoxStartY + chemCardHeight - 14f) break
-            val isTankDose = item.contains("15L", ignoreCase = true) ||
-                    item.contains("15-Liter", ignoreCase = true) ||
-                    item.contains("Tank Dose", ignoreCase = true) ||
-                    item.contains("लीटर", ignoreCase = true)
+            val isTankDose = isTankDoseKeyword(item)
 
             if (isTankDose) {
                 // Highlight Tank Dose with a distinct badge look
@@ -331,7 +361,11 @@ object PdfPrescriptionGenerator {
         // 5. ORGANIC REMEDIES & FIELD SANITATION
         // ==========================================
         val organicBoxStartY = curY
-        val organicPart = rawTreatment.substringAfter("[ORGANIC]", "").trim()
+        val organicPart = if (!customPrevention.isNullOrBlank()) {
+            customPrevention.trim()
+        } else {
+            scan.treatment.substringAfter("[ORGANIC]", "").trim()
+        }
         val organicItems = if (organicPart.isNotBlank()) {
             splitIntoBullets(organicPart)
         } else {
@@ -365,12 +399,12 @@ object PdfPrescriptionGenerator {
         paint.color = Color.parseColor("#0f766e") // Teal
         paint.textSize = 10.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("🌿 ORGANIC REMEDIES & FIELD HYGIENE", leftMargin + 12f, organicBoxStartY + 18f, paint)
+        canvas.drawText(labels.organicTitle, leftMargin + 12f, organicBoxStartY + 18f, paint)
 
         paint.color = Color.parseColor("#0d9488")
         paint.textSize = 8f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
-        canvas.drawText("(Bio-fungicides, natural resistance boosters & cultural farm practices)", leftMargin + 12f, organicBoxStartY + 29f, paint)
+        canvas.drawText(labels.organicSubtitle, leftMargin + 12f, organicBoxStartY + 29f, paint)
 
         var orgItemY = organicBoxStartY + 43f
         for (item in organicItems) {
@@ -407,14 +441,14 @@ object PdfPrescriptionGenerator {
         paint.color = Color.parseColor("#92400e")
         paint.textSize = 9.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("⚠️ CERTIFIED AGRONOMIST & SPRAY SAFETY ADVISORY", leftMargin + 12f, curY + 16f, paint)
+        canvas.drawText(labels.advisoryTitle, leftMargin + 12f, curY + 16f, paint)
 
         paint.color = Color.parseColor("#78350f")
         paint.textSize = 8f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-        canvas.drawText("• Ideal Spray Time: 6:30 AM - 9:30 AM or 4:30 PM - 6:30 PM in calm weather (<10 km/h wind). Never spray in midday sun.", leftMargin + 12f, curY + 29f, paint)
-        canvas.drawText("• Farm Safety: Wear gloves & mask. Ensure recommended Pre-Harvest Interval (PHI) before picking produce.", leftMargin + 12f, curY + 40f, paint)
-        canvas.drawText("• Kisan Helpline: For free government agronomist consultation, dial toll-free 1800-180-1551 (KVK / ICAR).", leftMargin + 12f, curY + 50f, paint)
+        canvas.drawText(labels.advisory1, leftMargin + 12f, curY + 29f, paint)
+        canvas.drawText(labels.advisory2, leftMargin + 12f, curY + 40f, paint)
+        canvas.drawText(labels.advisory3, leftMargin + 12f, curY + 50f, paint)
 
         // ==========================================
         // 7. FOOTER & DISCLAIMER (Fixed at page bottom)
@@ -426,9 +460,9 @@ object PdfPrescriptionGenerator {
         paint.color = Color.parseColor("#94a3b8")
         paint.textSize = 7.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-        canvas.drawText("Generated by Fasal Drishti Multimodal AI Agronomist • www.fasaldrishti.app • Save Soil, Protect Harvest", leftMargin, footerY, paint)
+        canvas.drawText(labels.footerText, leftMargin, footerY, paint)
 
-        val pageInfoText = "Digital Dossier • Valid for Season 2026"
+        val pageInfoText = labels.pageText
         val pageInfoWidth = paint.measureText(pageInfoText)
         canvas.drawText(pageInfoText, rightMargin - pageInfoWidth, footerY, paint)
 
@@ -447,6 +481,112 @@ object PdfPrescriptionGenerator {
         } catch (_: Exception) {
             document.close()
             null
+        }
+    }
+
+    private fun isTankDoseKeyword(item: String): Boolean {
+        return item.contains("15L", ignoreCase = true) ||
+                item.contains("15-Liter", ignoreCase = true) ||
+                item.contains("Tank Dose", ignoreCase = true) ||
+                item.contains("टंकी", ignoreCase = true) ||
+                item.contains("पंप", ignoreCase = true) ||
+                item.contains("পাম্প", ignoreCase = true) ||
+                item.contains("ট্যাঙ্ক", ignoreCase = true) ||
+                item.contains("ডোজ", ignoreCase = true) ||
+                item.contains("लीटर", ignoreCase = true) ||
+                item.contains("লিটার", ignoreCase = true)
+    }
+
+    private fun getLocalizedLabels(langCode: String): PdfReportStrings {
+        return when (langCode.lowercase()) {
+            "hi" -> PdfReportStrings(
+                appSubtitle = "सटीक कृषि विज्ञान और फसल रोग परीक्षण रिपोर्ट",
+                appSubDesc = "कृषि केंद्र / दवाई दुकान हेतु डिजिटल प्रिस्क्रिप्शन",
+                reportIdPrefix = "रिपोर्ट आईडी",
+                targetCropLabel = "फसल का नाम:",
+                diagnosedConditionLabel = "पहचाना गया रोग / स्थिति:",
+                severityPrefix = "गंभीरता",
+                aiMatchPrefix = "एआई मैच",
+                verifiedText = "✓ मल्टीमॉडल एआई द्वारा सत्यापित",
+                unverifiedText = "⚡ ऑन-डिवाइस त्वरित स्कैन",
+                symptomsTitle = "📋 देखे गए लक्षण और विकृति",
+                chemicalTitle = "🧪 RX: रासायनिक स्प्रे प्रिस्क्रिप्शन और खुराक गाइड",
+                chemicalSubtitle = "(यह फॉर्मूलेशन अपने नजदीकी कृषि सेवा केंद्र या खाद-बीज दुकान पर दिखाएं)",
+                organicTitle = "🌿 जैविक उपचार और खेत स्वच्छता",
+                organicSubtitle = "(जैविक फफूंदनाशक, प्राकृतिक उपाय और फसल प्रबंधन)",
+                advisoryTitle = "⚠️ कृषि वैज्ञानिक सुरक्षा और छिड़काव सलाह",
+                advisory1 = "• छिड़काव समय: शांत मौसम में सुबह 6:30 - 9:30 या शाम 4:30 - 6:30 बजे। तेज धूप में छिड़काव न करें।",
+                advisory2 = "• सुरक्षा: दस्ताने और मास्क पहनें। तुड़ाई से पहले अनुशंसित प्रतीक्षा अवधि (PHI) का ध्यान रखें।",
+                advisory3 = "• किसान हेल्पलाइन: मुफ्त कृषि सलाह के लिए टोल-फ्री 1800-180-1551 (KVK / ICAR) पर कॉल करें।",
+                footerText = "फसल दृष्टि एआई द्वारा निर्मित • www.fasaldrishti.app • मिट्टी बचाओ, फसल बचाओ",
+                pageText = "डिजिटल डोजियर • सीज़न 2026"
+            )
+            "bn" -> PdfReportStrings(
+                appSubtitle = "নির্ভুল কৃষিবিজ্ঞান ও ফসল রোগ নির্ণয় রিপোর্ট",
+                appSubDesc = "কৃষি সেবা কেন্দ্র / কীটনাশক দোকানের জন্য প্রেসক্রিপশন",
+                reportIdPrefix = "রিপোর্ট আইডি",
+                targetCropLabel = "ফসলের নাম:",
+                diagnosedConditionLabel = "শনাক্তকৃত রোগ / অবস্থা:",
+                severityPrefix = "তীব্রতা",
+                aiMatchPrefix = "ম্যাচ",
+                verifiedText = "✓ মাল্টিমোডাল এআই দ্বারা যাচাইকৃত",
+                unverifiedText = "⚡ অন-ডিভাইস দ্রুত স্ক্রিনিং",
+                symptomsTitle = "📋 পরিলক্ষিত লক্ষণ ও রোগতত্ত্ব",
+                chemicalTitle = "🧪 RX: রাসায়নিক স্প্রে প্রেসক্রিপশন ও ডোজ গাইড",
+                chemicalSubtitle = "(এই সঠিক মাত্রা আপনার স্থানীয় কৃষি সেবা কেন্দ্র বা কীটনাশক দোকানে দেখান)",
+                organicTitle = "🌿 জৈব প্রতিকার ও মাঠের পরিচ্ছন্নতা",
+                organicSubtitle = "(জৈব ছত্রাকনাশক, প্রাকৃতিক প্রতিরোধ ও সাংস্কৃতিক ব্যবস্থাপনা)",
+                advisoryTitle = "⚠️ কৃষিবিদ নিরাপত্তা ও স্প্রে নির্দেশিকা",
+                advisory1 = "• স্প্রে করার সময়: শান্ত আবহাওয়ায় সকাল ৬:৩০ - ৯:৩০ বা বিকেল ৪:৩০ - ৬:৩০। প্রখর রোদে স্প্রে করবেন না।",
+                advisory2 = "• নিরাপত্তা: গ্লাভস ও মাস্ক ব্যবহার করুন। ফসল তোলার আগে নির্ধারিত অপেক্ষার সময় (PHI) মেনে চলুন।",
+                advisory3 = "• কিষাণ হেল্পলাইন: বিনামূল্যে কৃষি পরামর্শের জন্য টোল-ফ্রি ১৮০০-১৮০-১৫৫১ নম্বরে যোগাযোগ করুন।",
+                footerText = "ফসল দৃষ্টি এআই দ্বারা প্রস্তুত • www.fasaldrishti.app • মাটি বাঁচান, ফসল রক্ষা করুন",
+                pageText = "ডিজিটাল ডসিয়ার • মরসুম ২০২৬"
+            )
+            "mr" -> PdfReportStrings(
+                appSubtitle = "अचूक कृषी विज्ञान आणि पीक रोग निदान अहवाल",
+                appSubDesc = "कृषी केंद्र / औषध दुकानासाठी डिजिटल प्रिस्क्रिप्शन",
+                reportIdPrefix = "अहवाल आयडी",
+                targetCropLabel = "पिकाचे नाव:",
+                diagnosedConditionLabel = "निदान झालेला रोग / स्थिती:",
+                severityPrefix = "तीव्रता",
+                aiMatchPrefix = "अचूकता",
+                verifiedText = "✓ मल्टीमॉडल एआय द्वारे सत्यापित",
+                unverifiedText = "⚡ ऑन-डिव्हाइस जलद स्कॅन",
+                symptomsTitle = "📋 आढळलेली लक्षणे आणि पॅथॉलॉजी",
+                chemicalTitle = "🧪 RX: रासायनिक फवारणी प्रिस्क्रिप्शन आणि डोस",
+                chemicalSubtitle = "(हे अचूक प्रमाण आपल्या कृषी केंद्रात किंवा खत-औषध दुकानात दाखवा)",
+                organicTitle = "🌿 सेंद्रिय उपाय आणि शेताची स्वच्छता",
+                organicSubtitle = "(जैविक बुरशीनाशके, नैसर्गिक उपाय आणि व्यवस्थापन)",
+                advisoryTitle = "⚠️ कृषी तज्ज्ञ सुरक्षा आणि फवारणी सल्ला",
+                advisory1 = "• फवारणीची वेळ: शांत हवामानात सकाळी ६:३० - ९:३० किंवा संध्याकाळी ४:३० - ६:३०. कडक उन्हात फवारणी करू नका.",
+                advisory2 = "• सुरक्षा: हातमोजे आणि मास्क वापरा. काढणीपूर्वी शिफारस केलेला प्रतीक्षा कालावधी (PHI) पाळा.",
+                advisory3 = "• किसान हेल्पलाइन: मोफत कृषी सल्ल्यासाठी टोल-फ्री १८००-१८०-१५५१ (KVK) वर कॉल करा.",
+                footerText = "फसल दृष्टी एआय द्वारे निर्मित • www.fasaldrishti.app • माती वाचवा, पीक वाचवा",
+                pageText = "डिजिटल डॉसियर • हंगाम २०२६"
+            )
+            else -> PdfReportStrings(
+                appSubtitle = "Precision Agronomy & Crop Vision Medical Dossier",
+                appSubDesc = "Digital Pathology Report & Spray Advisory for Agri Shops",
+                reportIdPrefix = "REPORT ID",
+                targetCropLabel = "TARGET CROP:",
+                diagnosedConditionLabel = "DIAGNOSED CONDITION / DISEASE:",
+                severityPrefix = "SEV",
+                aiMatchPrefix = "AI Match",
+                verifiedText = "✓ Verified with 2nd Multimodal AI",
+                unverifiedText = "⚡ Rapid On-Device Screening",
+                symptomsTitle = "📋 OBSERVED PATHOLOGY & SYMPTOMS",
+                chemicalTitle = "🧪 RX: CHEMICAL SPRAY PRESCRIPTION & DOSAGE GUIDE",
+                chemicalSubtitle = "(Show this exact formulation & active salt to your certified Krishi Kendra / Agri Shop)",
+                organicTitle = "🌿 ORGANIC REMEDIES & FIELD HYGIENE",
+                organicSubtitle = "(Bio-fungicides, natural resistance boosters & cultural farm practices)",
+                advisoryTitle = "⚠️ CERTIFIED AGRONOMIST & SPRAY SAFETY ADVISORY",
+                advisory1 = "• Ideal Spray Time: 6:30 AM - 9:30 AM or 4:30 PM - 6:30 PM in calm weather (<10 km/h wind). Never spray in midday sun.",
+                advisory2 = "• Farm Safety: Wear gloves & mask. Ensure recommended Pre-Harvest Interval (PHI) before picking produce.",
+                advisory3 = "• Kisan Helpline: For free government agronomist consultation, dial toll-free 1800-180-1551 (KVK / ICAR).",
+                footerText = "Generated by Fasal Drishti Multimodal AI Agronomist • www.fasaldrishti.app • Save Soil, Protect Harvest",
+                pageText = "Digital Dossier • Valid for Season 2026"
+            )
         }
     }
 
