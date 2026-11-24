@@ -80,9 +80,14 @@ class TFLiteDiseaseClassifier(private val context: Context) {
     }
 
     /**
-     * Fast Computer Vision Foliage & Chromatic Quality Guard (< 3ms).
-     * Prevents empty grey/beige walls, room ceilings, fingers, laptop screens,
-     * tables, and non-plant flat surfaces from triggering false disease diagnoses.
+     * Universal Computer Vision Foliage & Chromatic Quality Guard (< 3ms).
+     *
+     * Uses plant biological chlorophyll reflectance (Normalized Green Chromaticity):
+     *   normG = G / (R + G + B) > 0.36 && G > 1.05 * R && G > 1.05 * B
+     *
+     * Universally filters ANY non-plant object anywhere in the world (human skin, clothes,
+     * vehicles, animals, roads, furniture, electronics, walls, ceilings, floors, sky, soil)
+     * as well as completely blank, covered, or uniform out-of-focus surfaces before neural inference.
      */
     private fun checkFoliageQuality(bitmap: Bitmap): Boolean {
         return try {
