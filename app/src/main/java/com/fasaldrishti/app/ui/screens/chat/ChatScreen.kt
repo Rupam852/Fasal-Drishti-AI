@@ -36,10 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -138,10 +140,35 @@ fun ChatScreen(
         viewModel.initContext(contextInfo)
     }
 
+    val hasHeader = (uiState.contextInfo != null) || (uiState.messages.size <= 2)
+    val totalItemsCount = (if (hasHeader) 1 else 0) + uiState.messages.size + (if (uiState.isAiTyping) 1 else 0)
+    val lastItemIndex = maxOf(0, totalItemsCount - 1)
+
+    // 1. Initial Load / Re-entering screen: scroll straight to the bottom (latest message)
+    LaunchedEffect(uiState.currentSessionId, uiState.messages.isNotEmpty()) {
+        if (totalItemsCount > 0) {
+            kotlinx.coroutines.delay(120)
+            listState.scrollToItem(lastItemIndex)
+        }
+    }
+
+    // 2. Message sent or AI reply received or AI typing: smoothly scroll to bottom
     LaunchedEffect(uiState.messages.size, uiState.isAiTyping) {
-        if (uiState.messages.isNotEmpty()) {
-            kotlinx.coroutines.delay(100)
-            listState.animateScrollToItem(uiState.messages.size - 1)
+        if (totalItemsCount > 0) {
+            kotlinx.coroutines.delay(60)
+            listState.animateScrollToItem(lastItemIndex)
+            // Extra settling pass for long formatted markdown bubbles
+            kotlinx.coroutines.delay(240)
+            listState.scrollToItem(lastItemIndex)
+        }
+    }
+
+    // 3. Keyboard Visibility (IME Insets): Auto-scroll so latest messages remain above keyboard
+    val isImeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    LaunchedEffect(isImeVisible) {
+        if (isImeVisible && totalItemsCount > 0) {
+            kotlinx.coroutines.delay(120)
+            listState.animateScrollToItem(lastItemIndex)
         }
     }
 
@@ -598,7 +625,16 @@ fun ChatScreen(
                                 Text(if (!isConnected) strings.offlineStatus else if (isListening) "🎙️ Listening..." else strings.chatTypePlaceholder)
                             },
                             enabled = isConnected,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused && totalItemsCount > 0) {
+                                        coroutineScope.launch {
+                                            kotlinx.coroutines.delay(220)
+                                            listState.animateScrollToItem(lastItemIndex)
+                                        }
+                                    }
+                                },
                             shape = RoundedCornerShape(24.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color.Transparent,
