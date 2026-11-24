@@ -149,7 +149,7 @@ class FasalDrishtiApp : Application() {
             }
         }
 
-        // 10. Schedule periodic background update checks (every ~20 minutes)
+        // 10. Schedule periodic background update checks (every 1 hour)
         com.fasaldrishti.app.worker.AppUpdateWorker.schedule(this)
     }
 }

@@ -14,7 +14,7 @@ import com.fasaldrishti.app.data.remote.UpdateManager
 import java.util.concurrent.TimeUnit
 
 /**
- * Background worker that periodically checks for app updates (every ~20 minutes)
+ * Background worker that periodically checks for app updates (every 1 hour)
  * even when the app is completely closed or killed.
  */
 class AppUpdateWorker(
@@ -71,7 +71,7 @@ class AppUpdateWorker(
         private const val WORK_NAME = "fasal_app_update_periodic"
 
         /**
-         * Schedules periodic background update checks (every 20 minutes)
+         * Schedules periodic background update checks (every 1 hour)
          * Only triggers when the device is actively connected to the internet.
          */
         fun schedule(context: Context) {
@@ -79,10 +79,10 @@ class AppUpdateWorker(
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-            // 20 minutes interval with 5 minutes flex window
+            // 1 Hour interval with 15 minutes flex window
             val periodicWorkRequest = PeriodicWorkRequestBuilder<AppUpdateWorker>(
-                20, TimeUnit.MINUTES,
-                5, TimeUnit.MINUTES
+                1, TimeUnit.HOURS,
+                15, TimeUnit.MINUTES
             )
                 .setConstraints(constraints)
                 .build()
@@ -93,7 +93,7 @@ class AppUpdateWorker(
                 periodicWorkRequest
             )
 
-            Log.d(TAG, "AppUpdateWorker periodic check scheduled (every 20 mins with network constraint).")
+            Log.d(TAG, "AppUpdateWorker periodic check scheduled (every 1 hour with network constraint).")
         }
 
         fun cancel(context: Context) {
