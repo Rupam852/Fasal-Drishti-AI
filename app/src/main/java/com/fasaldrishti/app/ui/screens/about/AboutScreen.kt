@@ -249,7 +249,7 @@ fun AboutScreen(
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
 
                         TechSpecRow(
-                            icon = androidx.compose.material.icons.Icons.AutoMirrored.Filled.MenuBook,
+                            icon = Icons.Default.MenuBook,
                             title = "Native 8-Language Offline Crop Library",
                             subtitle = "Pre-compiled encyclopedia of 40+ crops & hundreds of diseases with 0ms delay & desi remedies"
                         )
