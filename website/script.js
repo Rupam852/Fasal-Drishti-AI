@@ -235,4 +235,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { threshold: 0.3 });
     observer.observe(statsSection);
   }
+
+  // 7. Light / Dark Mode Toggle Logic
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const mobileThemeToggleBtn = document.getElementById('mobileThemeToggleBtn');
+
+  function getActiveTheme() {
+    return document.documentElement.getAttribute('data-theme') || 'light';
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('theme', theme);
+    } catch (e) {}
+
+    const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+    if (metaColorScheme) {
+      metaColorScheme.content = theme;
+    }
+  }
+
+  function toggleTheme() {
+    const currentTheme = getActiveTheme();
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(nextTheme);
+  }
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', toggleTheme);
+  }
+
+  if (mobileThemeToggleBtn) {
+    mobileThemeToggleBtn.addEventListener('click', toggleTheme);
+  }
+
+  // Cross-tab theme sync
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'theme' && e.newValue) {
+      applyTheme(e.newValue);
+    }
+  });
 });

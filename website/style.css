@@ -35,6 +35,7 @@
   --bg-surface: #FFFFFF;
   --bg-surface-elevated: #F8FAF7;
   --bg-subtle: #F0FDF4;
+  --bg-header: rgba(250, 252, 248, 0.92);
 
   --border-light: rgba(16, 185, 129, 0.16);
   --border-card: rgba(226, 232, 240, 0.85);
@@ -54,6 +55,35 @@
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   
   --transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-primary: #080D0A;
+  --bg-surface: #101914;
+  --bg-surface-elevated: #15221B;
+  --bg-subtle: #13241A;
+  --bg-header: rgba(8, 13, 10, 0.92);
+
+  --slate-50: #121B16;
+  --slate-100: #18241E;
+  --slate-200: #23342A;
+  --slate-300: #32473A;
+  --slate-400: #688676;
+  --slate-500: #94A3B8;
+  --slate-600: #CBD5E1;
+  --slate-700: #E2E8F0;
+  --slate-800: #F1F5F9;
+  --slate-900: #FFFFFF;
+
+  --border-light: rgba(52, 211, 153, 0.22);
+  --border-card: rgba(52, 211, 153, 0.16);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 20px 40px -8px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 35px rgba(52, 211, 153, 0.22);
 }
 
 /* ==========================================================================
@@ -220,10 +250,10 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(250, 252, 248, 0.9);
+  background: var(--bg-header);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+  border-bottom: 1px solid var(--border-card);
   transition: var(--transition);
 }
 
@@ -309,6 +339,45 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+/* Theme Toggle Button (Light/Dark Mode) */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-card);
+  color: var(--slate-700);
+  transition: var(--transition);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--emerald-500);
+  color: var(--emerald-600);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
+}
+
+.theme-toggle-btn .sun-icon {
+  display: none;
+}
+.theme-toggle-btn .moon-icon {
+  display: block;
+}
+
+[data-theme="dark"] .theme-toggle-btn .sun-icon {
+  display: block;
+  color: var(--amber-400);
+}
+[data-theme="dark"] .theme-toggle-btn .moon-icon {
+  display: none;
 }
 
 .nav-btn {
@@ -411,6 +480,62 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--emerald-50);
   color: var(--emerald-700);
   border-color: var(--emerald-200);
+}
+
+.mobile-theme-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  margin-bottom: 6px;
+  font-weight: 700;
+  color: var(--slate-800);
+  font-size: 0.95rem;
+}
+
+.theme-toggle-switch {
+  width: 50px;
+  height: 28px;
+  background: var(--slate-300);
+  border-radius: var(--radius-full);
+  position: relative;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.theme-toggle-switch .switch-handle {
+  width: 24px;
+  height: 24px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  transition: var(--transition);
+  transform: translateX(0);
+}
+
+[data-theme="dark"] .theme-toggle-switch {
+  background: var(--emerald-500);
+}
+
+[data-theme="dark"] .theme-toggle-switch .switch-handle {
+  transform: translateX(22px);
+}
+
+[data-theme="dark"] .download-qr-pane {
+  background: var(--bg-surface-elevated);
+  border-color: var(--border-light);
+}
+
+[data-theme="dark"] .cta-qr-box {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-card);
 }
 
 .drawer-backdrop {
