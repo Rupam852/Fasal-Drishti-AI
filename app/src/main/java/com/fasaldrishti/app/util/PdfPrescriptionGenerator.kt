@@ -362,7 +362,7 @@ object PdfPrescriptionGenerator {
         // ==========================================
         val organicBoxStartY = curY
         val organicPart = if (!customPrevention.isNullOrBlank()) {
-            customPrevention.trim()
+            customPrevention.removePrefix("[ORGANIC]").trim()
         } else {
             scan.treatment.substringAfter("[ORGANIC]", "").trim()
         }
@@ -620,28 +620,27 @@ object PdfPrescriptionGenerator {
             val cleanLine = line.trim()
             if (cleanLine.isBlank()) continue
 
-            // Check if line contains inline bullet delimiters like "• " or "✓ "
-            if (cleanLine.contains(" • ")) {
-                val subItems = cleanLine.split(" • ")
-                for (sub in subItems) {
-                    val s = cleanBulletSymbol(sub)
-                    if (s.isNotBlank()) items.add(s)
+            // Split line by inline bullet delimiters like " • " or " ✓ " or " - "
+            val parts = cleanLine.split(Regex("(?<=\\S)\\s*[•✓*\\-]\\s+"))
+            for (part in parts) {
+                var s = part.trim()
+                while (s.isNotEmpty() && (s.startsWith("•") || s.startsWith("✓") || s.startsWith("-") || s.startsWith("*"))) {
+                    s = s.substring(1).trim()
                 }
-            } else {
-                val s = cleanBulletSymbol(cleanLine)
-                if (s.isNotBlank()) items.add(s)
+                if (s.isNotBlank() && !s.equals("[ORGANIC]", ignoreCase = true)) {
+                    items.add(s)
+                }
             }
         }
         return items
     }
 
     private fun cleanBulletSymbol(text: String): String {
-        return text
-            .removePrefix("•")
-            .removePrefix("✓")
-            .removePrefix("-")
-            .removePrefix("*")
-            .trim()
+        var t = text.trim()
+        while (t.isNotEmpty() && (t.startsWith("•") || t.startsWith("✓") || t.startsWith("-") || t.startsWith("*"))) {
+            t = t.substring(1).trim()
+        }
+        return t
     }
 
     /**

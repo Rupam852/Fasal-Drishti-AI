@@ -160,6 +160,7 @@ fun AppNavHost(
 
             composable(Screen.Home.route) {
                 val homeViewModel = remember { HomeViewModel(scanRepository, authRepository, weatherManager) }
+                val authViewModel = remember { AuthViewModel(authRepository) }
                 HomeScreen(
                     viewModel = homeViewModel,
                     onNavigateToScan = { navController.navigate(Screen.Scan.route) },
@@ -169,6 +170,16 @@ fun AppNavHost(
                     onNavigateToFertilizer = { navController.navigate(Screen.FertilizerCalculator.route) },
                     onNavigateToSchemes = { navController.navigate(Screen.GovtSchemes.route) },
                     onNavigateToSoilHealth = { navController.navigate(Screen.SoilHealth.route) },
+                    onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+                    onNavigateToUpdater = { navController.navigate(Screen.Updater.route) },
+                    onSignOut = {
+                        authViewModel.signOut {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    },
+                    updateManager = updateManager,
                     networkMonitor = networkMonitor
                 )
             }

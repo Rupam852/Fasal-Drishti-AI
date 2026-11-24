@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -28,6 +29,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.fasaldrishti.app.domain.model.ScanRecord
 import com.fasaldrishti.app.domain.model.SprayStatus
@@ -47,6 +50,10 @@ fun HomeScreen(
     onNavigateToFertilizer: () -> Unit = {},
     onNavigateToSchemes: () -> Unit = {},
     onNavigateToSoilHealth: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToUpdater: () -> Unit = {},
+    onSignOut: () -> Unit = {},
+    updateManager: com.fasaldrishti.app.data.remote.UpdateManager? = null,
     networkMonitor: com.fasaldrishti.app.util.NetworkMonitor? = null
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -57,6 +64,10 @@ fun HomeScreen(
     val recentScans by viewModel.recentScans.collectAsState()
     val syncStatus by viewModel.syncStatus.collectAsState()
     val weatherData by viewModel.weatherData.collectAsState()
+
+    var showAccountDialog by remember { mutableStateOf(false) }
+    val updateInfo by (updateManager?.updateInfo ?: kotlinx.coroutines.flow.MutableStateFlow(com.fasaldrishti.app.data.remote.AppUpdateInfo())).collectAsState()
+    val hasUpdate = updateInfo.hasUpdate
 
     val strings = com.fasaldrishti.app.ui.localization.LocalAppStrings.current
     val totalScans = recentScans.size
@@ -90,30 +101,50 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Google Account Avatar with Clickable Dialog & Red Notification Dot
                         Box(
                             modifier = Modifier
                                 .size(46.dp)
-                                .shadow(8.dp, CircleShape, spotColor = EmeraldPrimary)
-                                .clip(CircleShape)
-                                .background(
-                                    brush = Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
-                                )
-                                .border(1.5.dp, Color.White.copy(alpha = 0.5f), CircleShape),
-                            contentAlignment = Alignment.Center
+                                .clickable { showAccountDialog = true }
                         ) {
-                            if (!user?.avatarUrl.isNullOrBlank()) {
-                                AsyncImage(
-                                    model = user?.avatarUrl,
-                                    contentDescription = "Profile Avatar",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            } else {
-                                androidx.compose.foundation.Image(
-                                    painter = androidx.compose.ui.res.painterResource(id = com.fasaldrishti.app.R.drawable.app_logo),
-                                    contentDescription = "Fasal Drishti Logo",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .shadow(8.dp, CircleShape, spotColor = EmeraldPrimary)
+                                    .clip(CircleShape)
+                                    .background(
+                                        brush = Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark))
+                                    )
+                                    .border(1.5.dp, Color.White.copy(alpha = 0.5f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (!user?.avatarUrl.isNullOrBlank()) {
+                                    AsyncImage(
+                                        model = user?.avatarUrl,
+                                        contentDescription = "Profile Avatar",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                } else {
+                                    androidx.compose.foundation.Image(
+                                        painter = androidx.compose.ui.res.painterResource(id = com.fasaldrishti.app.R.drawable.app_logo),
+                                        contentDescription = "Fasal Drishti Logo",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            }
+
+                            // 🔴 Red Update Alert Dot attached to the top-right corner of the avatar
+                            if (hasUpdate) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(13.dp)
+                                        .align(Alignment.TopEnd)
+                                        .offset(x = 1.dp, y = (-1).dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFE53935))
+                                        .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
                                 )
                             }
                         }
@@ -1081,6 +1112,298 @@ fun HomeScreen(
                         }
                     }
                 }
+            }
+        }
+
+        // 🌐 Google-Style Connected Account Popup Dialog
+        if (showAccountDialog) {
+        Dialog(
+            onDismissRequest = { showAccountDialog = false },
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true,
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.55f))
+                    .clickable { showAccountDialog = false },
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.92f)
+                        .statusBarsPadding()
+                        .padding(top = 16.dp)
+                        .clip(RoundedCornerShape(26.dp))
+                        .clickable(enabled = false) {}, // Prevent dismiss when tapping dialog card
+                    shape = RoundedCornerShape(26.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 14.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        // 1. Top Row: Dialog Title + Close Icon
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = null,
+                                    tint = EmeraldPrimary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Fasal Drishti Account",
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 12.5.sp
+                                    )
+                                )
+                            }
+
+                            // ✕ Close Icon Button
+                            IconButton(
+                                onClick = { showAccountDialog = false },
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Close",
+                                    modifier = Modifier.size(18.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // 2. User Info Box (Google Avatar, Name, Email)
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(14.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(52.dp)
+                                        .clip(CircleShape)
+                                        .background(Brush.radialGradient(listOf(EmeraldPrimary, EmeraldDark)))
+                                        .border(2.dp, EmeraldPrimary.copy(alpha = 0.6f), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (!user?.avatarUrl.isNullOrBlank()) {
+                                        AsyncImage(
+                                            model = user?.avatarUrl,
+                                            contentDescription = "User Avatar",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    } else {
+                                        androidx.compose.foundation.Image(
+                                            painter = androidx.compose.ui.res.painterResource(id = com.fasaldrishti.app.R.drawable.app_logo),
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.width(14.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = user?.name?.ifBlank { "Kisan" } ?: "Kisan",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 16.sp
+                                        ),
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = user?.email?.ifBlank { "google.account@fasaldrishti.app" } ?: "google.account@fasaldrishti.app",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            fontSize = 12.sp
+                                        ),
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // 3. Action Rows: Updates, Settings, Sign Out
+
+                        // A) Updates Option (with red notification dot when update is available)
+                        HomeAccountDialogActionRow(
+                            icon = Icons.Default.SystemUpdate,
+                            title = "App Updates",
+                            subtitle = if (hasUpdate) "New version ${updateInfo.latestVersion} available!" else "App is up to date (v${com.fasaldrishti.app.BuildConfig.VERSION_NAME})",
+                            hasBadge = hasUpdate,
+                            badgeText = if (hasUpdate) "Update" else null,
+                            onClick = {
+                                showAccountDialog = false
+                                onNavigateToUpdater()
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // B) Settings Option
+                        HomeAccountDialogActionRow(
+                            icon = Icons.Default.Settings,
+                            title = "Settings",
+                            subtitle = "Theme, Language & AI Configurations",
+                            onClick = {
+                                showAccountDialog = false
+                                onNavigateToSettings()
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // C) Sign Out Option
+                        HomeAccountDialogActionRow(
+                            icon = Icons.AutoMirrored.Filled.Logout,
+                            title = "Sign Out",
+                            subtitle = "Disconnect Google Account from this device",
+                            isDestructive = true,
+                            onClick = {
+                                showAccountDialog = false
+                                onSignOut()
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+}
+
+@Composable
+private fun HomeAccountDialogActionRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    hasBadge: Boolean = false,
+    badgeText: String? = null,
+    isDestructive: Boolean = false,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(14.dp),
+        color = Color.Transparent,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp, horizontal = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isDestructive) Color(0xFFFEE2E2)
+                        else if (hasBadge) Color(0xFFFEF3C7)
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isDestructive) Color(0xFFDC2626) else if (hasBadge) Color(0xFFD97706) else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.5.sp,
+                            color = if (isDestructive) Color(0xFFDC2626) else MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                    if (hasBadge) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(9.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFE53935))
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(1.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 11.5.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
+
+            if (badgeText != null) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFFE53935)
+                ) {
+                    Text(
+                        text = badgeText,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 10.sp
+                        ),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+            } else {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                    modifier = Modifier.size(18.dp)
+                )
             }
         }
     }
