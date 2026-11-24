@@ -124,7 +124,7 @@ fun ResultScreen(
             }
         )
     }
-    val effectiveTreatment = if (isUnrecognized) {
+    val rawTreatment = if (isUnrecognized) {
         strings.unrecognizedTreatment
     } else {
         uiState.translatedDossier?.treatment ?: (
@@ -139,8 +139,19 @@ fun ResultScreen(
             }
         )
     }
+
+    val effectiveTreatment = if (rawTreatment.contains("[ORGANIC]")) {
+        rawTreatment.substringBefore("[ORGANIC]").trim()
+    } else {
+        rawTreatment
+    }
+
     val effectivePrevention = uiState.translatedDossier?.prevention ?: (
-        diseaseInfo?.prevention ?: "Spray 5% Neem oil extract, prune and destroy severely infected leaves, and maintain proper crop spacing."
+        if (rawTreatment.contains("[ORGANIC]")) {
+            rawTreatment.substringAfter("[ORGANIC]").trim()
+        } else {
+            diseaseInfo?.prevention ?: "Spray 5% Neem oil extract, prune and destroy severely infected leaves, and maintain proper crop spacing."
+        }
     )
 
     Box(modifier = Modifier.fillMaxSize()) {

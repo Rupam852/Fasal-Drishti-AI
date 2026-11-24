@@ -132,7 +132,18 @@ class NvidiaClient(
                    - Determine accurate severity ('None' for healthy, 'Low', 'Moderate', or 'Severe').
                    - Calibrated confidence between 0.75 and 0.99.
                    - Detailed visual symptoms.
-                   - Actionable organic & chemical spray treatment with exact dosage per litre (e.g. Mancozeb 2.5g/L, Neem Oil 5ml/L).
+                   - PRACTICAL CHEMICAL PRESCRIPTION ("treatment"):
+                     Format as clear bullet points:
+                     • Recommended Chemical: exact trade name & active ingredient (e.g. Mancozeb, Ridomil Gold, Tilt, Beam, etc.)
+                     • 15-Liter Knapsack Tank Dose: exact grams or ml per 15L spray pump (e.g. 35-40g per 15L tank)
+                     • Field Acre Dose: amount in 200L water per acre
+                     • Spray Timing: calm morning (7:00-9:30 AM) or evening (4:00-6:00 PM)
+                     • Resistance Rotation: alternate with a different chemical group after 8-10 days
+                   - PRACTICAL ORGANIC & FIELD MANAGEMENT ("prevention"):
+                     Format as clear bullet points:
+                     • Organic Remedy: 5% Neem oil @ 5ml/L, Trichoderma viride, or sour buttermilk
+                     • Crop Sanitation: crop-specific field care (staking, pruning lower leaves, earthing up, water drainage)
+                     • Harvest Safety (PHI): days to wait before picking
 
                 Respond ONLY in strictly valid JSON format:
                 {
@@ -140,8 +151,9 @@ class NvidiaClient(
                   "disease_name": "Early Blight",
                   "severity": "Moderate",
                   "confidence": 0.94,
-                  "symptoms": "...",
-                  "treatment": "..."
+                  "symptoms": "Dark brown circular spots with concentric target-board rings on lower leaves.",
+                  "treatment": "• Chemical: Mancozeb 75% WP @ 2.5g/L\n• 15L Tank Dose: 35-40g per 15-liter spray pump\n• Field Acre Dose: 600-800g in 200L water per acre\n• Spray Timing: Calm morning or cool evening\n• Rotation: Alternate with Azoxystrobin after 8-10 days",
+                  "prevention": "• Organic Remedy: 5% Neem oil (5ml/L) or Trichoderma viride\n• Crop Sanitation: Prune lower leaves touching soil, stake plants\n• Harvest Safety: 7-10 days PHI waiting period before picking"
                 }
             """.trimIndent()
 
@@ -213,13 +225,21 @@ class NvidiaClient(
             if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
                 val jsonStr = rawText.substring(startIdx, endIdx + 1)
                 val obj = JSONObject(jsonStr)
+                val rawTreatment = obj.optString("treatment", "Apply recommended organic neem oil or approved fungicide.")
+                val rawPrevention = obj.optString("prevention", "")
+                val fullTreatment = if (rawPrevention.isNotBlank()) {
+                    "$rawTreatment\n\n[ORGANIC]\n$rawPrevention"
+                } else {
+                    rawTreatment
+                }
+
                 FallbackScanDiagnosis(
                     cropName = obj.optString("crop_name", "Crop Plant"),
                     diseaseName = obj.optString("disease_name", "Leaf Condition"),
                     severity = obj.optString("severity", "Moderate"),
                     confidence = obj.optDouble("confidence", 0.85).toFloat(),
                     symptoms = obj.optString("symptoms", "Visual abnormalities observed on plant foliage."),
-                    treatment = obj.optString("treatment", "Apply recommended organic neem oil or approved fungicide.")
+                    treatment = fullTreatment
                 )
             } else null
         } catch (_: Exception) {

@@ -29,9 +29,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Spindle-shaped diamond lesions with gray-white centers and reddish-brown borders on leaf blades, neck rot, and node rot.",
             symptomsHindi = "पत्तियों पर आंख या नाव के आकार के भूरे धब्बे जिनके केंद्र में राख जैसा रंग होता है, तने और बाली का सड़ना।",
-            treatment = "Spray Tricyclazole 75 WP @ 0.6 g/L (Beam / Baan) or Isoprothiolane 40 EC @ 1.5 ml/L at first appearance of spots.",
-            treatmentHindi = "ट्राइसाइक्लाजोल 75 WP (0.6 ग्राम/लीटर) या आइसोप्रोपियोलेन 40 EC (1.5 मिली/लीटर) का छिड़काव करें।",
-            prevention = "Avoid excessive nitrogen fertilizers, treat seeds with Carbendazim (2g/kg), maintain standing water."
+            treatment = "• Recommended Chemical: Tricyclazole 75% WP @ 0.6g/L (Beam / Baan) or Kasugamycin 3% SL @ 2ml/L\n• 15-Liter Knapsack Tank Dose: 9-10g per 15-liter spray pump\n• Per Acre Field Dose: 120-150g in 200L water per acre\n• Spray Timing: Calm morning (7:00-9:30 AM) or cool evening (4:00-6:00 PM)\n• Resistance Management: Alternate with Isoprothiolane 40% EC (Fujione @ 1.5ml/L) after 10 days",
+            treatmentHindi = "• मुख्य रासायनिक दवा: ट्राइसाइक्लाजोल 75% WP (बीम / बान @ 0.6 ग्राम/लीटर) या कासुगामाइसिन 3% SL (2 मिली/लीटर)\n• 15 लीटर टंकी खुराक: 9-10 ग्राम दवा प्रति 15L पंप\n• प्रति एकड़ मात्रा: 120-150 ग्राम दवा (200 लीटर पानी में)\n• छिड़काव समय: शांत सुबह (7:00-9:30 AM) या ठंडी शाम (4:00-6:00 PM)\n• दवा बदलना: 10 दिन बाद आइसोप्रोपियोलेन 40% EC (फ्यूजीवान @ 1.5 मिली/लीटर) से स्प्रे करें",
+            prevention = "• Organic Remedy: Spray Pseudomonas fluorescens @ 5g/L or 5% Neem oil\n• Crop Sanitation: Avoid excess urea/nitrogen fertilizer, maintain standing water in field\n• Harvest Safety (PHI): Maintain 14-21 days safety interval before grain harvest"
         ),
         DiseaseInfo(
             classId = "Rice___Bacterial_blight",
@@ -43,9 +43,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Water-soaked stripes starting from leaf tips turning yellow-white with wavy margins, severe kresek (wilting).",
             symptomsHindi = "पत्तियों के किनारों से शुरू होकर नीचे की ओर जाने वाली पीली-सफेद लहरदार धारियां, पौधों का मुरझाना।",
-            treatment = "Spray Streptocycline @ 1 g per 10 L mixed with Copper Oxychloride 50 WP @ 30 g per 10 L of water.",
-            treatmentHindi = "स्ट्रेप्टोसाइक्लिन (1 ग्राम / 10 लीटर) + कॉपर ऑक्सीक्लोराइड 50 WP (30 ग्राम / 10 लीटर) का छिड़काव करें।",
-            prevention = "Drain excess field water temporarily, balance potash application, use resistant varieties like IR64."
+            treatment = "• Recommended Chemical: Streptocycline @ 1g/10L mixed with Copper Oxychloride 50% WP @ 3g/L\n• 15-Liter Knapsack Tank Dose: 1.5g Streptocycline + 45g Copper Oxychloride per 15L spray pump\n• Per Acre Field Dose: 20-30g Streptocycline + 500g Copper Oxychloride in 200L water\n• Spray Timing: Spray in cool evening hours\n• Resistance Management: Repeat after 10-12 days if rains continue",
+            treatmentHindi = "• मुख्य रासायनिक दवा: स्ट्रेप्टोसाइक्लिन (1 ग्राम प्रति 10 लीटर) + कॉपर ऑक्सीक्लोराइड 50% WP (3 ग्राम प्रति लीटर)\n• 15 लीटर टंकी खुराक: 1.5 ग्राम स्ट्रेप्टोसाइक्लिन + 45 ग्राम कॉपर प्रति 15L पंप\n• प्रति एकड़ मात्रा: 30 ग्राम स्ट्रेप्टोसाइक्लिन + 500 ग्राम कॉपर (200 लीटर पानी में)\n• छिड़काव समय: शाम के ठंडे समय छिड़काव करें\n• दवा बदलना: बारिश जारी रहने पर 10-12 दिन बाद दोबारा छिड़कें",
+            prevention = "• Organic Remedy: Spray fresh cow dung extract supernatant (20%) or Trichoderma\n• Crop Sanitation: Drain standing field water for 3-4 days to stop bacterial swimming spread\n• Harvest Safety (PHI): Maintain 14 days waiting period before grain harvest"
         ),
         DiseaseInfo(
             classId = "Rice___Brown_spot",
@@ -103,9 +103,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Bright yellow pustules arranged in parallel linear stripes along the leaf veins, rubbing off yellow powder on fingers.",
             symptomsHindi = "पत्तियों पर समानांतर कतारों में चमकीले पीले रंग के पाउडर जैसे दाने, उंगली लगाने पर पीला रंग लगना।",
-            treatment = "Spray Propiconazole 25 EC (Tilt @ 1 ml/L) or Tebuconazole 25.9 EC @ 1 ml/L immediately at first detection.",
-            treatmentHindi = "प्रोपिकोनाज़ोल 25 EC (1 मिली/लीटर) या टेबुकोनाज़ोल (1 मिली/लीटर) का 200 लीटर पानी में तुरंत छिड़काव करें।",
-            prevention = "Sow certified rust-resistant varieties (e.g. HD 2967, DBW 187, DBW 222)."
+            treatment = "• Recommended Chemical: Propiconazole 25% EC (Tilt @ 1ml/L) or Tebuconazole 25.9% EC @ 1ml/L\n• 15-Liter Knapsack Tank Dose: 15-20ml per 15-liter spray pump\n• Per Acre Field Dose: 200ml in 200L water per acre\n• Spray Timing: Calm sunny morning (8:00-11:00 AM) after dew dries\n• Resistance Management: Single timely spray at disease initiation usually protects flag leaf completely",
+            treatmentHindi = "• मुख्य रासायनिक दवा: प्रोपिकोनाज़ोल 25% EC (टिल्ट @ 1 मिली/लीटर) या टेबुकोनाज़ोल 25.9% EC @ 1 मिली/लीटर\n• 15 लीटर टंकी खुराक: 15-20 मिली दवा प्रति 15L पंप\n• प्रति एकड़ मात्रा: 200 मिली दवा (200 लीटर पानी में)\n• छिड़काव समय: ओस सूखने के बाद धूप वाली सुबह (8:00-11:00 AM)\n• दवा बदलना: लक्षण दिखते ही पहला स्प्रे झंडा पत्ती (Flag Leaf) को पूरी तरह बचा लेता है",
+            prevention = "• Organic Remedy: Spray Trichoderma viride or 5% Neem oil at early tillering\n• Crop Sanitation: Grow resistant varieties (HD 2967, DBW 187, DBW 222), avoid excessive late urea\n• Harvest Safety (PHI): Maintain 30 days interval before harvesting wheat grain"
         ),
         DiseaseInfo(
             classId = "Wheat___Brown_rust",
@@ -241,9 +241,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Puckering and upward curling of leaves, leaf size reduction, clustered crowded bushy appearance with poor fruit set.",
             symptomsHindi = "पत्तियों का ऊपर की ओर मुड़कर नाव जैसा बनना, पत्तियां छोटी होना और पौधे का झाड़ीदार हो जाना।",
-            treatment = "Spray Imidacloprid 17.8 SL @ 0.5 ml/L or Diafenthiuron 50 WP @ 1.2 g/L to control thrips/whiteflies.",
-            treatmentHindi = "थ्रिप्स और सफेद मक्खी नियंत्रण हेतु इमिडाक्लोप्रिड (0.5 मिली/लीटर) या फिप्रोनिल का छिड़काव करें।",
-            prevention = "Spray Neem oil (5 ml/L), place blue and yellow sticky traps in the field."
+            treatment = "• Recommended Chemical: Imidacloprid 17.8% SL (Confidor @ 0.5ml/L) or Diafenthiuron 50% WP (Pegasus @ 1.2g/L)\n• 15-Liter Knapsack Tank Dose: 7-8ml Confidor OR 18g Pegasus per 15L spray pump\n• Per Acre Field Dose: 100ml in 200L water per acre\n• Spray Timing: Calm morning or evening hours\n• Resistance Management: Alternate with Fipronil 5% SC (2ml/L) after 8-10 days to break vector resistance",
+            treatmentHindi = "• मुख्य रासायनिक दवा: इमिडाक्लोप्रिड 17.8% SL (कॉन्फिडोर @ 0.5 मिली/लीटर) या डायफेंथियूरॉन 50% WP (पेगासस @ 1.2 ग्राम/लीटर)\n• 15 लीटर टंकी खुराक: 7-8 मिली कॉन्फिडोर अथवा 18 ग्राम पेगासस प्रति 15L पंप\n• प्रति एकड़ मात्रा: 100 मिली दवा (200 लीटर पानी में)\n• छिड़काव समय: शांत सुबह या ठंडी शाम को छिड़कें\n• दवा बदलना: कीटों की प्रतिरोधक क्षमता रोकने के लिए 10 दिन बाद फिप्रोनिल 5% SC (2 मिली/लीटर) डालें",
+            prevention = "• Organic Remedy: Spray 5% Neem oil (5ml/L) every 7 days as repellent\n• Crop Sanitation: Install 15 yellow & blue sticky traps per acre for thrips/whitefly monitoring\n• Harvest Safety (PHI): Maintain 5-7 days interval before harvesting green chillies"
         ),
         DiseaseInfo(
             classId = "Chilli___Anthracnose",
@@ -393,9 +393,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Concentric dark brown rings forming target-board spots on older lower leaves.",
             symptomsHindi = "पुरानी पत्तियों पर भूरे रंग के छल्लेदार धब्बे।",
-            treatment = "Spray Mancozeb 75% WP @ 2.5g/L (35-40g per 15L tank) or Copper Oxychloride 50% WP @ 3g/L. For severe spread, spray Azoxystrobin 23% SC @ 1ml/L. Repeat every 8-10 days.",
-            treatmentHindi = "मैनकोजेब 75% WP @ 2.5 ग्राम/लीटर (35-40 ग्राम प्रति 15L टंकी) या कॉपर ऑक्सीक्लोराइड @ 3 ग्राम/लीटर का छिड़काव करें। 8-10 दिन के अंतराल पर दोहराएं।",
-            prevention = "Organic: Spray 5% Neem oil (5ml/L) or sour buttermilk (500ml/15L). Sanitation: Prune lower leaves touching soil, use straw mulch to stop soil-splash, stake plants."
+            treatment = "• Recommended Chemical: Mancozeb 75% WP @ 2.5g/L (Dithane M-45) or Chlorothalonil 75% WP @ 2g/L (Kavach)\n• 15-Liter Knapsack Tank Dose: 35-40g per 15-liter spray pump\n• Per Acre Field Dose: 600-800g in 200L water per acre\n• Spray Timing: Calm morning (7:00-9:30 AM) or cool evening (4:00-6:00 PM)\n• Resistance Management: Alternate with Azoxystrobin 23% SC @ 1ml/L after 8-10 days",
+            treatmentHindi = "• मुख्य रासायनिक दवा: मैनकोजेब 75% WP (डाइथेन M-45 @ 2.5 ग्राम/लीटर) या क्लोरोथैलोनिल 75% WP (कवच)\n• 15 लीटर टंकी खुराक: 35-40 ग्राम दवा प्रति 15L पंप\n• प्रति एकड़ मात्रा: 600-800 ग्राम दवा (200 लीटर पानी में)\n• छिड़काव समय: शांत सुबह (7:00-9:30 AM) या ठंडी शाम (4:00-6:00 PM)\n• दवा बदलना: 8-10 दिन बाद एजॉक्सीस्ट्रोबिन 23% SC से स्प्रे करें",
+            prevention = "• Organic Remedy: Spray 5% Neem oil (5ml/L) or sour buttermilk (500ml/15L pump)\n• Crop Sanitation: Prune lower leaves touching soil, use straw mulch, stake plants with trellis\n• Harvest Safety (PHI): Maintain 7-10 days waiting interval before harvesting tomatoes"
         ),
         DiseaseInfo(
             classId = "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
@@ -467,9 +467,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Dark brown circular spots with concentric target-board rings on older foliage.",
             symptomsHindi = "पुरानी पत्तियों पर भूरे छल्लेदार धब्बे।",
-            treatment = "Spray Mancozeb 75% WP @ 2.5g/L (35-40g per 15L knapsack tank) or Propineb 70% WP @ 2g/L. In advanced spread, apply Azoxystrobin + Difenoconazole @ 1ml/L. Repeat after 8-10 days.",
-            treatmentHindi = "मैनकोजेब 75% WP @ 2.5 ग्राम/लीटर (35-40 ग्राम प्रति 15L टंकी) या प्रोपिनेब @ 2 ग्राम/लीटर का छिड़काव करें। उग्र स्थिति में एजॉक्सीस्ट्रोबिन + डाइफेनोकोनाजोल @ 1 मिली/लीटर डालें। 8-10 दिन बाद दोहराएं।",
-            prevention = "Organic: Spray 5% Neem oil (5ml/L) or sour buttermilk (500ml/15L tank). Sanitation: Destroy infected lower leaves, avoid overhead watering, follow 3-year crop rotation."
+            treatment = "• Recommended Chemical: Mancozeb 75% WP @ 2.5g/L or Propineb 70% WP @ 2g/L (Antracol)\n• 15-Liter Knapsack Tank Dose: 35-40g per 15-liter spray pump\n• Per Acre Field Dose: 700-800g in 200L water per acre\n• Spray Timing: Calm morning (7:00-9:30 AM) or cool evening (4:00-6:00 PM)\n• Resistance Management: Alternate with Difenoconazole 25% EC (Score @ 0.5ml/L) after 10 days",
+            treatmentHindi = "• मुख्य रासायनिक दवा: मैनकोजेब 75% WP (2.5 ग्राम/लीटर) या प्रोपिनेब 70% WP (एंट्राकोल @ 2 ग्राम/लीटर)\n• 15 लीटर टंकी खुराक: 35-40 ग्राम दवा प्रति 15L पंप\n• प्रति एकड़ मात्रा: 700-800 ग्राम दवा (200 लीटर पानी में)\n• छिड़काव समय: शांत सुबह (7:00-9:30 AM) या ठंडी शाम (4:00-6:00 PM)\n• दवा बदलना: 10 दिन बाद डिफेनोकोनाजोल (स्कोर @ 0.5 मिली/लीटर) डालें",
+            prevention = "• Organic Remedy: Spray 5% Neem oil (5ml/L) or Trichoderma viride foliar spray\n• Crop Sanitation: Earthing up (mitti chadhana) to protect tubers from fungal spore wash-down\n• Harvest Safety (PHI): Maintain 10-14 days waiting period before digging tubers"
         ),
         DiseaseInfo(
             classId = "Potato___healthy",

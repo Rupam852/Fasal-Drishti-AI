@@ -21,7 +21,10 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fasaldrishti.app.ui.theme.EmeraldPrimary
@@ -119,14 +122,107 @@ fun AccordionCard(
                         thickness = 1.dp
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = content,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.88f),
-                            lineHeight = 23.sp,
-                            fontSize = 14.5.sp
+                    val lines = content.split("\n").map { it.trim() }.filter { it.isNotBlank() }
+                    if (lines.size > 1 || lines.any { it.startsWith("•") || it.contains(":") }) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            lines.forEach { rawLine ->
+                                val cleanLine = rawLine.removePrefix("•").trim()
+                                val isTankDose = cleanLine.contains("15L", ignoreCase = true) ||
+                                        cleanLine.contains("15-Liter", ignoreCase = true) ||
+                                        cleanLine.contains("15 लीटर", ignoreCase = true) ||
+                                        cleanLine.contains("टंकी", ignoreCase = true)
+
+                                if (isTankDose) {
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = accentColor.copy(alpha = 0.12f),
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, accentColor.copy(alpha = 0.35f)),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "💧",
+                                                fontSize = 16.sp
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = cleanLine,
+                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    lineHeight = 20.sp,
+                                                    fontSize = 14.sp
+                                                )
+                                            )
+                                        }
+                                    }
+                                } else if (cleanLine.contains(":")) {
+                                    val parts = cleanLine.split(":", limit = 2)
+                                    val titlePart = parts[0].trim()
+                                    val valuePart = parts.getOrNull(1)?.trim() ?: ""
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        Text(
+                                            text = "•",
+                                            color = accentColor,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp,
+                                            modifier = Modifier.padding(end = 6.dp)
+                                        )
+                                        Text(
+                                            text = buildAnnotatedString {
+                                                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)) {
+                                                    append("$titlePart: ")
+                                                }
+                                                withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant)) {
+                                                    append(valuePart)
+                                                }
+                                            },
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                lineHeight = 21.sp,
+                                                fontSize = 14.sp
+                                            )
+                                        )
+                                    }
+                                } else {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        Text(
+                                            text = "•",
+                                            color = accentColor,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp,
+                                            modifier = Modifier.padding(end = 6.dp)
+                                        )
+                                        Text(
+                                            text = cleanLine,
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                lineHeight = 21.sp,
+                                                fontSize = 14.sp
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Text(
+                            text = content,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.88f),
+                                lineHeight = 23.sp,
+                                fontSize = 14.5.sp
+                            )
                         )
-                    )
+                    }
                 }
             }
         }

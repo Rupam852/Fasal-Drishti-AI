@@ -39,18 +39,6 @@ fun FasalBottomBar(
     onNavigate: (String) -> Unit,
     onScanClick: () -> Unit
 ) {
-    // Pulse animation for scan button
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.08f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "fabPulse"
-    )
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -118,20 +106,15 @@ fun FasalBottomBar(
             }
         }
 
-        // Center Floating Glowing Bio-Scan FAB
+        // Center Floating Scan FAB (Clean, steady & no glow)
         Box(
             modifier = Modifier
                 .offset(y = (-14).dp)
-                .scale(pulseScale)
                 .size(64.dp)
-                .shadow(16.dp, CircleShape, spotColor = EmeraldPrimary)
+                .shadow(6.dp, CircleShape)
                 .clip(CircleShape)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(EmeraldGradientStart, EmeraldGradientEnd)
-                    )
-                )
-                .border(2.5.dp, Color.White.copy(alpha = 0.85f), CircleShape)
+                .background(EmeraldPrimary)
+                .border(2.dp, Color.White.copy(alpha = 0.9f), CircleShape)
                 .clickable { onScanClick() },
             contentAlignment = Alignment.Center
         ) {

@@ -145,17 +145,30 @@ class GeminiClient(
                     Set severity to 'Low', 'Moderate', or 'Severe'.
                 - Provide Calibrated Confidence (0.80 - 0.99).
                 - Give visual foliar Symptoms observed.
-                - Provide practical, exact Chemical Treatment (dosage per litre, e.g. Mancozeb 75 WP @ 2.5g/L or Copper Oxychloride @ 3g/L) AND Organic Treatment (e.g. Neem Oil 5ml/L, Trichoderma). If healthy, state no chemical treatment is needed.
+                - PRACTICAL CHEMICAL PRESCRIPTION ("treatment"):
+                  Strictly format as clear bullet points tailored specifically to this crop and disease:
+                  • Recommended Chemical: (Active ingredient & top Indian trade names e.g. Mancozeb, Ridomil Gold, Tilt, Beam, Curzate, Antracol, etc.)
+                  • 15-Liter Knapsack Tank Dose: (Exact grams or ml per 15L spray pump, e.g. 35-40g / 15L tank)
+                  • Field Acre Dose: (Amount in 200L water per acre)
+                  • Spray Timing: (Calm morning 7:00-9:30 AM or evening 4:00-6:00 PM)
+                  • Resistance Rotation: (Rotate with an alternate chemical group after 8-10 days)
+                  (If healthy, state: "No chemical spray required. Crop foliage is vigorous and healthy.")
+                - PRACTICAL ORGANIC & FIELD MANAGEMENT ("prevention"):
+                  Strictly format as clear bullet points:
+                  • Organic Remedy: (5% Neem oil @ 5ml/L, Trichoderma viride @ 5g/L, or sour buttermilk)
+                  • Crop Sanitation: (Crop-specific hygiene: pruning infected lower leaves, staking/trellis for tomato, earthing up for potato, water drainage for rice, etc.)
+                  • Harvest Safety (PHI): (Pre-Harvest Interval waiting days before harvesting)
 
                 Respond ONLY in strictly valid JSON format matching this schema:
                 {
                   "is_plant": true,
-                  "crop_name": "Guava",
-                  "disease_name": "Healthy Plant",
-                  "severity": "None",
-                  "confidence": 0.97,
-                  "symptoms": "Foliage is clean and vibrant green with developing buds and no signs of fungal or bacterial infection.",
-                  "treatment": "No chemical treatment required. Continue regular irrigation and balanced organic manure."
+                  "crop_name": "Tomato",
+                  "disease_name": "Early Blight",
+                  "severity": "Moderate",
+                  "confidence": 0.95,
+                  "symptoms": "Dark brown circular spots with concentric target-board rings on lower leaves.",
+                  "treatment": "• Chemical: Mancozeb 75% WP (Dithane M-45) @ 2.5g/L\n• 15L Tank Dose: 35-40g per 15-liter spray pump\n• Field Acre Dose: 600-800g in 200L water per acre\n• Spray Timing: Calm morning (7:00-9:30 AM) or evening (4:00-6:00 PM)\n• Resistance Rotation: Rotate with Azoxystrobin 23% SC after 8-10 days",
+                  "prevention": "• Organic Remedy: 5% Neem oil (5ml/L) or Trichoderma viride (5g/L)\n• Crop Sanitation: Prune lower infected leaves touching soil, stake plants with trellis\n• Harvest Safety: 7-10 days PHI waiting period before picking"
                 }
             """.trimIndent()
 
@@ -432,13 +445,21 @@ class GeminiClient(
                         treatment = obj.optString("treatment", "Please align a clear diseased crop leaf inside the camera reticle.")
                     )
                 } else {
+                    val rawTreatment = obj.optString("treatment", "Apply recommended organic neem oil or approved fungicide.")
+                    val rawPrevention = obj.optString("prevention", "")
+                    val fullTreatment = if (rawPrevention.isNotBlank()) {
+                        "$rawTreatment\n\n[ORGANIC]\n$rawPrevention"
+                    } else {
+                        rawTreatment
+                    }
+
                     FallbackScanDiagnosis(
                         cropName = cropName,
                         diseaseName = diseaseName,
                         severity = severity,
                         confidence = obj.optDouble("confidence", 0.95).toFloat(),
                         symptoms = obj.optString("symptoms", "Foliar discoloration or lesions observed on crop surface."),
-                        treatment = obj.optString("treatment", "Apply recommended organic neem oil or approved fungicide.")
+                        treatment = fullTreatment
                     )
                 }
             } else null
