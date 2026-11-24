@@ -57,9 +57,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Oval or circular dark brown spots with yellow halos across the entire leaf surface, grain discoloration.",
             symptomsHindi = "पत्तियों पर छोटे अंडाकार गहरे भूरे धब्बे, दानों पर बदरंग धब्बे।",
-            treatment = "Spray Mancozeb 75 WP @ 2.5 g/L or Propiconazole 25 EC @ 1 ml/L.",
-            treatmentHindi = "मैनकोजेब 75 WP (2.5 ग्राम/लीटर) या प्रोपिकोनाज़ोल 25 EC (1 मिली/लीटर) का छिड़काव करें।",
-            prevention = "Ensure balanced NPK + Zinc fertilization, improve soil drainage and aeration."
+            treatment = "• Recommended Chemical: Mancozeb 75% WP @ 2.5g/L or Propiconazole 25% EC (Tilt @ 1ml/L)\n• 15-Liter Knapsack Tank Dose: 35-40g Mancozeb OR 15ml Tilt per 15L spray pump\n• Per Acre Field Dose: 500-600g Mancozeb in 200L water per acre\n• Spray Timing: Spray in morning or cool evening hours\n• Resistance Management: Alternate with Hexaconazole 5% EC (2ml/L) after 10-12 days",
+            treatmentHindi = "• मुख्य रासायनिक दवा: मैनकोजेब 75% WP (2.5 ग्राम/लीटर) या प्रोपिकोनाज़ोल 25% EC (टिल्ट @ 1 मिली/लीटर)\n• 15 लीटर टंकी खुराक: 35-40 ग्राम मैनकोजेब अथवा 15 मिली टिल्ट प्रति 15L पंप\n• प्रति एकड़ मात्रा: 500-600 ग्राम दवा (200 लीटर पानी में)\n• छिड़काव समय: शांत सुबह या ठंडी शाम को छिड़कें\n• दवा बदलना: 10-12 दिन बाद हेक्साकोनाज़ोल 5% EC (2 मिली/लीटर) से स्प्रे करें",
+            prevention = "• Organic Remedy: Apply balanced NPK + Zinc sulphate (10kg/acre), spray Pseudomonas fluorescens\n• Crop Sanitation: Improve soil drainage, avoid stagnant muddy water\n• Harvest Safety (PHI): Maintain 14 days waiting period before harvesting rice"
         ),
         DiseaseInfo(
             classId = "Rice___Sheath_blight",
@@ -71,9 +71,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Greenish-gray oval spots on leaf sheaths near water level, spreading upward forming snake-skin patterns.",
             symptomsHindi = "पानी की सतह के पास तने पर हरे-ग्रे अंडाकार धब्बे जो बाद में सांप की खाल जैसे दिखते हैं।",
-            treatment = "Apply Hexaconazole 5 EC @ 2 ml/L or Validamycin 3L @ 2.5 ml/L.",
-            treatmentHindi = "हेक्साकोनाज़ोल 5 EC (2 मिली/लीटर) या वैलिडामाइसिन 3L (2.5 मिली/लीटर) का तने पर छिड़काव करें।",
-            prevention = "Avoid dense plant canopy, reduce nitrogen overdose, remove field weeds."
+            treatment = "• Recommended Chemical: Hexaconazole 5% EC (Contaf @ 2ml/L) or Validamycin 3% L @ 2.5ml/L\n• 15-Liter Knapsack Tank Dose: 30ml Contaf OR 35ml Validamycin per 15L spray pump\n• Per Acre Field Dose: 400ml Contaf in 200L water (target lower stem base)\n• Spray Timing: Direct spray nozzle at the base/sheath of the tillers near water level\n• Resistance Management: Alternate with Thifluzamide 24% SC (Pulsor @ 0.75ml/L) after 10 days",
+            treatmentHindi = "• मुख्य रासायनिक दवा: हेक्साकोनाज़ोल 5% EC (कॉन्टाफ @ 2 मिली/लीटर) या वैलिडामाइसिन 3% L @ 2.5 मिली/लीटर\n• 15 लीटर टंकी खुराक: 30 मिली कॉन्टाफ अथवा 35 मिली वैलिडामाइसिन प्रति 15L पंप\n• प्रति एकड़ मात्रा: 400 मिली दवा (200 लीटर पानी में, तने के निचले हिस्से पर स्प्रे करें)\n• छिड़काव समय: स्प्रे का नोजल पानी की सतह के पास तनों पर रखें\n• दवा बदलना: 10 दिन बाद थिफ्लूजामाइड 24% SC (पल्सर @ 0.75 मिली/लीटर) से स्प्रे करें",
+            prevention = "• Organic Remedy: Apply Trichoderma viride enriched farmyard manure in soil\n• Crop Sanitation: Reduce urea overdose, remove weed hosts (Echinochloa) from field bunds\n• Harvest Safety (PHI): Maintain 14-21 days safety period before harvesting paddy"
         ),
         DiseaseInfo(
             classId = "Rice___healthy",
@@ -117,9 +117,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Small round or oval orange-brown scattered pustules on upper leaf blades.",
             symptomsHindi = "पत्तियों की ऊपरी सतह पर बिखरे हुए नारंगी-भूरे रंग के धब्बे।",
-            treatment = "Spray Mancozeb 75 WP @ 2.5 g/L or Propiconazole 25 EC @ 1 ml/L.",
-            treatmentHindi = "मैनकोजेब 75 WP (2.5 ग्राम/लीटर) का छिड़काव करें।",
-            prevention = "Avoid late sowing, apply balanced potassium to strengthen plant tissue."
+            treatment = "• Recommended Chemical: Mancozeb 75% WP @ 2.5g/L or Propiconazole 25% EC (Tilt @ 1ml/L)\n• 15-Liter Knapsack Tank Dose: 35-40g Mancozeb OR 15ml Tilt per 15L spray pump\n• Per Acre Field Dose: 500-600g in 200L water per acre\n• Spray Timing: Calm morning after morning dew has evaporated\n• Resistance Management: Single timely spray at first rust pustule appearance",
+            treatmentHindi = "• मुख्य रासायनिक दवा: मैनकोजेब 75% WP (2.5 ग्राम/लीटर) या प्रोपिकोनाज़ोल 25% EC (टिल्ट @ 1 मिली/लीटर)\n• 15 लीटर टंकी खुराक: 35-40 ग्राम मैनकोजेब अथवा 15 मिली टिल्ट प्रति 15L पंप\n• प्रति एकड़ मात्रा: 500-600 ग्राम दवा (200 लीटर पानी में)\n• छिड़काव समय: सुबह की ओस सूखने के बाद शांत मौसम में छिड़कें\n• दवा बदलना: पत्तियों पर पहला धब्बा दिखते ही समय पर एक स्प्रे करें",
+            prevention = "• Organic Remedy: Spray Trichoderma viride preventive spray at jointing stage\n• Crop Sanitation: Avoid late sowing, apply balanced potash (MOP) to strengthen flag leaf\n• Harvest Safety (PHI): Maintain 25-30 days waiting period before grain harvest"
         ),
         DiseaseInfo(
             classId = "Wheat___healthy",
@@ -149,9 +149,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Upward/downward leaf curling, vein thickening, leaf enation (cup-like growth under leaf), stunted plants.",
             symptomsHindi = "पत्तियों का ऊपर या नीचे की ओर मुड़ना, नसों का मोटा होना, पत्ती के नीचे छोटी पत्ती जैसी गांठ बनना।",
-            treatment = "Control whitefly vector by spraying Thiamethoxam 25 WG @ 0.2 g/L or Diafenthiuron 50 WP @ 1.2 g/L.",
-            treatmentHindi = "सफेद मक्खी की रोकथाम हेतु थायमेथॉक्सम 25 WG (0.2 ग्राम/लीटर) या डायफेंथियूरॉन का छिड़काव करें।",
-            prevention = "Eradicate weed hosts (Kanghi booti, Peeli booti), grow tolerant hybrids."
+            treatment = "• Recommended Chemical: Thiamethoxam 25% WG (Actara @ 0.3g/L) or Diafenthiuron 50% WP (Pegasus @ 1.2g/L) to control whitefly\n• 15-Liter Knapsack Tank Dose: 5g Actara OR 18g Pegasus per 15L spray pump\n• Per Acre Field Dose: 80g Actara in 200L water per acre\n• Spray Timing: Spray in cool evening or early morning on leaf undersides\n• Resistance Management: Alternate with Pyriproxyfen 10% EC (Lano @ 2ml/L) after 10 days",
+            treatmentHindi = "• मुख्य रासायनिक दवा: सफेद मक्खी रोकथाम हेतु थायमेथॉक्सम 25% WG (एकतारा @ 0.3 ग्राम/लीटर) या डायफेंथियूरॉन 50% WP (पेगासस @ 1.2 ग्राम/लीटर)\n• 15 लीटर टंकी खुराक: 5 ग्राम एकतारा अथवा 18 ग्राम पेगासस प्रति 15L पंप\n• प्रति एकड़ मात्रा: 80 ग्राम एकतारा (200 लीटर पानी में)\n• छिड़काव समय: सुबह या शाम को पत्तियों की निचली सतह पर छिड़कें\n• दवा बदलना: 10 दिन बाद पाइरीप्रॉक्सीफेन 10% EC (2 मिली/लीटर) से स्प्रे करें",
+            prevention = "• Organic Remedy: Spray 5% Neem oil (5ml/L) or castor oil sticky traps\n• Crop Sanitation: Eradicate weed hosts (Kanghi booti, Peeli booti) from field borders\n• Harvest Safety (PHI): Maintain 15-20 days waiting period before boll picking"
         ),
         DiseaseInfo(
             classId = "Cotton___Bacterial_blight",
@@ -163,9 +163,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Angular water-soaked spots bounded by leaf veinlets, blackening of petioles and stems ('Black Arm').",
             symptomsHindi = "पत्तियों की नसों के बीच कोणीय पानीदार काले धब्बे, टहनियों का काला पड़कर सूखना।",
-            treatment = "Spray Copper Oxychloride 50 WP @ 3 g/L mixed with Streptocycline @ 0.5 g per 10 L.",
-            treatmentHindi = "कॉपर ऑक्सीक्लोराइड (3 ग्राम/लीटर) + स्ट्रेप्टोसाइक्लिन (0.5 ग्राम / 10 लीटर) का छिड़काव करें।",
-            prevention = "Delint seeds with concentrated sulphuric acid, destroy crop residue."
+            treatment = "• Recommended Chemical: Copper Oxychloride 50% WP @ 3g/L mixed with Streptocycline @ 1g/10L\n• 15-Liter Knapsack Tank Dose: 45g Copper Oxychloride + 1.5g Streptocycline per 15L spray pump\n• Per Acre Field Dose: 500g Copper + 20g Streptocycline in 200L water\n• Spray Timing: Calm morning or cool evening hours\n• Resistance Management: Repeat spray after 10-12 days if humid cloudy weather continues",
+            treatmentHindi = "• मुख्य रासायनिक दवा: कॉपर ऑक्सीक्लोराइड 50% WP (3 ग्राम/लीटर) + स्ट्रेप्टोसाइक्लिन (1 ग्राम प्रति 10 लीटर)\n• 15 लीटर टंकी खुराक: 45 ग्राम कॉपर + 1.5 ग्राम स्ट्रेप्टोसाइक्लिन प्रति 15L पंप\n• प्रति एकड़ मात्रा: 500 ग्राम कॉपर + 20 ग्राम स्ट्रेप्टोसाइक्लिन (200 लीटर पानी में)\n• छिड़काव समय: सुबह या शाम को समान रूप से छिड़काव करें\n• दवा बदलना: नम मौसम रहने पर 10-12 दिन बाद दोबारा दोहराएं",
+            prevention = "• Organic Remedy: Spray Pseudomonas fluorescens @ 5g/L foliar spray\n• Crop Sanitation: Destroy previous crop residue, avoid high nitrogen fertilisation\n• Harvest Safety (PHI): Maintain 15 days waiting period before picking cotton"
         ),
         DiseaseInfo(
             classId = "Cotton___healthy",
@@ -379,9 +379,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Dark brown water-soaked lesions on leaves and stems, white fungal mold underneath in humid fog.",
             symptomsHindi = "पत्तियों और तनों पर गहरे भूरे रंग के धब्बे, नम मौसम में सफेद फफूंद।",
-            treatment = "Apply Metalaxyl 8% + Mancozeb 64% WP (Ridomil Gold @ 2.5g/L, 35-40g per 15L tank) or Cymoxanil 8% + Mancozeb 64% WP @ 2g/L. Ensure complete leaf coverage.",
-            treatmentHindi = "मेटालैक्सिल 8% + मैनकोजेब 64% WP (रिडोमिल गोल्ड @ 2.5 ग्राम/लीटर, 35-40 ग्राम प्रति 15L टंकी) का तुरंत छिड़काव करें। पत्तियों को ऊपर-नीचे पूरा भिगोएं।",
-            prevention = "Organic: Trichoderma viride foliar spray @ 5g/L. Sanitation: Remove infected plants immediately, avoid overhead sprinkler watering, ensure proper row spacing."
+            treatment = "• Recommended Chemical: Metalaxyl 8% + Mancozeb 64% WP (Ridomil Gold @ 2.5g/L) or Cymoxanil + Mancozeb (Curzate @ 2.5g/L)\n• 15-Liter Knapsack Tank Dose: 35-40g per 15-liter spray pump\n• Per Acre Field Dose: 600-700g in 200L water per acre\n• Spray Timing: Spray immediately within 24 hours of cool foggy weather\n• Resistance Management: Alternate with Dimethomorph 50% WP (1g/L) after 7-10 days",
+            treatmentHindi = "• मुख्य रासायनिक दवा: मेटालैक्सिल 8% + मैनकोजेब 64% WP (रिडोमिल गोल्ड @ 2.5 ग्राम/लीटर) या साइमोक्सानिल + मैनकोजेब (कर्जेट @ 2.5 ग्राम/लीटर)\n• 15 लीटर टंकी खुराक: 35-40 ग्राम दवा प्रति 15L पंप\n• प्रति एकड़ मात्रा: 600-700 ग्राम दवा (200 लीटर पानी में)\n• छिड़काव समय: कोहरे या नम मौसम के 24 घंटे के अंदर तुरंत छिड़कें\n• दवा बदलना: 7-10 दिन बाद डाइमथोमोर्फ 50% WP (1 ग्राम/लीटर) से स्प्रे करें",
+            prevention = "• Organic Remedy: Foliar spray of Trichoderma viride @ 5g/L or sour buttermilk (500ml/15L)\n• Crop Sanitation: Destroy infected foliage immediately, avoid sprinkler/overhead irrigation\n• Harvest Safety (PHI): Maintain 7 days waiting period before fruit picking"
         ),
         DiseaseInfo(
             classId = "Tomato___Early_blight",
@@ -407,9 +407,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Severe leaf curling, cup-shaped deformation, yellowing margins, bushy stunted plant.",
             symptomsHindi = "पत्तियों का मुड़ना, किनारों का पीला पड़ना, पौधे का बौना रह जाना और फल न लगना।",
-            treatment = "Target whitefly vector: Spray Imidacloprid 17.8% SL @ 0.5ml/L (7-8ml per 15L tank) or Diafenthiuron 50% WP @ 1.2g/L. Add surfactant sticker for rainfastness.",
-            treatmentHindi = "सफेद मक्खी नियंत्रण हेतु इमिडाक्लोप्रिड 17.8% SL @ 0.5 मिली/लीटर (7-8 मिली प्रति 15L टंकी) या डायफेंथियूरॉन 50% WP @ 1.2 ग्राम/लीटर का छिड़काव करें।",
-            prevention = "Install 15-20 yellow sticky traps per acre, rogue out early infected stunted plants, use silver reflective plastic mulch."
+            treatment = "• Recommended Chemical: Target whitefly vector: Imidacloprid 17.8% SL (Confidor @ 0.5ml/L) or Diafenthiuron 50% WP @ 1.2g/L\n• 15-Liter Knapsack Tank Dose: 7-8ml Confidor OR 18g Diafenthiuron per 15L spray pump\n• Per Acre Field Dose: 100ml in 200L water per acre (add sticker/surfactant)\n• Spray Timing: Spray in morning or evening on leaf undersides\n• Resistance Management: Alternate with Acetamiprid 20% SP @ 0.3g/L after 10 days",
+            treatmentHindi = "• मुख्य रासायनिक दवा: सफेद मक्खी नियंत्रण हेतु इमिडाक्लोप्रिड 17.8% SL (कॉन्फिडोर @ 0.5 मिली/लीटर) या डायफेंथियूरॉन 50% WP @ 1.2 ग्राम/लीटर\n• 15 लीटर टंकी खुराक: 7-8 मिली कॉन्फिडोर अथवा 18 ग्राम डायफेंथियूरॉन प्रति 15L पंप\n• प्रति एकड़ मात्रा: 100 मिली दवा (200 लीटर पानी में, चिपको स्टीकर मिलाएं)\n• छिड़काव समय: सुबह या शाम पत्तियों की निचली सतह पर छिड़कें\n• दवा बदलना: 10 दिन बाद एसिटामिप्रिड 20% SP (0.3 ग्राम/लीटर) से स्प्रे करें",
+            prevention = "• Organic Remedy: Spray 5% Neem oil (5ml/L) regularly as insect repellent\n• Crop Sanitation: Install 15-20 yellow sticky traps per acre, rogue out stunted viral plants\n• Harvest Safety (PHI): Maintain 5 days waiting period before tomato harvest"
         ),
         DiseaseInfo(
             classId = "Tomato___Bacterial_spot",
@@ -421,9 +421,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Small, dark greasy spots with yellow halos on leaves and fruits.",
             symptomsHindi = "पत्तियों पर छोटे, काले तैलीय धब्बे जिनके चारों ओर पीला घेरा होता है।",
-            treatment = "Apply Copper Hydroxide (2.5 g/L, 35g per 15L tank) mixed with Streptocycline (1g per 10L water). Repeat after 10 days.",
-            treatmentHindi = "कॉपर हाइड्रॉक्साइड (2.5 ग्राम/लीटर) के साथ स्ट्रेप्टोसाइक्लिन (1 ग्राम प्रति 10 लीटर पानी) का घोल बनाकर छिड़कें।",
-            prevention = "Use certified disease-free seeds, avoid overhead watering, disinfect pruning shears."
+            treatment = "• Recommended Chemical: Copper Hydroxide 53.8% DF @ 2g/L mixed with Streptocycline @ 1g/10L\n• 15-Liter Knapsack Tank Dose: 30g Copper Hydroxide + 1.5g Streptocycline per 15L spray pump\n• Per Acre Field Dose: 400g Copper + 20g Streptocycline in 200L water per acre\n• Spray Timing: Spray in cool evening hours\n• Resistance Management: Repeat after 10-12 days if wet weather persists",
+            treatmentHindi = "• मुख्य रासायनिक दवा: कॉपर हाइड्रॉक्साइड 53.8% DF (2 ग्राम/लीटर) + स्ट्रेप्टोसाइक्लिन (1 ग्राम प्रति 10 लीटर)\n• 15 लीटर टंकी खुराक: 30 ग्राम कॉपर + 1.5 ग्राम स्ट्रेप्टोसाइक्लिन प्रति 15L पंप\n• प्रति एकड़ मात्रा: 400 ग्राम कॉपर + 20 ग्राम स्ट्रेप्टोसाइक्लिन (200 लीटर पानी में)\n• छिड़काव समय: शाम के ठंडे समय पत्तियों पर छिड़कें\n• दवा बदलना: बारिश का मौसम जारी रहने पर 10-12 दिन बाद दोबारा छिड़कें",
+            prevention = "• Organic Remedy: Spray cow dung slurry filtrate or Pseudomonas fluorescens @ 5g/L\n• Crop Sanitation: Avoid overhead sprinkler watering, disinfect pruning shears between rows\n• Harvest Safety (PHI): Maintain 7 days waiting period before picking"
         ),
         DiseaseInfo(
             classId = "Tomato___healthy",
@@ -453,9 +453,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Water-soaked lesions on leaf margins rapidly turning black, white fungal growth underneath in cool foggy weather.",
             symptomsHindi = "पत्तियों के किनारों पर काले पानीदार धब्बे, कोहरे में सफेद फफूंद।",
-            treatment = "Urgent: Spray Cymoxanil + Mancozeb (Curzate @ 2.5g/L, 35-40g per 15L tank) or Dimethomorph 50% WP @ 1g/L (15g/15L tank). Spray within 24 hours of cool foggy weather.",
-            treatmentHindi = "अति आवश्यक: साइमोक्सानिल + मैनकोजेब (कर्जेट @ 2.5 ग्राम/लीटर, 35-40 ग्राम प्रति 15L टंकी) या डाइमथोमोर्फ @ 1 ग्राम/लीटर का कोहरे या नम मौसम में तुरंत छिड़काव करें।",
-            prevention = "Organic: Spray 5% Neem oil (5ml/L) or Trichoderma viride. Sanitation: Destroy infected foliage 10 days before harvest, plant certified blight-resistant tubers (Kufri Girdhari)."
+            treatment = "• Recommended Chemical: Cymoxanil 8% + Mancozeb 64% WP (Curzate @ 2.5g/L) or Dimethomorph 50% WP (1g/L)\n• 15-Liter Knapsack Tank Dose: 35-40g Curzate OR 15g Dimethomorph per 15L spray pump\n• Per Acre Field Dose: 600-750g in 200L water per acre\n• Spray Timing: Urgent - spray within 24 hours of cool foggy/cloudy morning\n• Resistance Management: Alternate with Fenamidone 10% + Mancozeb 50% WDG (Sectin @ 2g/L) after 7-10 days",
+            treatmentHindi = "• मुख्य रासायनिक दवा: साइमोक्सानिल 8% + मैनकोजेब 64% WP (कर्जेट @ 2.5 ग्राम/लीटर) या डाइमथोमोर्फ 50% WP (1 ग्राम/लीटर)\n• 15 लीटर टंकी खुराक: 35-40 ग्राम कर्जेक्ट अथवा 15 ग्राम डाइमथोमोर्फ प्रति 15L पंप\n• प्रति एकड़ मात्रा: 600-750 ग्राम दवा (200 लीटर पानी में)\n• छिड़काव समय: अति आवश्यक - कोहरे या बादल वाले मौसम के 24 घंटे के अंदर छिड़कें\n• दवा बदलना: 7-10 दिन बाद फेनामिडोन + मैनकोजेब (सेक्टिन @ 2 ग्राम/लीटर) डालें",
+            prevention = "• Organic Remedy: Spray 5% Neem oil (5ml/L) or Trichoderma viride preventive spray\n• Crop Sanitation: Cut and destroy haulms (potato foliage) 10-12 days before tuber digging\n• Harvest Safety (PHI): Maintain 10 days waiting period before harvesting potatoes"
         ),
         DiseaseInfo(
             classId = "Potato___Early_blight",
