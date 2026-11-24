@@ -1,7 +1,7 @@
 # 🌾 Fasal Drishti (Crop Disease Detection with AI)
 
 [![Website](https://img.shields.io/badge/Website-fasaldrishti--ai.vercel.app-005B94?style=flat&logo=vercel)](https://fasaldrishti-ai.vercel.app)
-[![Release](https://img.shields.io/badge/Release-v1.0.5-brightgreen.svg)](https://github.com/Rupam852/Fasal-Drishti-AI/releases)
+[![Release](https://img.shields.io/badge/Release-v1.3.0-brightgreen.svg)](https://github.com/Rupam852/Fasal-Drishti-AI/releases)
 [![Android](https://img.shields.io/badge/Android-13%2B%20(API%2033%2B)-green.svg)](https://developer.android.com/about/versions/13)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-purple.svg)](https://kotlinlang.org/)
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20%26%20M3-brightgreen.svg)](https://developer.android.com/jetpack/compose)
@@ -16,7 +16,7 @@
 
 ---
 
-## 🌟 What's New in v1.0.5
+## 🌟 What's New in v1.3.0
 
 - 🌐 **Official Web Portal on Vercel**: Real-time crop disease dataset catalog, clinical verification guidelines, theme switcher, and instant APK installation via QR code.
 - 📍 **GPS Auto-Detected Live Mandi Bhav**: Automatically detects farmer's state from GPS location with 1-tap state selector fallback when location is disabled.
