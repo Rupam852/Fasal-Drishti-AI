@@ -18,7 +18,7 @@ coroutines = "1.8.0"
 supabase = "2.1.4"
 lottieCompose = "6.4.0"
 materialIconsExtended = "1.6.2"
-tensorflowLite = "2.14.0"
+tensorflowLite = "2.16.1"
 tensorflowLiteSupport = "0.4.4"
 
 [libraries]
