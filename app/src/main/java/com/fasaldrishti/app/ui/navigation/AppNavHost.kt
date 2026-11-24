@@ -447,6 +447,8 @@ fun AppNavHost(
                 CropLibraryScreen(
                     diseaseRepository = diseaseRepository,
                     languageManager = languageManager,
+                    geminiClient = geminiClient,
+                    nvidiaClient = nvidiaClient,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToChat = { contextMsg ->
                         navController.navigate(Screen.Chat.createRoute(contextMsg))

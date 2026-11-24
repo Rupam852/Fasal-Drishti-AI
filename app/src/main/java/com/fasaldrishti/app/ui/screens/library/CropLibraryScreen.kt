@@ -51,6 +51,8 @@ data class IndianCropCategory(
 fun CropLibraryScreen(
     diseaseRepository: DiseaseRepository,
     languageManager: LanguageManager? = null,
+    geminiClient: com.fasaldrishti.app.data.remote.GeminiClient? = null,
+    nvidiaClient: com.fasaldrishti.app.data.remote.NvidiaClient? = null,
     onNavigateBack: () -> Unit,
     onNavigateToChat: ((String) -> Unit)? = null
 ) {
@@ -63,6 +65,57 @@ fun CropLibraryScreen(
     var diseases by remember { mutableStateOf<List<DiseaseInfo>>(emptyList()) }
     var selectedDiseaseForSheet by remember { mutableStateOf<DiseaseInfo?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    val cachedDossiers = remember { mutableStateMapOf<String, com.fasaldrishti.app.data.local.TranslatedDossier>() }
+    var isTranslatingSheet by remember { mutableStateOf(false) }
+
+    // Automatic AI Translation for Bottom Sheet Dossier when regional language (Bengali, Marathi, etc.) is active
+    LaunchedEffect(selectedDiseaseForSheet, localLangCode) {
+        val d = selectedDiseaseForSheet
+        if (d != null && localLangCode != "en" && localLangCode != "hi") {
+            val cacheKey = "${d.classId}_$localLangCode"
+            if (!cachedDossiers.containsKey(cacheKey)) {
+                val targetLang = AppLanguage.entries.find { it.code == localLangCode }
+                if (targetLang != null && (geminiClient != null || nvidiaClient != null)) {
+                    isTranslatingSheet = true
+                    try {
+                        val result = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            var res: Result<com.fasaldrishti.app.data.local.TranslatedDossier>? = null
+                            if (geminiClient != null) {
+                                res = geminiClient.translateDossier(
+                                    languageCode = targetLang.code,
+                                    targetLanguageName = targetLang.englishName,
+                                    targetLanguageNative = targetLang.nativeName,
+                                    diseaseName = d.diseaseName,
+                                    symptoms = d.symptoms,
+                                    treatment = d.treatment,
+                                    prevention = d.prevention
+                                )
+                            }
+                            if ((res == null || res.isFailure) && nvidiaClient != null) {
+                                res = nvidiaClient.translateDossier(
+                                    languageCode = targetLang.code,
+                                    targetLanguageName = targetLang.englishName,
+                                    targetLanguageNative = targetLang.nativeName,
+                                    diseaseName = d.diseaseName,
+                                    symptoms = d.symptoms,
+                                    treatment = d.treatment,
+                                    prevention = d.prevention
+                                )
+                            }
+                            res
+                        }
+                        if (result != null && result.isSuccess) {
+                            cachedDossiers[cacheKey] = result.getOrThrow()
+                        }
+                    } catch (_: Exception) {
+                    } finally {
+                        isTranslatingSheet = false
+                    }
+                }
+            }
+        }
+    }
 
     val languages = listOf(
         "en" to "English",
@@ -217,10 +270,7 @@ fun CropLibraryScreen(
                                     text = { Text(name) },
                                     onClick = {
                                         localLangCode = code
-                                        val appLang = AppLanguage.entries.find { it.code == code }
-                                        if (appLang != null && languageManager != null) {
-                                            languageManager.setLanguage(appLang)
-                                        }
+                                        // Isolated to Crop Pathology Library screen only (does NOT alter global app language)
                                         showLanguageDropdown = false
                                     },
                                     leadingIcon = if (localLangCode == code) {
@@ -358,9 +408,19 @@ fun CropLibraryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(filteredDiseases) { disease ->
-                    val displayCropName = if (localLangCode != "en" && !disease.cropHindi.isNullOrBlank()) disease.cropHindi.uppercase() else disease.cropName.uppercase()
-                    val displayDiseaseName = if (localLangCode != "en" && !disease.diseaseHindi.isNullOrBlank()) disease.diseaseHindi else disease.diseaseName
-                    val displayTreatment = if (localLangCode != "en" && !disease.treatmentHindi.isNullOrBlank()) disease.treatmentHindi else disease.treatment
+                    val displayCropName = getSimpleCropName(disease.cropName, localLangCode).uppercase()
+                    val cardCacheKey = "${disease.classId}_$localLangCode"
+                    val cardCached = cachedDossiers[cardCacheKey]
+                    val displayDiseaseName = when {
+                        localLangCode == "hi" -> disease.diseaseHindi ?: disease.diseaseName
+                        cardCached != null -> cardCached.diseaseName
+                        else -> disease.diseaseName
+                    }
+                    val displayTreatment = when {
+                        localLangCode == "hi" -> disease.treatmentHindi ?: disease.treatment
+                        cardCached != null -> cardCached.treatment
+                        else -> disease.treatment
+                    }
 
                     Card(
                         modifier = Modifier
@@ -451,10 +511,30 @@ fun CropLibraryScreen(
                 containerColor = MaterialTheme.colorScheme.surface
             ) {
                 val d = selectedDiseaseForSheet!!
-                val sheetCrop = if (localLangCode != "en" && !d.cropHindi.isNullOrBlank()) d.cropHindi.uppercase() else d.cropName.uppercase()
-                val sheetDisease = if (localLangCode != "en" && !d.diseaseHindi.isNullOrBlank()) d.diseaseHindi else d.diseaseName
-                val sheetSymptoms = if (localLangCode != "en" && !d.symptomsHindi.isNullOrBlank()) d.symptomsHindi else d.symptoms
-                val sheetTreatment = if (localLangCode != "en" && !d.treatmentHindi.isNullOrBlank()) d.treatmentHindi else d.treatment
+                val sheetCacheKey = "${d.classId}_$localLangCode"
+                val sheetCached = cachedDossiers[sheetCacheKey]
+
+                val sheetCrop = getSimpleCropName(d.cropName, localLangCode).uppercase()
+                val sheetDisease = when {
+                    localLangCode == "hi" -> d.diseaseHindi ?: d.diseaseName
+                    sheetCached != null -> sheetCached.diseaseName
+                    else -> d.diseaseName
+                }
+                val sheetSymptoms = when {
+                    localLangCode == "hi" -> d.symptomsHindi ?: d.symptoms
+                    sheetCached != null -> sheetCached.symptoms
+                    else -> d.symptoms
+                }
+                val sheetTreatment = when {
+                    localLangCode == "hi" -> d.treatmentHindi ?: d.treatment
+                    sheetCached != null -> sheetCached.treatment
+                    else -> d.treatment
+                }
+                val sheetPrevention = when {
+                    localLangCode == "hi" -> d.prevention
+                    sheetCached != null -> sheetCached.prevention
+                    else -> d.prevention
+                }
 
                 Column(
                     modifier = Modifier
@@ -489,6 +569,33 @@ fun CropLibraryScreen(
                         SeverityBadge(severity = d.severity)
                     }
 
+                    if (isTranslatingSheet) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = EmeraldPrimary.copy(alpha = 0.12f),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color = EmeraldPrimary
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "AI translating into ${languages.find { it.first == localLangCode }?.second ?: ""}...",
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = EmeraldPrimary
+                                    )
+                                )
+                            }
+                        }
+                    }
+
                     HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
                     AccordionCard(
@@ -510,7 +617,7 @@ fun CropLibraryScreen(
                     AccordionCard(
                         title = getOrganicSectionTitle(localLangCode),
                         icon = Icons.Default.Shield,
-                        content = d.prevention,
+                        content = sheetPrevention,
                         initiallyExpanded = false,
                         accentColor = EmeraldPrimary
                     )
@@ -581,6 +688,10 @@ private fun getSymptomsSectionTitle(lang: String): String = when (lang) {
     "hi" -> "रोग के लक्षण एवं पहचान"
     "bn" -> "রোগের লক্ষণ ও শনাক্তকরণ"
     "mr" -> "रोगाची लक्षणे व ओळख"
+    "pa" -> "ਰੋਗ ਦੇ ਲੱਛਣ ਅਤੇ ਪਛਾਣ"
+    "te" -> "వ్యాధి లక్షణాలు మరియు గుర్తింపు"
+    "ta" -> "நோய் அறிகுறிகள் மற்றும் அடையாளம்"
+    "gu" -> "રોગના લક્ષણો અને ઓળખ"
     else -> "Symptoms & Identification"
 }
 
@@ -588,6 +699,10 @@ private fun getTreatmentSectionTitle(lang: String): String = when (lang) {
     "hi" -> "रासायनिक उपचार एवं सटीक खुराक"
     "bn" -> "রাসায়নিক চিকিৎসা ও মাত্রা"
     "mr" -> "रासायनिक उपचार व मात्रा"
+    "pa" -> "ਕੈਮੀਕਲ ਇਲਾਜ ਅਤੇ ਮਾਤਰਾ"
+    "te" -> "రసాయన చికిత్స మరియు మోతాదు"
+    "ta" -> "ரசாயன சிகிச்சை மற்றும் அளவு"
+    "gu" -> "રાસાયણિક સારવાર અને માત્રા"
     else -> "Chemical Treatment & Dosage"
 }
 
@@ -595,7 +710,107 @@ private fun getOrganicSectionTitle(lang: String): String = when (lang) {
     "hi" -> "जैविक नियंत्रण एवं खेत की रोकथाम"
     "bn" -> "জৈব নিয়ন্ত্রণ ও প্রতিরোধ ব্যবস্থা"
     "mr" -> "सेंद्रिय नियंत्रण व प्रतिबंध"
+    "pa" -> "ਜੈਵਿਕ ਕੰਟਰੋਲ ਅਤੇ ਰੋਕਥਾਮ"
+    "te" -> "సేంద్రీయ నియంత్రణ మరియు నివారణ"
+    "ta" -> "இயற்கை கட்டுப்பாடு மற்றும் தடுப்பு"
+    "gu" -> "જૈવિક નિયંત્રણ અને નિવારણ"
     else -> "Organic Control & Prevention"
+}
+
+fun getSimpleCropName(cropName: String, lang: String): String {
+    val clean = cropName.trim()
+    return when (lang) {
+        "hi" -> when {
+            clean.contains("Rice", ignoreCase = true) -> "धान"
+            clean.contains("Wheat", ignoreCase = true) -> "गेहूं"
+            clean.contains("Cotton", ignoreCase = true) -> "कपास"
+            clean.contains("Sugarcane", ignoreCase = true) -> "गन्ना"
+            clean.contains("Chilli", ignoreCase = true) -> "मिर्च"
+            clean.contains("Mustard", ignoreCase = true) -> "सरसों"
+            clean.contains("Mango", ignoreCase = true) -> "आम"
+            clean.contains("Tomato", ignoreCase = true) -> "टमाटर"
+            clean.contains("Potato", ignoreCase = true) -> "आलू"
+            clean.contains("Corn", ignoreCase = true) || clean.contains("Maize", ignoreCase = true) -> "मक्का"
+            clean.contains("Soybean", ignoreCase = true) -> "सोयाबीन"
+            clean.contains("Citrus", ignoreCase = true) -> "नींबू"
+            clean.contains("Grape", ignoreCase = true) -> "अंगूर"
+            clean.contains("Apple", ignoreCase = true) -> "सेब"
+            else -> clean
+        }
+        "bn" -> when {
+            clean.contains("Rice", ignoreCase = true) -> "ধান"
+            clean.contains("Wheat", ignoreCase = true) -> "গম"
+            clean.contains("Cotton", ignoreCase = true) -> "তুলা"
+            clean.contains("Sugarcane", ignoreCase = true) -> "আখ"
+            clean.contains("Chilli", ignoreCase = true) -> "লঙ্কা"
+            clean.contains("Mustard", ignoreCase = true) -> "সরিষা"
+            clean.contains("Mango", ignoreCase = true) -> "আম"
+            clean.contains("Tomato", ignoreCase = true) -> "টমেটো"
+            clean.contains("Potato", ignoreCase = true) -> "আলু"
+            clean.contains("Corn", ignoreCase = true) || clean.contains("Maize", ignoreCase = true) -> "ভুট্টা"
+            clean.contains("Soybean", ignoreCase = true) -> "সয়াবিন"
+            clean.contains("Citrus", ignoreCase = true) -> "লেবু"
+            clean.contains("Grape", ignoreCase = true) -> "আঙুর"
+            clean.contains("Apple", ignoreCase = true) -> "আপেল"
+            else -> clean
+        }
+        "mr" -> when {
+            clean.contains("Rice", ignoreCase = true) -> "भात"
+            clean.contains("Wheat", ignoreCase = true) -> "गहू"
+            clean.contains("Cotton", ignoreCase = true) -> "कापूस"
+            clean.contains("Sugarcane", ignoreCase = true) -> "ऊस"
+            clean.contains("Chilli", ignoreCase = true) -> "मिरची"
+            clean.contains("Mustard", ignoreCase = true) -> "मोहरी"
+            clean.contains("Mango", ignoreCase = true) -> "आंबा"
+            clean.contains("Tomato", ignoreCase = true) -> "टोमॅटो"
+            clean.contains("Potato", ignoreCase = true) -> "बटाटा"
+            clean.contains("Corn", ignoreCase = true) || clean.contains("Maize", ignoreCase = true) -> "मका"
+            clean.contains("Soybean", ignoreCase = true) -> "सोयाबीन"
+            clean.contains("Citrus", ignoreCase = true) -> "संत्री/लिंबू"
+            clean.contains("Grape", ignoreCase = true) -> "द्राक्षे"
+            clean.contains("Apple", ignoreCase = true) -> "सफरचंद"
+            else -> clean
+        }
+        "pa" -> when {
+            clean.contains("Rice", ignoreCase = true) -> "ਝੋਨਾ"
+            clean.contains("Wheat", ignoreCase = true) -> "ਕਣਕ"
+            clean.contains("Cotton", ignoreCase = true) -> "ਨਰਮਾ"
+            clean.contains("Sugarcane", ignoreCase = true) -> "ਗੰਨਾ"
+            clean.contains("Tomato", ignoreCase = true) -> "ਟਮਾਟਰ"
+            clean.contains("Potato", ignoreCase = true) -> "ਆਲੂ"
+            clean.contains("Mustard", ignoreCase = true) -> "ਸਰ੍ਹੋਂ"
+            else -> clean
+        }
+        "te" -> when {
+            clean.contains("Rice", ignoreCase = true) -> "వరి"
+            clean.contains("Wheat", ignoreCase = true) -> "గోధుమ"
+            clean.contains("Cotton", ignoreCase = true) -> "పత్తి"
+            clean.contains("Sugarcane", ignoreCase = true) -> "చెరకు"
+            clean.contains("Tomato", ignoreCase = true) -> "టమోటా"
+            clean.contains("Potato", ignoreCase = true) -> "బంగాళాదుంప"
+            else -> clean
+        }
+        "ta" -> when {
+            clean.contains("Rice", ignoreCase = true) -> "நெல்"
+            clean.contains("Wheat", ignoreCase = true) -> "கோதுமை"
+            clean.contains("Cotton", ignoreCase = true) -> "பருத்தி"
+            clean.contains("Sugarcane", ignoreCase = true) -> "கரும்பு"
+            clean.contains("Tomato", ignoreCase = true) -> "தக்காளி"
+            clean.contains("Potato", ignoreCase = true) -> "உருளைக்கிழங்கு"
+            else -> clean
+        }
+        "gu" -> when {
+            clean.contains("Rice", ignoreCase = true) -> "ડાંગર"
+            clean.contains("Wheat", ignoreCase = true) -> "ઘઉં"
+            clean.contains("Cotton", ignoreCase = true) -> "કપાસ"
+            clean.contains("Sugarcane", ignoreCase = true) -> "શેરડી"
+            clean.contains("Tomato", ignoreCase = true) -> "ટામેટા"
+            clean.contains("Potato", ignoreCase = true) -> "બટાટા"
+            clean.contains("Mustard", ignoreCase = true) -> "રાયડો"
+            else -> clean
+        }
+        else -> clean
+    }
 }
 
 private fun getLocalizedCropCategoryName(cropId: String, lang: String): String = when (lang) {
