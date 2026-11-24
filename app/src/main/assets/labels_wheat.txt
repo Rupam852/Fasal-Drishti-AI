@@ -1,0 +1,11 @@
+Wheat___Black_point
+Wheat___Blast
+Wheat___Fusarium_foot_rot
+Wheat___healthy
+Wheat___healthy_leaf
+Wheat___Leaf_rust
+Wheat___Leaf_blight
+Wheat___Powdery_mildew
+Wheat___Stem_rust
+Wheat___Stripe_rust
+Wheat___Wheat_blast

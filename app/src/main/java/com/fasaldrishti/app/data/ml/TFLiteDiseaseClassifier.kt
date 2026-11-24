@@ -15,48 +15,74 @@ import java.io.File
 data class OnDevicePrediction(
     val predictedClass: String,
     val confidence: Float,
-    val top3: List<Pair<String, Float>>
+    val top3: List<Pair<String, Float>>,
+    val modelOrigin: String = "Foliar Base"
 )
 
 class TFLiteDiseaseClassifier(private val context: Context) {
 
-    private var interpreter: Interpreter? = null
-    private var labels: List<String> = emptyList()
-    private val modelFileName = "model_4_mobilenet_finetuned.tflite"
+    private data class SpecialistEngine(
+        val id: String,
+        val displayName: String,
+        val modelFile: String,
+        val labelsFile: String,
+        val inputSize: Int,
+        var interpreter: Interpreter? = null,
+        var labels: List<String> = emptyList()
+    )
+
+    private val engines = listOf(
+        SpecialistEngine(
+            id = "base",
+            displayName = "Foliar Generalist",
+            modelFile = "model_4_mobilenet_finetuned.tflite",
+            labelsFile = "labels.txt",
+            inputSize = 224
+        ),
+        SpecialistEngine(
+            id = "rice",
+            displayName = "Paddy / Rice Specialist",
+            modelFile = "model_rice_fp16.tflite",
+            labelsFile = "labels_rice.txt",
+            inputSize = 320
+        ),
+        SpecialistEngine(
+            id = "wheat",
+            displayName = "Wheat Specialist",
+            modelFile = "model_wheat_fp16.tflite",
+            labelsFile = "labels_wheat.txt",
+            inputSize = 320
+        )
+    )
 
     init {
-        loadLabels()
-        loadModel()
-    }
-
-    private fun loadLabels() {
-        try {
-            labels = context.assets.open("labels.txt").bufferedReader().useLines { it.toList() }
-            Log.d(TAG, "Loaded ${labels.size} disease classification labels")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error loading labels.txt", e)
+        engines.forEach { engine ->
+            loadEngine(engine)
         }
     }
 
-    private fun loadModel() {
+    private fun loadEngine(engine: SpecialistEngine) {
         try {
-            val buffer = FileUtil.loadMappedFile(context, modelFileName)
+            engine.labels = context.assets.open(engine.labelsFile).bufferedReader().useLines { it.toList() }
+            Log.d(TAG, "Loaded ${engine.labels.size} labels for ${engine.displayName}")
+
+            val buffer = FileUtil.loadMappedFile(context, engine.modelFile)
             val cpuOptions = Interpreter.Options().apply {
                 setNumThreads(4)
-                setUseNNAPI(false) // Pure XNNPACK CPU acceleration - rock-solid on all devices
+                setUseNNAPI(false)
             }
-            interpreter = Interpreter(buffer, cpuOptions)
-            Log.d(TAG, "Successfully initialized On-Device TFLite model ($modelFileName) with CPU XNNPACK")
+            engine.interpreter = Interpreter(buffer, cpuOptions)
+            Log.d(TAG, "Successfully initialized ${engine.displayName} (${engine.modelFile}) with CPU XNNPACK")
         } catch (e: Throwable) {
-            Log.e(TAG, "Critical failure loading TFLite model ($modelFileName)", e)
-            interpreter = null
+            Log.e(TAG, "Error initializing ${engine.displayName} (${engine.modelFile})", e)
+            engine.interpreter = null
         }
     }
 
     /**
-     * Fast Computer Vision Foliage & Detail Quality Guard (< 3ms).
-     * Prevents empty grey walls, foggy blurs, covered camera lenses, and
-     * non-plant flat surfaces from falsely triggering high-confidence disease diagnoses.
+     * Fast Computer Vision Foliage & Chromatic Quality Guard (< 3ms).
+     * Prevents empty grey/beige walls, room ceilings, fingers, laptop screens,
+     * tables, and non-plant flat surfaces from triggering false disease diagnoses.
      */
     private fun checkFoliageQuality(bitmap: Bitmap): Boolean {
         return try {
@@ -69,47 +95,66 @@ class TFLiteDiseaseClassifier(private val context: Context) {
 
             var sumGray = 0.0
             var sumSqGray = 0.0
-            var totalSat = 0.0
-            var greenPixelCount = 0
+            var totalPlantChromaCount = 0
+            var centerPlantChromaCount = 0
+            var centerTotalCount = 0
 
-            for (color in pixels) {
-                val r = (color shr 16) and 0xFF
-                val g = (color shr 8) and 0xFF
-                val b = color and 0xFF
+            val cYMin = (height * 0.20).toInt()
+            val cYMax = (height * 0.80).toInt()
+            val cXMin = (width * 0.20).toInt()
+            val cXMax = (width * 0.80).toInt()
 
-                // Luminance
-                val gray = 0.299 * r + 0.587 * g + 0.114 * b
-                sumGray += gray
-                sumSqGray += gray * gray
+            for (y in 0 until height) {
+                val inCenterY = y in cYMin..cYMax
+                for (x in 0 until width) {
+                    val color = pixels[y * width + x]
+                    val r = (color shr 16) and 0xFF
+                    val g = (color shr 8) and 0xFF
+                    val b = color and 0xFF
 
-                // Saturation: (max - min) / max
-                val max = maxOf(r, maxOf(g, b))
-                val min = minOf(r, minOf(g, b))
-                if (max > 12) {
-                    val sat = (max - min).toDouble() / max.toDouble()
-                    totalSat += sat
-                }
+                    // Luminance
+                    val gray = 0.299 * r + 0.587 * g + 0.114 * b
+                    sumGray += gray
+                    sumSqGray += gray * gray
 
-                // Excess Green vegetation index (ExG = 2G - R - B)
-                val exg = 2 * g - r - b
-                if (exg > 12) {
-                    greenPixelCount++
+                    // Normalized Green Chromaticity
+                    val total = r + g + b + 0.001f
+                    val normG = g / total
+                    val normR = r / total
+                    val normB = b / total
+
+                    // Genuine plant foliage: green chromaticity distinctly exceeds red and blue
+                    val isPlantChroma = (normG > 0.36f) && (normG > normR * 1.05f) && (normG > normB * 1.05f)
+                    if (isPlantChroma) {
+                        totalPlantChromaCount++
+                    }
+
+                    if (inCenterY && x in cXMin..cXMax) {
+                        centerTotalCount++
+                        if (isPlantChroma) {
+                            centerPlantChromaCount++
+                        }
+                    }
                 }
             }
 
             val meanGray = sumGray / totalPixels
             val variance = (sumSqGray / totalPixels) - (meanGray * meanGray)
             val stdDev = if (variance > 0) Math.sqrt(variance) else 0.0
-            val meanSat = totalSat / totalPixels
-            val greenRatio = greenPixelCount.toDouble() / totalPixels
 
-            // A. Completely blank / uniform / camera covered / flat wall (StdDev < 16.0)
-            val isBlankOrUniform = stdDev < 16.0
-            // B. Monochromatic grey/white/black surface with no plant pigment (Sat < 0.12 && Green < 0.08)
-            val isMonochromeNonPlant = (meanSat < 0.12 && greenRatio < 0.08)
+            val overallChromaRatio = totalPlantChromaCount.toDouble() / totalPixels
+            val centerChromaRatio = if (centerTotalCount > 0) centerPlantChromaCount.toDouble() / centerTotalCount else 0.0
 
-            if (isBlankOrUniform || isMonochromeNonPlant) {
-                Log.w(TAG, "CV Foliage Guard: Non-plant surface detected (StdDev=%.1f, Sat=%.3f, Green=%.3f)".format(stdDev, meanSat, greenRatio))
+            // 1. Completely blank / uniform / camera covered (StdDev < 14.0)
+            val isBlankOrUniform = stdDev < 14.0
+
+            // 2. Non-plant surface: painted wall, room ceiling, finger, laptop, floor, table (Chroma < 14%)
+            val isNonFoliarSurface = (overallChromaRatio < 0.14) && (centerChromaRatio < 0.15)
+
+            if (isBlankOrUniform || isNonFoliarSurface) {
+                Log.w(TAG, "CV Foliage Guard: Non-plant surface rejected (StdDev=%.1f, OverallChroma=%.1f%%, CenterChroma=%.1f%%)".format(
+                    stdDev, overallChromaRatio * 100, centerChromaRatio * 100
+                ))
                 false
             } else {
                 true
@@ -153,10 +198,10 @@ class TFLiteDiseaseClassifier(private val context: Context) {
         }
     }
 
-    fun classifyBitmap(bitmap: Bitmap): OnDevicePrediction {
+    fun classifyBitmap(bitmap: Bitmap, preferredCrop: String? = null): OnDevicePrediction {
         if (bitmap.isRecycled) {
             Log.e(TAG, "classifyBitmap: Provided bitmap is recycled")
-            return OnDevicePrediction("Invalid_Crop", 0.0f, emptyList())
+            return OnDevicePrediction("Invalid_Crop", 0.0f, emptyList(), "None")
         }
 
         // Ensure software ARGB_8888 bitmap to prevent HARDWARE bitmap crashes on modern Android
@@ -176,34 +221,44 @@ class TFLiteDiseaseClassifier(private val context: Context) {
             return OnDevicePrediction(
                 predictedClass = "Invalid_Crop",
                 confidence = 0.08f,
-                top3 = listOf("Invalid_Crop" to 0.08f)
+                top3 = listOf("Invalid_Crop" to 0.08f),
+                modelOrigin = "CV Guard"
             )
         }
 
-        if (interpreter == null) {
-            loadModel()
-        }
-        if (labels.isEmpty()) {
-            loadLabels()
-        }
+        // 2. Multi-Model Inference & Calibration
+        val baseEngine = engines.find { it.id == "base" }
+        val riceEngine = engines.find { it.id == "rice" }
+        val wheatEngine = engines.find { it.id == "wheat" }
 
-        // 2. Neural Network Inference
-        if (interpreter != null && labels.isNotEmpty()) {
-            try {
-                // Preprocess Bitmap to 224x224 RGB
+        data class ModelRunResult(
+            val engineName: String,
+            val bestClass: String,
+            val bestConfidence: Float,
+            val topList: List<Pair<String, Float>>
+        )
+
+        fun runEngine(engine: SpecialistEngine?): ModelRunResult? {
+            if (engine == null) return null
+            if (engine.interpreter == null || engine.labels.isEmpty()) {
+                loadEngine(engine)
+            }
+            val interp = engine.interpreter ?: return null
+            val labels = engine.labels
+            if (labels.isEmpty()) return null
+
+            return try {
                 val imageProcessor = ImageProcessor.Builder()
-                    .add(ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
+                    .add(ResizeOp(engine.inputSize, engine.inputSize, ResizeOp.ResizeMethod.BILINEAR))
                     .build()
 
                 var tensorImage = TensorImage(org.tensorflow.lite.DataType.FLOAT32)
                 tensorImage.load(safeBitmap)
                 tensorImage = imageProcessor.process(tensorImage)
 
-                // Direct native 2D float array (zero buffer position / byte underflow issues)
                 val outputScores = Array(1) { FloatArray(labels.size) }
-                interpreter?.run(tensorImage.buffer.rewind(), outputScores)
+                interp.run(tensorImage.buffer.rewind(), outputScores)
 
-                // Extract and rank softmax probabilities
                 val probabilities = outputScores[0]
                 val indexedScores = probabilities.indices.map { idx ->
                     val label = if (idx < labels.size) labels[idx] else "Class_$idx"
@@ -211,28 +266,84 @@ class TFLiteDiseaseClassifier(private val context: Context) {
                 }.sortedByDescending { it.second }
 
                 val best = indexedScores.firstOrNull() ?: ("Invalid_Crop" to 0.0f)
-                val top3 = indexedScores.take(3)
-
-                return OnDevicePrediction(
-                    predictedClass = best.first,
-                    confidence = best.second,
-                    top3 = top3
+                ModelRunResult(
+                    engineName = engine.displayName,
+                    bestClass = best.first,
+                    bestConfidence = best.second,
+                    topList = indexedScores.take(3)
                 )
             } catch (e: Throwable) {
-                Log.e(TAG, "Inference exception: ${e.message}", e)
+                Log.e(TAG, "Error executing ${engine.displayName}: ${e.message}", e)
+                null
             }
         }
 
-        // Return invalid crop if model is uninitialized or threw an exception
+        val allCandidates = mutableListOf<Pair<String, Float>>()
+
+        // Run Base Foliar Engine
+        val baseResult = runEngine(baseEngine)
+        if (baseResult != null) {
+            allCandidates.addAll(baseResult.topList)
+        }
+
+        // Run Specialist Engines
+        val isRicePreferred = preferredCrop?.contains("rice", ignoreCase = true) == true ||
+                              preferredCrop?.contains("paddy", ignoreCase = true) == true ||
+                              preferredCrop?.contains("dhan", ignoreCase = true) == true
+        val isWheatPreferred = preferredCrop?.contains("wheat", ignoreCase = true) == true ||
+                               preferredCrop?.contains("gehun", ignoreCase = true) == true
+
+        val riceResult = if (isRicePreferred || (baseResult == null || baseResult.bestConfidence < 0.60f)) {
+            runEngine(riceEngine)
+        } else null
+
+        val wheatResult = if (isWheatPreferred || (baseResult == null || baseResult.bestConfidence < 0.60f)) {
+            runEngine(wheatEngine)
+        } else null
+
+        if (riceResult != null) allCandidates.addAll(riceResult.topList)
+        if (wheatResult != null) allCandidates.addAll(wheatResult.topList)
+
+        // Winner Selection Logic (Arbiter)
+        val winner: ModelRunResult? = when {
+            isRicePreferred && riceResult != null -> riceResult
+            isWheatPreferred && wheatResult != null -> wheatResult
+            // If base model is confident (>= 0.45f) on broadleaf crops, favor base model
+            baseResult != null && baseResult.bestConfidence >= 0.45f -> baseResult
+            // If base model is low confidence, check if Rice or Wheat is confident
+            riceResult != null && riceResult.bestConfidence >= 0.55f && (wheatResult == null || riceResult.bestConfidence >= wheatResult.bestConfidence) -> riceResult
+            wheatResult != null && wheatResult.bestConfidence >= 0.55f -> wheatResult
+            else -> baseResult ?: riceResult ?: wheatResult
+        }
+
+        val sortedTop3 = allCandidates.distinctBy { it.first }.sortedByDescending { it.second }.take(3)
+
+        if (winner != null) {
+            return OnDevicePrediction(
+                predictedClass = winner.bestClass,
+                confidence = winner.bestConfidence,
+                top3 = sortedTop3,
+                modelOrigin = winner.engineName
+            )
+        }
+
         return OnDevicePrediction(
             predictedClass = "Invalid_Crop",
             confidence = 0.0f,
-            top3 = emptyList()
+            top3 = emptyList(),
+            modelOrigin = "None"
         )
     }
 
     fun close() {
-        interpreter?.close()
+        engines.forEach {
+            try {
+                it.interpreter?.close()
+                it.interpreter = null
+            } catch (e: Exception) {
+                // Ignore close errors
+            }
+        }
     }
 
     companion object {

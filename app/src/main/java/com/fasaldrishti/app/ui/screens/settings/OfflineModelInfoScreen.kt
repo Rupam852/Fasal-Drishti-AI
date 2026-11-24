@@ -76,9 +76,9 @@ fun OfflineModelInfoScreen(
     }
 
     val tCatalogTitle = when (lang) {
-        AppLanguage.HINDI -> "पहचान योग्य 43 फसल और रोग सूची"
-        AppLanguage.BENGALI -> "শনাক্তকরণযোগ্য ৪৩টি ফসল ও রোগের তালিকা"
-        else -> "43 Detectable Crop Disease Classes"
+        AppLanguage.HINDI -> "पहचान योग्य 62 फसल और रोग सूची (Multi-Model Fleet)"
+        AppLanguage.BENGALI -> "শনাক্তকরণযোগ্য ৬২টি ফসল ও রোগের তালিকা (Multi-Model Fleet)"
+        else -> "62 Detectable Crop Disease Classes (Multi-Model Fleet)"
     }
 
     val tSearchPlaceholder = when (lang) {
@@ -140,10 +140,32 @@ fun OfflineModelInfoScreen(
                 emoji = "🌾",
                 category = "Cereal",
                 diseases = listOf(
-                    "Bacterial Blight (Xanthomonas oryzae)",
+                    "Leaf Blast (Pyricularia oryzae)",
+                    "Bacterial Leaf Blight (Xanthomonas oryzae)",
                     "Brown Spot (Bipolaris oryzae)",
                     "Sheath Blight (Rhizoctonia solani)",
+                    "Rice Hispa (Dicladispa armigera)",
+                    "Leaf Scald (Microdochium oryzae)",
+                    "Narrow Brown Leaf Spot (Cercospora janseana)",
                     "Healthy Crop"
+                )
+            ),
+            CropCatalogItem(
+                cropName = "Wheat",
+                cropHindi = "गेहूं (Wheat)",
+                cropBengali = "গম (Wheat)",
+                emoji = "🌾",
+                category = "Cereal",
+                diseases = listOf(
+                    "Leaf Rust / Brown Rust (Puccinia triticina)",
+                    "Stripe Rust / Yellow Rust (Puccinia striiformis)",
+                    "Stem Rust / Black Rust (Puccinia graminis)",
+                    "Powdery Mildew (Blumeria graminis)",
+                    "Leaf Blight (Bipolaris sorokiniana)",
+                    "Wheat Blast (Magnaporthe oryzae)",
+                    "Fusarium Foot Rot",
+                    "Black Point Disease",
+                    "Healthy Foliage"
                 )
             ),
             CropCatalogItem(

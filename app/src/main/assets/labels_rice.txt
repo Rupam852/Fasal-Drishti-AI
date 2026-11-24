@@ -1,0 +1,8 @@
+Rice___Bacterial_leaf_blight
+Rice___Brown_spot
+Rice___healthy
+Rice___Leaf_blast
+Rice___Leaf_scald
+Rice___Narrow_brown_leaf_spot
+Rice___Rice_hispa
+Rice___Sheath_blight
