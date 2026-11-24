@@ -65,6 +65,7 @@
           <li><a href="#features" class="nav-link">Features</a></li>
           <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
           <li><a href="#technology" class="nav-link">AI Tech</a></li>
+          <li><a href="#datasets" class="nav-link trigger-dataset-modal">Datasets &amp; Scope</a></li>
           <li><a href="#contributors" class="nav-link">Contributors</a></li>
           <li><a href="#faq" class="nav-link">FAQ</a></li>
         </ul>
@@ -144,6 +145,12 @@
       <li>
         <a href="#technology" class="mobile-nav-link">
           <span>🤖 Multimodal AI Architecture</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="#datasets" class="mobile-nav-link trigger-dataset-modal">
+          <span>📊 Model Datasets &amp; Scope</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
       </li>
@@ -640,6 +647,13 @@
         </div>
       </div>
 
+      <!-- Dataset Modal Trigger Button inside AI Tech section -->
+      <div style="margin-top: 36px; text-align: center;">
+        <button class="btn btn-secondary trigger-dataset-modal" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; padding: 12px 26px; border-radius: var(--radius-full);">
+          <span>📊</span> View Model Training Datasets &amp; Offline Scope
+        </button>
+      </div>
+
     </div>
   </section>
 
@@ -931,6 +945,7 @@
             <li><a href="#features" class="footer-link">App Features</a></li>
             <li><a href="#how-it-works" class="footer-link">How It Works</a></li>
             <li><a href="#technology" class="footer-link">Multimodal AI Stack</a></li>
+            <li><a href="#datasets" class="footer-link trigger-dataset-modal">Model Datasets &amp; Scope</a></li>
             <li><a href="#contributors" class="footer-link">Core Contributors</a></li>
             <li><a href="#faq" class="footer-link">Help & FAQs</a></li>
           </ul>
@@ -978,6 +993,7 @@
           © 2026 Fasal Drishti AI. All rights reserved. Open-source agricultural technology.
         </div>
         <div class="footer-legal-links">
+          <button class="footer-legal-btn trigger-dataset-modal">Datasets &amp; Clinical Advisory</button>
           <button class="footer-legal-btn trigger-terms-modal">Terms & Conditions</button>
           <button class="footer-legal-btn trigger-privacy-modal">Privacy Policy</button>
         </div>
@@ -1091,6 +1107,168 @@
         <p>
           Fasal Drishti AI contains zero third-party ads, zero tracking pixels, and does not sell or monetize farmer agricultural records.
         </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       Modals: 4. Model Datasets & Clinical Advisory Modal
+       ========================================================================= -->
+  <div id="datasetModal" class="modal-backdrop">
+    <div class="modal-window modal-large">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Model Datasets, Offline Scope &amp; Clinical Advisory</h3>
+          <p style="font-size: 0.85rem; color: var(--slate-500); margin-top: 4px;">
+            Scientific training data inventory, on-device Edge limitations, and mandatory agricultural verification protocol.
+          </p>
+        </div>
+        <button class="modal-close-btn" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        
+        <!-- Warning Box 1: Offline Edge AI Scope & Diagnostic Boundaries -->
+        <div class="warning-callout-box">
+          <div class="warning-callout-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Notice: Offline Edge AI Scope &amp; Diagnostic Limitations</span>
+          </div>
+          <ul style="margin-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+            <li>
+              <b>Strict Trained Dataset Bounds:</b> In 100% offline mode without internet connectivity, disease diagnosis executes exclusively on quantized on-device Edge TFLite models (<code>MobileNetV2</code> &amp; <code>EfficientNet</code> int8/fp16). The offline engine <b>can only detect and classify crops and diseases that are explicitly present in its trained dataset</b> (cataloged below). It cannot diagnose uncataloged plant species, novel pest vectors, or non-crop foliage.
+            </li>
+            <li>
+              <b>No 100% Diagnostic Accuracy Guarantee:</b> On-device edge classification does not guarantee 100% diagnostic accuracy. Image blur, extreme sunlight glare, overlapping leaf infections, or dirty camera lenses can produce false positives or lower confidence. Offline predictions must always be treated as preliminary screening indicators.
+            </li>
+          </ul>
+        </div>
+
+        <!-- Warning Box 2: Online Verification & Professional Consultation Advisory -->
+        <div class="advisory-callout-box">
+          <div class="advisory-callout-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>Professional Agronomy Advisory: Mandatory Expert Cross-Verification</span>
+          </div>
+          <ul style="margin-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+            <li>
+              <b>Advisory Decision-Support:</b> Even when utilizing Online Mode with Dual Google Gemini 2.5 Flash and NVIDIA Llama-3-Vision multimodal reasoning, all AI outputs are decision-support guidelines, not infallible biochemical decrees.
+            </li>
+            <li>
+              <b>Mandatory Certified Agronomist Review:</b> Before purchasing expensive commercial chemical pesticides, preparing concentrated systemic fungicides, or taking irreversible operational steps on high-stakes agricultural acreage, <b>farmers and users are strongly advised to cross-verify the diagnosis with a certified agricultural extension officer, local KVK (Krishi Vigyan Kendra) agronomist, or Kisan Call Center (1800-180-1551) specialist.</b>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Section: Supported Training Datasets & Pathology Directory -->
+        <div>
+          <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--slate-900); margin-bottom: 12px;">
+            📚 Supported Training Datasets &amp; Crop Disease Directory
+          </h4>
+          
+          <div class="dataset-cards-container">
+            
+            <!-- Dataset 1: Baseline Agronomy (PlantVillage & Regional Indian Crops) -->
+            <div class="dataset-card">
+              <div class="dataset-card-header">
+                <div class="dataset-card-title">
+                  <span>🌱</span> PlantVillage &amp; Indian Agronomy Baseline
+                </div>
+                <span class="dataset-card-badge">38+ Classes • Edge TFLite</span>
+              </div>
+              <p style="font-size: 0.86rem; color: var(--slate-600); line-height: 1.5;">
+                Quantized MobileNetV2 neural vision model fine-tuned on 54,000+ curated leaf pathology specimens across 14 major crops.
+              </p>
+              <div class="dataset-crop-chips">
+                <span class="crop-chip highlight">Tomato (9 Diseases + Healthy)</span>
+                <span class="crop-chip highlight">Potato (Early &amp; Late Blight)</span>
+                <span class="crop-chip highlight">Corn / Maize (Rust &amp; Blight)</span>
+                <span class="crop-chip">Apple (Scab, Rot, Rust)</span>
+                <span class="crop-chip">Grape (Black Rot, Esca, Blight)</span>
+                <span class="crop-chip">Bell Pepper (Bacterial Spot)</span>
+                <span class="crop-chip">Orange (Citrus Greening)</span>
+                <span class="crop-chip">Peach (Bacterial Spot)</span>
+                <span class="crop-chip">Strawberry (Leaf Scorch)</span>
+                <span class="crop-chip">Squash (Powdery Mildew)</span>
+                <span class="crop-chip">Cherry</span>
+                <span class="crop-chip">Blueberry</span>
+                <span class="crop-chip">Raspberry</span>
+                <span class="crop-chip">Soybean</span>
+              </div>
+            </div>
+
+            <!-- Dataset 2: Dedicated Rice Pathology Model -->
+            <div class="dataset-card">
+              <div class="dataset-card-header">
+                <div class="dataset-card-title">
+                  <span>🌾</span> Dedicated Rice Pathology Specialized Model
+                </div>
+                <span class="dataset-card-badge">8 Specific Classes • FP16</span>
+              </div>
+              <p style="font-size: 0.86rem; color: var(--slate-600); line-height: 1.5;">
+                High-resolution field dataset focused exclusively on paddy/rice epidemics across Indian monsoon belts.
+              </p>
+              <div class="dataset-crop-chips">
+                <span class="crop-chip highlight">Bacterial Leaf Blight</span>
+                <span class="crop-chip highlight">Brown Spot</span>
+                <span class="crop-chip highlight">Leaf Blast</span>
+                <span class="crop-chip">Leaf Scald</span>
+                <span class="crop-chip">Narrow Brown Leaf Spot</span>
+                <span class="crop-chip">Rice Hispa</span>
+                <span class="crop-chip">Sheath Blight</span>
+                <span class="crop-chip">Healthy Rice Leaf</span>
+              </div>
+            </div>
+
+            <!-- Dataset 3: Dedicated Wheat Pathology Model -->
+            <div class="dataset-card">
+              <div class="dataset-card-header">
+                <div class="dataset-card-title">
+                  <span>🌾</span> Dedicated Wheat Pathology Specialized Model
+                </div>
+                <span class="dataset-card-badge">11 Specific Classes • FP16</span>
+              </div>
+              <p style="font-size: 0.86rem; color: var(--slate-600); line-height: 1.5;">
+                Trained on comprehensive rust and blast variations across northern Indian Rabi cropping cycles.
+              </p>
+              <div class="dataset-crop-chips">
+                <span class="crop-chip highlight">Wheat Blast</span>
+                <span class="crop-chip highlight">Yellow / Stripe Rust</span>
+                <span class="crop-chip highlight">Stem / Black Rust</span>
+                <span class="crop-chip highlight">Brown / Leaf Rust</span>
+                <span class="crop-chip">Leaf Blight</span>
+                <span class="crop-chip">Fusarium Foot Rot</span>
+                <span class="crop-chip">Black Point</span>
+                <span class="crop-chip">Powdery Mildew</span>
+                <span class="crop-chip">Healthy Wheat Leaf</span>
+              </div>
+            </div>
+
+            <!-- Dataset 4: Cloud Multimodal Reasoning (40+ Crops) -->
+            <div class="dataset-card">
+              <div class="dataset-card-header">
+                <div class="dataset-card-title">
+                  <span>☁️</span> Dual Cloud Multimodal Reasoning Domain
+                </div>
+                <span class="dataset-card-badge">40+ Crops • Gemini &amp; NVIDIA</span>
+              </div>
+              <p style="font-size: 0.86rem; color: var(--slate-600); line-height: 1.5;">
+                Zero-shot and few-shot agricultural chain-of-thought vision reasoning for crops and pest vectors beyond local TFLite weights.
+              </p>
+              <div class="dataset-crop-chips">
+                <span class="crop-chip">Cotton (Pink Bollworm &amp; CLCuD)</span>
+                <span class="crop-chip">Sugarcane (Red Rot &amp; Smut)</span>
+                <span class="crop-chip">Mustard / Rapeseed</span>
+                <span class="crop-chip">Pulses / Gram / Chana (Wilt &amp; Pod Borer)</span>
+                <span class="crop-chip">Groundnut / Peanut (Tikka)</span>
+                <span class="crop-chip">Onion / Garlic (Purple Blotch)</span>
+                <span class="crop-chip">Mango &amp; Guava</span>
+                <span class="crop-chip">Chilli &amp; Brinjal / Eggplant</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

@@ -1898,6 +1898,128 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 10px;
 }
 
+/* Dataset & Advisory Modal */
+.modal-window.modal-large {
+  max-width: 740px;
+}
+
+.warning-callout-box {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1.5px solid var(--amber-400);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  color: var(--slate-700);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.warning-callout-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--amber-500);
+  margin-bottom: 8px;
+}
+
+.advisory-callout-box {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1.5px solid var(--emerald-500);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  color: var(--slate-700);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.advisory-callout-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--emerald-600);
+  margin-bottom: 8px;
+}
+
+[data-theme="dark"] .advisory-callout-title {
+  color: var(--emerald-400);
+}
+
+.dataset-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.dataset-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dataset-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dataset-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dataset-card-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--emerald-600);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+[data-theme="dark"] .dataset-card-badge {
+  color: var(--emerald-400);
+}
+
+.dataset-crop-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.crop-chip {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  color: var(--slate-700);
+}
+
+.crop-chip.highlight {
+  border-color: var(--emerald-400);
+  color: var(--emerald-600);
+}
+
+[data-theme="dark"] .crop-chip.highlight {
+  color: var(--emerald-400);
+}
+
 /* ==========================================================================
    Responsive Breakpoints (Desktop -> Tablet -> Mobile)
    ========================================================================== */

@@ -107,10 +107,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 150);
   }
 
-  // 3. Modals System (Download, Terms, Privacy)
+  // 3. Modals System (Download, Terms, Privacy, Datasets)
   const downloadModal = document.getElementById('downloadModal');
   const termsModal = document.getElementById('termsModal');
   const privacyModal = document.getElementById('privacyModal');
+  const datasetModal = document.getElementById('datasetModal');
 
   function openModal(modal) {
     if (!modal) return;
@@ -149,16 +150,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Dataset & Scope Modal Triggers
+  document.querySelectorAll('.trigger-dataset-modal').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal(datasetModal);
+    });
+  });
+
   // Modal Close Buttons & Backdrop click
   document.querySelectorAll('.modal-close-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       closeModal(downloadModal);
       closeModal(termsModal);
       closeModal(privacyModal);
+      closeModal(datasetModal);
     });
   });
 
-  [downloadModal, termsModal, privacyModal].forEach(modal => {
+  [downloadModal, termsModal, privacyModal, datasetModal].forEach(modal => {
     if (modal) {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -174,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
       closeModal(downloadModal);
       closeModal(termsModal);
       closeModal(privacyModal);
+      closeModal(datasetModal);
       closeMobileMenu();
     }
   });
