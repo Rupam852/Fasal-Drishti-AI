@@ -56,7 +56,8 @@ class AppUpdateWorker(
                     Log.d(TAG, "Update available ($latestVer) but notification was recently shown. Cooldown active.")
                 }
             } else {
-                Log.d(TAG, "App is already up to date. Latest version: ${updateInfo.latestVersion}")
+                updateManager.dismissUpdateNotification()
+                Log.d(TAG, "App is already up to date. Dismissing any pending update notifications. Latest version: ${updateInfo.latestVersion}")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error checking for updates in background", e)

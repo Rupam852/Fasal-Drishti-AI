@@ -143,6 +143,8 @@ class UpdateManager(private val context: Context) {
                             checkMessage = "New update available: v$serverVer"
                         )
                     } else {
+                        // App is already on latest version -> clear any old update notification from tray
+                        dismissUpdateNotification()
                         AppUpdateInfo(
                             currentVersion = "v$normCurrentVer",
                             latestVersion = "v$serverVer",
@@ -257,6 +259,17 @@ class UpdateManager(private val context: Context) {
             }
         } catch (_: SecurityException) {
             // Android 13+ POST_NOTIFICATIONS permission
+        }
+    }
+
+    /**
+     * Dismisses any active update notification from the Android status bar.
+     */
+    fun dismissUpdateNotification() {
+        try {
+            NotificationManagerCompat.from(context).cancel(1001)
+        } catch (_: Exception) {
+            // Safe fallback
         }
     }
 
