@@ -43,4 +43,8 @@ supabase/insert_gemini_key.sql
 
 # Large ML Datasets & Training Folders
 Fasal-Drishti-ML-DB/
-Fasal-Drishti-ML-Model-Train/
+Fasal-Drishti-ML-Model-Train/*
+!Fasal-Drishti-ML-Model-Train/fasal-drishti-offline-model-trainer.ipynb
+!Fasal-Drishti-ML-Model-Train/labels.txt
+!Fasal-Drishti-ML-Model-Train/README.md
+!Fasal-Drishti-ML-Model-Train/model_4_mobilenet_finetuned.tflite
