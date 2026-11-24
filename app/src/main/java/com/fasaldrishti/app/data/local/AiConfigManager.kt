@@ -39,9 +39,9 @@ data class AiConfigState(
     val isCustomMode: Boolean = false,
     val primaryProvider: AiProvider = AiProvider.GEMINI,
     val secondaryProvider: AiProvider = AiProvider.NVIDIA,
-    val geminiModel: String = "gemini-3.7-flash",
+    val geminiModel: String = "gemini-3.5-flash-lite",
     val geminiApiKey: String = "",
-    val nvidiaModel: String = "meta/llama-3.2-11b-vision-instruct",
+    val nvidiaModel: String = "nvidia/nemotron-3.5-super-vl-120b-a12b",
     val nvidiaApiKey: String = ""
 )
 
@@ -69,18 +69,16 @@ class AiConfigManager(private val context: Context) {
         private const val KEY_LAST_DEFAULT_TEST = "last_default_test_timestamp"
 
         val AVAILABLE_GEMINI_MODELS = listOf(
-            AiModelOption("gemini-3.7-flash", "Gemini 3.7 Flash", "State-of-the-art hybrid reasoning & fast multimodal vision (Recommended)", true),
-            AiModelOption("gemini-3.5-flash", "Gemini 3.5 Flash", "Ultra high-throughput crop disease diagnosis"),
-            AiModelOption("gemini-3.5-flash-lite", "Gemini 3.5 Flash Lite", "Lightweight low-latency foliar analysis"),
-            AiModelOption("gemini-3.1-flash-lite", "Gemini 3.1 Flash Lite", "Optimized low-bandwidth agronomy engine"),
-            AiModelOption("gemini-flash-lite-latest", "Gemini Flash Lite (Latest)", "Automatically tracking latest stable Flash Lite"),
-            AiModelOption("gemini-3-flash-preview", "Gemini 3 Flash Preview", "Experimental rapid multimodal vision")
+            AiModelOption("gemini-3.5-flash-lite", "Gemini 3.5 Flash Lite", "Ultra-fast low-latency agronomy vision (Recommended • 1.4s)", true),
+            AiModelOption("gemini-flash-lite-latest", "Gemini Flash Lite (Latest)", "Auto-tracks latest stable Flash Lite vision (1.9s)"),
+            AiModelOption("gemini-3.7-flash", "Gemini 3.7 Flash", "Advanced hybrid reasoning & multimodal vision"),
+            AiModelOption("gemini-3.5-flash", "Gemini 3.5 Flash", "High-throughput crop disease diagnosis"),
+            AiModelOption("gemini-3.1-flash-lite", "Gemini 3.1 Flash Lite", "Optimized low-bandwidth agronomy engine")
         )
 
         val AVAILABLE_NVIDIA_MODELS = listOf(
-            AiModelOption("meta/llama-3.2-11b-vision-instruct", "Llama 3.2 11B Vision", "Multimodal crop vision & leaf pathology (Recommended)", true),
+            AiModelOption("nvidia/nemotron-3.5-super-vl-120b-a12b", "Nemotron 3.5 Super VL", "Multimodal crop vision & leaf pathology (Recommended)", true),
             AiModelOption("meta/llama-3.1-70b-instruct", "Llama 3.1 70B Instruct", "High-capacity conversational agronomist"),
-            AiModelOption("nvidia/neva-22b", "NVIDIA NeVA 22B", "Specialized visual reasoning model"),
             AiModelOption("mistralai/mistral-large-2-instruct", "Mistral Large 2", "Advanced multi-lingual agronomy intelligence")
         )
     }
@@ -94,9 +92,9 @@ class AiConfigManager(private val context: Context) {
         val primary = try { AiProvider.valueOf(primaryStr) } catch (_: Exception) { AiProvider.GEMINI }
         val secondary = if (primary == AiProvider.GEMINI) AiProvider.NVIDIA else AiProvider.GEMINI
         
-        val geminiModel = prefs.getString(KEY_GEMINI_MODEL, "gemini-3.7-flash") ?: "gemini-3.7-flash"
+        val geminiModel = prefs.getString(KEY_GEMINI_MODEL, "gemini-3.5-flash-lite") ?: "gemini-3.5-flash-lite"
         val geminiKey = prefs.getString(KEY_GEMINI_API_KEY, "") ?: ""
-        val nvidiaModel = prefs.getString(KEY_NVIDIA_MODEL, "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
+        val nvidiaModel = prefs.getString(KEY_NVIDIA_MODEL, "nvidia/nemotron-3.5-super-vl-120b-a12b") ?: "nvidia/nemotron-3.5-super-vl-120b-a12b"
         val nvidiaKey = prefs.getString(KEY_NVIDIA_API_KEY, "") ?: ""
 
         return AiConfigState(
@@ -166,12 +164,11 @@ class AiConfigManager(private val context: Context) {
 
         val modelsToTest = listOf(
             primaryModelName,
-            "gemini-3.7-flash",
-            "gemini-3.5-flash",
             "gemini-3.5-flash-lite",
             "gemini-flash-lite-latest",
             "gemini-3.1-flash-lite",
-            "gemini-3-flash-preview"
+            "gemini-3.5-flash",
+            "gemini-3.7-flash"
         ).distinct()
 
         var lastError = "All Gemini models unavailable"

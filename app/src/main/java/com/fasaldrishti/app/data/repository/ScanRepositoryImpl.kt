@@ -309,7 +309,7 @@ class ScanRepositoryImpl(
             }
 
             if (!success) {
-                return@withContext Result.failure(com.fasaldrishti.app.domain.model.AiUnreachableException())
+                return@withContext Result.failure(Exception("All online AI engines (Gemini & NVIDIA) are currently unreachable. Please check your internet connection or API quota and try again."))
             }
 
             val verifiedScanRecord = scan.copy(

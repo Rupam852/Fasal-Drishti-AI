@@ -334,7 +334,7 @@ fun AiConfigScreen(
                             // Default Engine 1: Gemini
                             DefaultEngineItem(
                                 title = "Primary: Google Gemini Vision AI",
-                                subtitle = "gemini-3.7-flash • Multimodal leaf diagnosis & treatment",
+                                subtitle = "gemini-3.5-flash-lite • Ultra-fast multimodal leaf diagnosis & treatment (1.4s)",
                                 icon = Icons.Default.Psychology,
                                 badge = "Active",
                                 badgeColor = EmeraldPrimary
@@ -345,7 +345,7 @@ fun AiConfigScreen(
                             // Default Engine 2: NVIDIA NIM
                             DefaultEngineItem(
                                 title = "Secondary: NVIDIA NIM Agronomy",
-                                subtitle = "meta/llama-3.2-11b-vision-instruct • Cloud fallback",
+                                subtitle = "nvidia/nemotron-3.5-super-vl-120b-a12b • Multimodal visual reasoning fallback",
                                 icon = Icons.Default.Memory,
                                 badge = "Standby",
                                 badgeColor = SolarGold
@@ -374,7 +374,7 @@ fun AiConfigScreen(
                                         // Test Gemini Default with Cascade (verifies best working active model live)
                                         val defaultGeminiKey = supabaseManager?.getRemoteConfig("gemini_api_key", "") ?: ""
                                         val testKey = if (defaultGeminiKey.isNotBlank()) defaultGeminiKey else "AIzaSy_DEFAULT"
-                                        val defaultGeminiModel = supabaseManager?.getRemoteConfig("gemini_model_name", "gemini-3.7-flash") ?: "gemini-3.7-flash"
+                                        val defaultGeminiModel = supabaseManager?.getRemoteConfig("gemini_model_name", "gemini-3.5-flash-lite") ?: "gemini-3.5-flash-lite"
                                         val geminiRes = aiConfigManager.testGeminiCascade(defaultGeminiModel, testKey)
                                         results.add(geminiRes)
                                         diagnosticResults = results.toList()
@@ -382,7 +382,7 @@ fun AiConfigScreen(
 
                                         // Test NVIDIA Default
                                         val defaultNvidiaKey = supabaseManager?.getRemoteConfig("nvidia_nim_api_key", "") ?: ""
-                                        val nvidiaRes = aiConfigManager.testNvidia("meta/llama-3.2-11b-vision-instruct", defaultNvidiaKey)
+                                        val nvidiaRes = aiConfigManager.testNvidia("nvidia/nemotron-3.5-super-vl-120b-a12b", defaultNvidiaKey)
                                         results.add(nvidiaRes)
                                         diagnosticResults = results.toList()
 
