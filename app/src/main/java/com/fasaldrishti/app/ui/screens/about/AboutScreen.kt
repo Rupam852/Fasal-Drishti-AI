@@ -63,7 +63,8 @@ data class TeamMember(
 
 @Composable
 fun AboutScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToWorkflows: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var selectedPhotoMember by remember { mutableStateOf<TeamMember?>(null) }
@@ -309,6 +310,87 @@ fun AboutScreen(
                             icon = Icons.Default.WbSunny,
                             title = "Agro-Weather & Spray Forecast",
                             subtitle = "Source: IMD (India Meteorological Department) & Open-Meteo Agro-Climate Data"
+                        )
+                    }
+                }
+            }
+
+            // 3.5 APP WORKFLOWS & ARCHITECTURE FLOWCHARTS
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onNavigateToWorkflows() },
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.5f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Brush.linearGradient(listOf(EmeraldPrimary, EmeraldDark))),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountTree,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(14.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "App Workflows & Architecture",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 16.sp
+                                    )
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text(
+                                text = "Interactive Flowcharts: Scan to Treatment, Offline AI, Hybrid Fallback, PDF Engine & Weather Risk",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 12.sp,
+                                    lineHeight = 16.sp
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = EmeraldPrimary.copy(alpha = 0.12f)
+                            ) {
+                                Text(
+                                    text = "⚡ 6 Interactive Visual Pipelines →",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = EmeraldPrimary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 10.5.sp
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = "Open Workflows",
+                            tint = EmeraldPrimary,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }

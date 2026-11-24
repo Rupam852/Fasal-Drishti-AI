@@ -374,7 +374,16 @@ fun AppNavHost(
             }
 
             composable(Screen.About.route) {
-                AboutScreen(onNavigateBack = { navController.popBackStack() })
+                AboutScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToWorkflows = { navController.navigate(Screen.Workflows.route) }
+                )
+            }
+
+            composable(Screen.Workflows.route) {
+                com.fasaldrishti.app.ui.screens.workflows.WorkflowsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
 
             composable(Screen.Updater.route) {
