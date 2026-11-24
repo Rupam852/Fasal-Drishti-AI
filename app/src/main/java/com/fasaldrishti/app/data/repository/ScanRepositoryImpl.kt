@@ -81,8 +81,8 @@ class ScanRepositoryImpl(
             var treatment = localDiseaseInfo?.treatment ?: "Apply recommended fungicide and maintain proper plant spacing."
             var finalPredictedClass = preliminaryClass
 
-            // Tier 1 Guard: Non-Crop / Random objects in offline detection (< 0.40f)
-            if (preliminaryConfidence < 0.40f) {
+            // Tier 1 Guard: Non-Crop / Random objects in offline detection (< 0.40f or Invalid_Crop)
+            if (preliminaryConfidence < 0.40f || preliminaryClass == "Invalid_Crop") {
                 cropName = "Non-Crop Object"
                 diseaseName = "No Plant Leaf Detected"
                 severity = "Invalid"
