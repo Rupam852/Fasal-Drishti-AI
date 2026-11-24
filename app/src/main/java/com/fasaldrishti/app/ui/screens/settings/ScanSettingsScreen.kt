@@ -3,6 +3,7 @@ package com.fasaldrishti.app.ui.screens.settings
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -28,7 +29,8 @@ import com.fasaldrishti.app.ui.theme.SolarGold
 @Composable
 fun ScanSettingsScreen(
     scanSettingsManager: ScanSettingsManager,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToOfflineModelInfo: () -> Unit = {}
 ) {
     val strings = LocalAppStrings.current
     val isOfflineEnabled by scanSettingsManager.isOfflineModelEnabled.collectAsState()
@@ -139,12 +141,31 @@ fun ScanSettingsScreen(
                                 Spacer(modifier = Modifier.width(14.dp))
                                 Column {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
+                                        // Left question mark icon in a simple circle
+                                        Surface(
+                                            onClick = onNavigateToOfflineModelInfo,
+                                            shape = CircleShape,
+                                            color = EmeraldPrimary.copy(alpha = 0.12f),
+                                            border = BorderStroke(1.2.dp, EmeraldPrimary.copy(alpha = 0.45f)),
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = "?",
+                                                    color = EmeraldPrimary,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 14.sp
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
                                         Text(
                                             text = strings.offlineModelToggleTitle,
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 16.sp
-                                            )
+                                            ),
+                                            modifier = Modifier.clickable { onNavigateToOfflineModelInfo() }
                                         )
                                         if (isOfflineLocked) {
                                             Spacer(modifier = Modifier.width(6.dp))
@@ -163,6 +184,16 @@ fun ScanSettingsScreen(
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             fontSize = 12.sp
                                         )
+                                    )
+                                    Spacer(modifier = Modifier.height(3.dp))
+                                    Text(
+                                        text = "ℹ️ View Datasets & 43 Recognized Crops ➔",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = EmeraldPrimary,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 11.5.sp
+                                        ),
+                                        modifier = Modifier.clickable { onNavigateToOfflineModelInfo() }
                                     )
                                 }
                             }

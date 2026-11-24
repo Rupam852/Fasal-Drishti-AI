@@ -347,6 +347,14 @@ fun AppNavHost(
                 val manager = scanSettingsManager ?: app?.scanSettingsManager ?: remember { com.fasaldrishti.app.data.local.ScanSettingsManager(context) }
                 com.fasaldrishti.app.ui.screens.settings.ScanSettingsScreen(
                     scanSettingsManager = manager,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToOfflineModelInfo = { navController.navigate(Screen.OfflineModelInfo.route) }
+                )
+            }
+
+            composable(Screen.OfflineModelInfo.route) {
+                com.fasaldrishti.app.ui.screens.settings.OfflineModelInfoScreen(
+                    languageManager = languageManager,
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
