@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const mobileThemeToggleBtn = document.getElementById('mobileThemeToggleBtn');
 
   function getActiveTheme() {
-    return document.documentElement.getAttribute('data-theme') || 'light';
+    return document.documentElement.getAttribute('data-theme') || 'dark';
   }
 
   function applyTheme(theme) {

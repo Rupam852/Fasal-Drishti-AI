@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -22,16 +22,16 @@
   <link rel="apple-touch-icon" href="favicon.png">
 
   <!-- Color Scheme Meta & FOUC Prevention Script -->
-  <meta name="color-scheme" content="light dark">
+  <meta name="color-scheme" content="dark light">
   <script>
     (function() {
       try {
         const savedTheme = localStorage.getItem('theme');
-        // Default to light mode unless explicitly set to dark by user
-        if (savedTheme === 'dark') {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        } else {
+        // Default to dark mode unless explicitly set to light by user
+        if (savedTheme === 'light') {
           document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
         }
       } catch (e) {}
     })();
