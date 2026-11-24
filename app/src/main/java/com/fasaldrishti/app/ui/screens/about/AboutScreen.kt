@@ -185,7 +185,7 @@ fun AboutScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "v${com.fasaldrishti.app.BuildConfig.VERSION_NAME} • Precision Agronomy & Crop Vision AI",
+                            text = "v${com.fasaldrishti.app.BuildConfig.VERSION_NAME} • 100% Offline Edge & Cloud Vision AI",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 color = EmeraldPrimary,
                                 fontWeight = FontWeight.ExtraBold,
@@ -196,7 +196,7 @@ fun AboutScreen(
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
-                            text = "Fasal Drishti empowers Indian farmers with high-precision Google Gemini & NVIDIA Multimodal AI for accurate crop disease diagnosis, real-time spray prescriptions, and smart weather advisories.",
+                            text = "Fasal Drishti empowers Indian farmers with 100% Offline Edge AI and Dual Multimodal Cloud AI for instant crop disease diagnosis in remote fields, precision spray prescriptions, and smart agro-weather advisories.",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                                 fontSize = 14.sp,
@@ -228,30 +228,44 @@ fun AboutScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         TechSpecRow(
+                            icon = Icons.Default.Memory,
+                            title = "Edge TFLite Specialist Suite (100% Offline)",
+                            subtitle = "On-Device Rice, Wheat & Multi-Crop FP16 Models (<120ms latency, zero data in remote fields)"
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
+
+                        TechSpecRow(
                             icon = Icons.Default.AutoAwesome,
-                            title = "Google Gemini 3.7 Vision & Flash",
-                            subtitle = "Multimodal Crop Pathology & Real-Time Diagnosis Verification"
+                            title = "Google Gemini 2.5 Flash & 3.7 Vision",
+                            subtitle = "Dual Multimodal Cloud AI for Secondary Cross-Examination & Calibrated Chemical Dosages"
                         )
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
 
                         TechSpecRow(
                             icon = Icons.Default.Psychology,
-                            title = "NVIDIA NIM Agronomist",
-                            subtitle = "Multilingual Llama 3.2 11B Vision-Instruct Secondary Layer"
+                            title = "NVIDIA NIM Agronomist Layer",
+                            subtitle = "Multilingual Llama 3.2 11B Vision-Instruct for Secondary Severity & Symptom Validation"
                         )
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
 
                         TechSpecRow(
-                            icon = Icons.Default.Memory,
-                            title = "On-Device MobileNetV2 Engine",
-                            subtitle = "Offline TensorFlow Lite + Android NNAPI Acceleration"
+                            icon = androidx.compose.material.icons.Icons.AutoMirrored.Filled.MenuBook,
+                            title = "Native 8-Language Offline Crop Library",
+                            subtitle = "Pre-compiled encyclopedia of 40+ crops & hundreds of diseases with 0ms delay & desi remedies"
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
+
+                        TechSpecRow(
+                            icon = Icons.Default.Alarm,
+                            title = "Precision Hardware Alarms & WorkManager",
+                            subtitle = "Exact AlarmManager + WakeLock for spray alerts & 1-hour background auto-update checker"
                         )
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = 12.dp))
 
                         TechSpecRow(
                             icon = Icons.Default.CloudQueue,
-                            title = "Supabase Cloud & Storage",
-                            subtitle = "Remote Dynamic Configs, Secure Auth & Image Storage"
+                            title = "Supabase Cloud & Encrypted Room DB",
+                            subtitle = "100% Offline-First local data caching with secure remote configs, authentication, and sync"
                         )
                     }
                 }
