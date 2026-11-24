@@ -59,6 +59,10 @@ fun ScanScreen(
     val isOnlineVerificationEnabled by scanSettingsManager?.isOnlineVerificationEnabled?.collectAsState()
         ?: remember { mutableStateOf(true) }
 
+    LaunchedEffect(Unit) {
+        com.fasaldrishti.app.worker.CropReminderWorker.dismissInactivityNotification(context)
+    }
+
     val isOfflineModeActive = !isNetworkConnected || !isOnlineVerificationEnabled
     var showOfflineAlert by rememberSaveable { mutableStateOf(true) }
 
