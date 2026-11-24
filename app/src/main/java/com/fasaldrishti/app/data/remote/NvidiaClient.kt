@@ -27,8 +27,9 @@ class NvidiaClient(
 ) {
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(25, TimeUnit.SECONDS)
-        .readTimeout(25, TimeUnit.SECONDS)
+        .connectTimeout(35, TimeUnit.SECONDS)
+        .readTimeout(35, TimeUnit.SECONDS)
+        .writeTimeout(35, TimeUnit.SECONDS)
         .build()
 
     private val apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions"
@@ -44,13 +45,16 @@ class NvidiaClient(
     private suspend fun resolveModelName(): String {
         val config = aiConfigManager?.configState?.value
         if (config?.isCustomMode == true && config.nvidiaModel.isNotBlank()) {
-            return config.nvidiaModel
+            val m = config.nvidiaModel
+            if (!m.contains("llama-3.1-70b") && !m.contains("mistral-large")) {
+                return m
+            }
         }
         val remote = supabaseManager?.getRemoteConfig("nvidia_model_name", "") ?: ""
-        if (remote.isNotBlank() && !remote.contains("llama-3.2-11b-vision")) {
+        if (remote.isNotBlank() && !remote.contains("llama-3.1-70b") && !remote.contains("mistral-large")) {
             return remote
         }
-        return "nvidia/nemotron-3.5-super-vl-120b-a12b"
+        return "meta/llama-3.2-11b-vision-instruct"
     }
 
     private fun compressAndEncodeImage(imageFile: File): String {
@@ -90,7 +94,6 @@ class NvidiaClient(
     ): Result<FallbackScanDiagnosis> = withContext(Dispatchers.IO) {
         try {
             val apiKey = resolveApiKey()
-            val modelName = resolveModelName()
 
             if (apiKey.isBlank() || !imageFile.exists()) {
                 return@withContext Result.failure(Exception("NVIDIA API key not available or image file missing"))
@@ -157,56 +160,73 @@ class NvidiaClient(
                 }
             """.trimIndent()
 
-            val jsonBody = JSONObject().apply {
-                put("model", modelName)
-                val messages = JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("role", "user")
-                        val contentArray = JSONArray().apply {
+            val primaryModel = resolveModelName()
+            val candidateModels = listOf(
+                primaryModel,
+                "meta/llama-3.2-11b-vision-instruct",
+                "microsoft/phi-3.5-vision-instruct"
+            ).distinct()
+
+            var lastError: Exception = Exception("Could not obtain vision verification response")
+
+            for (currModel in candidateModels) {
+                try {
+                    val jsonBody = JSONObject().apply {
+                        put("model", currModel)
+                        val messages = JSONArray().apply {
                             put(JSONObject().apply {
-                                put("type", "text")
-                                put("text", prompt)
-                            })
-                            put(JSONObject().apply {
-                                put("type", "image_url")
-                                put("image_url", JSONObject().apply {
-                                    put("url", "data:image/jpeg;base64,$base64Image")
-                                })
+                                put("role", "user")
+                                val contentArray = JSONArray().apply {
+                                    put(JSONObject().apply {
+                                        put("type", "text")
+                                        put("text", prompt)
+                                    })
+                                    put(JSONObject().apply {
+                                        put("type", "image_url")
+                                        put("image_url", JSONObject().apply {
+                                            put("url", "data:image/jpeg;base64,$base64Image")
+                                        })
+                                    })
+                                }
+                                put("content", contentArray)
                             })
                         }
-                        put("content", contentArray)
-                    })
-                }
-                put("messages", messages)
-                put("temperature", 0.2)
-                put("max_tokens", 2048)
-            }
-
-            val request = Request.Builder()
-                .url(apiUrl)
-                .addHeader("Authorization", "Bearer $apiKey")
-                .addHeader("Content-Type", "application/json")
-                .post(jsonBody.toString().toRequestBody("application/json".toMediaType()))
-                .build()
-
-            val response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                val responseString = response.body?.string() ?: ""
-                val jsonObj = JSONObject(responseString)
-                val choices = jsonObj.optJSONArray("choices")
-                if (choices != null && choices.length() > 0) {
-                    val msgObj = choices.getJSONObject(0).optJSONObject("message")
-                    val contentStr = msgObj?.optString("content", "") ?: ""
-                    val reasoningStr = msgObj?.optString("reasoning_content", "") ?: ""
-                    val rawText = if (contentStr.isNotBlank() && contentStr != "null") contentStr else reasoningStr
-                    val parsed = parseDiagnosisJson(rawText)
-                    if (parsed != null) {
-                        return@withContext Result.success(parsed)
+                        put("messages", messages)
+                        put("temperature", 0.2)
+                        put("max_tokens", 2048)
                     }
+
+                    val request = Request.Builder()
+                        .url(apiUrl)
+                        .addHeader("Authorization", "Bearer $apiKey")
+                        .addHeader("Content-Type", "application/json")
+                        .post(jsonBody.toString().toRequestBody("application/json".toMediaType()))
+                        .build()
+
+                    val response = client.newCall(request).execute()
+                    if (response.isSuccessful) {
+                        val responseString = response.body?.string() ?: ""
+                        val jsonObj = JSONObject(responseString)
+                        val choices = jsonObj.optJSONArray("choices")
+                        if (choices != null && choices.length() > 0) {
+                            val msgObj = choices.getJSONObject(0).optJSONObject("message")
+                            val contentStr = msgObj?.optString("content", "") ?: ""
+                            val reasoningStr = msgObj?.optString("reasoning_content", "") ?: ""
+                            val rawText = if (contentStr.isNotBlank() && contentStr != "null") contentStr else reasoningStr
+                            val parsed = parseDiagnosisJson(rawText)
+                            if (parsed != null) {
+                                return@withContext Result.success(parsed)
+                            }
+                        }
+                    } else {
+                        lastError = Exception("HTTP ${response.code} from $currModel: ${response.message}")
+                    }
+                } catch (e: Exception) {
+                    lastError = e
                 }
             }
 
-            Result.failure(Exception("Could not obtain vision verification response"))
+            Result.failure(lastError)
         } catch (e: Exception) {
             Result.failure(e)
         }

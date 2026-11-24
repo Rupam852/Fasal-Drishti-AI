@@ -41,7 +41,7 @@ data class AiConfigState(
     val secondaryProvider: AiProvider = AiProvider.NVIDIA,
     val geminiModel: String = "gemini-3.5-flash-lite",
     val geminiApiKey: String = "",
-    val nvidiaModel: String = "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    val nvidiaModel: String = "meta/llama-3.2-11b-vision-instruct",
     val nvidiaApiKey: String = ""
 )
 
@@ -54,9 +54,9 @@ class AiConfigManager(private val context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("fasal_ai_config_prefs", Context.MODE_PRIVATE)
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
-        .writeTimeout(10, TimeUnit.SECONDS)
+        .connectTimeout(35, TimeUnit.SECONDS)
+        .readTimeout(35, TimeUnit.SECONDS)
+        .writeTimeout(35, TimeUnit.SECONDS)
         .build()
 
     companion object {
@@ -77,9 +77,10 @@ class AiConfigManager(private val context: Context) {
         )
 
         val AVAILABLE_NVIDIA_MODELS = listOf(
-            AiModelOption("nvidia/nemotron-3.5-super-vl-120b-a12b", "Nemotron 3.5 Super VL", "Multimodal crop vision & leaf pathology (Recommended)", true),
-            AiModelOption("meta/llama-3.1-70b-instruct", "Llama 3.1 70B Instruct", "High-capacity conversational agronomist"),
-            AiModelOption("mistralai/mistral-large-2-instruct", "Mistral Large 2", "Advanced multi-lingual agronomy intelligence")
+            AiModelOption("meta/llama-3.2-11b-vision-instruct", "Llama 3.2 11B Vision", "Ultra-fast multimodal crop pathology (Recommended • ~2.5s)", true),
+            AiModelOption("microsoft/phi-3.5-vision-instruct", "Phi-3.5 Vision", "Compact lightweight vision engine (~1.8s)"),
+            AiModelOption("meta/llama-3.2-90b-vision-instruct", "Llama 3.2 90B Vision", "Deep visual reasoning for complex foliar symptoms"),
+            AiModelOption("nvidia/nemotron-3.5-super-vl-120b-a12b", "Nemotron 3.5 Super VL", "Heavy multimodal vision & leaf pathology fallback")
         )
     }
 
@@ -94,7 +95,13 @@ class AiConfigManager(private val context: Context) {
         
         val geminiModel = prefs.getString(KEY_GEMINI_MODEL, "gemini-3.5-flash-lite") ?: "gemini-3.5-flash-lite"
         val geminiKey = prefs.getString(KEY_GEMINI_API_KEY, "") ?: ""
-        val nvidiaModel = prefs.getString(KEY_NVIDIA_MODEL, "nvidia/nemotron-3.5-super-vl-120b-a12b") ?: "nvidia/nemotron-3.5-super-vl-120b-a12b"
+        val rawNvidiaModel = prefs.getString(KEY_NVIDIA_MODEL, "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
+        // Auto-migrate legacy text-only models (Llama 70B & Mistral Large) to Llama 3.2 11B Vision
+        val nvidiaModel = if (rawNvidiaModel.contains("llama-3.1-70b") || rawNvidiaModel.contains("mistral-large")) {
+            "meta/llama-3.2-11b-vision-instruct"
+        } else {
+            rawNvidiaModel
+        }
         val nvidiaKey = prefs.getString(KEY_NVIDIA_API_KEY, "") ?: ""
 
         return AiConfigState(
@@ -307,6 +314,56 @@ class AiConfigManager(private val context: Context) {
                 message = e.localizedMessage ?: "Connection error"
             )
         }
+    }
+
+    /**
+     * Diagnostic live ping test for NVIDIA NIM with automatic fallback cascade.
+     * Tries primary model first, then falls back to lightweight vision models if queue is congested.
+     */
+    suspend fun testNvidiaCascade(primaryModelName: String, apiKey: String): DiagnosticResult = withContext(Dispatchers.IO) {
+        if (apiKey.isBlank()) {
+            return@withContext DiagnosticResult(
+                provider = AiProvider.NVIDIA,
+                model = primaryModelName,
+                isSuccess = false,
+                latencyMs = 0,
+                message = "NVIDIA API key is missing or blank"
+            )
+        }
+
+        val modelsToTest = listOf(
+            primaryModelName,
+            "meta/llama-3.2-11b-vision-instruct",
+            "microsoft/phi-3.5-vision-instruct",
+            "meta/llama-3.2-90b-vision-instruct"
+        ).distinct()
+
+        var lastError = "All NVIDIA models unavailable"
+        var lastLatency = 0L
+
+        for (model in modelsToTest) {
+            val res = testNvidia(model, apiKey)
+            if (res.isSuccess) {
+                val candidateNote = if (model == primaryModelName) "Active Primary" else "Verified Active Fallback"
+                return@withContext DiagnosticResult(
+                    provider = AiProvider.NVIDIA,
+                    model = model,
+                    isSuccess = true,
+                    latencyMs = res.latencyMs,
+                    message = "Operational • $candidateNote (${res.latencyMs} ms)"
+                )
+            }
+            lastError = res.message
+            lastLatency = res.latencyMs
+        }
+
+        DiagnosticResult(
+            provider = AiProvider.NVIDIA,
+            model = primaryModelName,
+            isSuccess = false,
+            latencyMs = lastLatency,
+            message = lastError
+        )
     }
 
     /**
