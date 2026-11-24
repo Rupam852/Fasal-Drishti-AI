@@ -564,29 +564,81 @@ fun ResultScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 20.dp),
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(18.dp),
                                 color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.45f),
                                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.35f))
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                Column(
+                                    modifier = Modifier.padding(14.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Info,
-                                        contentDescription = "Notice",
-                                        tint = MaterialTheme.colorScheme.tertiary,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = strings.offlineLeafModelNotice,
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                            fontSize = 12.sp,
-                                            lineHeight = 16.sp
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = "Notice",
+                                            tint = MaterialTheme.colorScheme.tertiary,
+                                            modifier = Modifier.size(20.dp)
                                         )
-                                    )
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text(
+                                            text = strings.offlineLeafModelNotice,
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                                fontSize = 12.sp,
+                                                lineHeight = 16.5.sp
+                                            ),
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(10.dp))
+
+                                    // Button for 2nd Online Multimodal Verification directly inside this alert
+                                    Button(
+                                        onClick = {
+                                            if (!isOnlineVerificationEnabled) {
+                                                showSettingsDisabledDialog = true
+                                            } else if (!isConnected) {
+                                                showOfflineNoticeDialog = true
+                                            } else {
+                                                viewModel.runOnlineVerification()
+                                            }
+                                        },
+                                        enabled = !uiState.isVerifying,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = EmeraldPrimary,
+                                            contentColor = Color.White
+                                        ),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        if (uiState.isVerifying) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(16.dp),
+                                                strokeWidth = 2.dp,
+                                                color = Color.White
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Verifying with Online Multimodal AI...",
+                                                fontSize = 12.5.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        } else {
+                                            Icon(
+                                                imageVector = Icons.Default.CloudSync,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "2nd Online Multimodal Verification",
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1033,8 +1085,9 @@ fun ResultScreen(
                 }
             }
         }
+    }
 
-        // Dialog 1: Keep Verified Diagnosis
+    // Dialog 1: Keep Verified Diagnosis
         if (uiState.showKeepDialog && uiState.pendingVerifiedRecord != null) {
             AlertDialog(
                 onDismissRequest = { viewModel.dismissKeepDialog() },
@@ -1161,6 +1214,5 @@ fun ResultScreen(
             )
         }
     }
-}
 }
 

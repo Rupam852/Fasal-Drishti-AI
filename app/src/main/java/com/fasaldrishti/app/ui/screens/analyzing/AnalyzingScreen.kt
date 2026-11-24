@@ -310,26 +310,6 @@ fun AnalyzingScreen(
                 }
             }
         }
-
-        // Bottom Progress Bar (only during active scanning)
-        if (errorMessage == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .navigationBarsPadding()
-                    .padding(horizontal = 40.dp, vertical = 32.dp)
-            ) {
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(5.dp)
-                        .clip(CircleShape),
-                    color = EmeraldPrimary,
-                    trackColor = Color.White.copy(alpha = 0.15f)
-                )
-            }
-        }
     }
 }
 
