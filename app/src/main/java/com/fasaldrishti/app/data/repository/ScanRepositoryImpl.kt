@@ -95,7 +95,7 @@ class ScanRepositoryImpl(
                 diseaseName = "Unrecognized Crop Condition"
                 severity = "Undetermined"
                 finalPredictedClass = "Unrecognized_Disease"
-                symptoms = "This crop variety or disease pattern is not in the 43 offline leaf categories. To prevent crop damage from improper chemical sprays, specific identification is required."
+                symptoms = "This plant or crop variety is not in the 62 offline leaf categories. To prevent crop damage from improper chemical sprays, specific identification is required."
                 treatment = "Please connect to internet and tap '2nd Online Verification' above to identify this condition using Multimodal AI, or consult Kisan Helpline (1800-180-1551)."
             }
 

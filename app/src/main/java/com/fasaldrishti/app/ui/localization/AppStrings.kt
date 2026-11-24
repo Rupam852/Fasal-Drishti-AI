@@ -113,7 +113,7 @@ data class Strings(
     val offlineLeafModelNotice: String = "Offline AI model is specialized for crop leaves. For best accuracy on tubers or fruits, scan a crop leaf or use 2nd Online Verification.",
     val unrecognizedDiseaseTitle: String = "Unrecognized Crop Condition",
     val unrecognizedCropName: String = "Uncataloged Crop",
-    val unrecognizedSymptoms: String = "This crop variety or disease pattern is not in the 43 offline leaf categories. To prevent crop damage from improper chemical sprays, specific identification is required.",
+    val unrecognizedSymptoms: String = "This crop variety or disease pattern is not in the 62 offline leaf categories. To prevent crop damage from improper chemical sprays, specific identification is required.",
     val unrecognizedTreatment: String = "Please connect to internet and tap '2nd Online Verification' above to identify this condition using Multimodal AI, or consult Kisan Helpline (1800-180-1551).",
     val cameraOfflineAlertTitle: String = "Offline AI Mode Active",
     val cameraOfflineAlertDesc: String = "Align a diseased crop leaf inside the frame in bright light. (62 crop diseases supported offline)"

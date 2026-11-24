@@ -393,7 +393,7 @@ fun ResultScreen(
                     }
                 }
 
-                val isInvalidCrop = scan.predictedClass == "Invalid_Crop" || scan.severity.equals("Invalid", ignoreCase = true) || scan.confidence < 0.50f
+                val isInvalidCrop = (scan.predictedClass == "Invalid_Crop" || scan.severity.equals("Invalid", ignoreCase = true)) && !isUnrecognized
 
                 if (isInvalidCrop) {
                     // INVALID SUBJECT / NON-CROP GUIDANCE VIEW
