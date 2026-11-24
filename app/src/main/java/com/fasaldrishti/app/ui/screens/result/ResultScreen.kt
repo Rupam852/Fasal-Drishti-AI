@@ -73,6 +73,9 @@ fun ResultScreen(
     var showOfflineNoticeDialog by remember { mutableStateOf(false) }
     var dotCount by remember { mutableIntStateOf(1) }
 
+    // Intercept system back gestures and back button to ensure clean return to Home
+    androidx.activity.compose.BackHandler(onBack = onNavigateBack)
+
     LaunchedEffect(uiState.isTranslating) {
         if (uiState.isTranslating) {
             while (true) {

@@ -63,6 +63,12 @@ fun AnalyzingScreen(
     var isUnreachableError by remember { mutableStateOf(false) }
     var retryTrigger by remember { mutableIntStateOf(0) }
     var dotCount by remember { mutableIntStateOf(1) }
+    var hasCompletedScan by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+
+    // Intercept back gesture / hardware back while analysis is in progress
+    androidx.activity.compose.BackHandler {
+        onAnalysisError("Scan cancelled by user")
+    }
 
     // Cycle through dots: . -> .. -> ... -> .... -> .
     LaunchedEffect(errorMessage) {
@@ -76,7 +82,7 @@ fun AnalyzingScreen(
 
     // Execute scan asynchronously and require AI verification
     LaunchedEffect(imagePath, retryTrigger) {
-        if (imagePath.isNotBlank()) {
+        if (imagePath.isNotBlank() && !hasCompletedScan) {
             val file = File(imagePath)
             if (file.exists()) {
                 errorMessage = null
@@ -84,6 +90,7 @@ fun AnalyzingScreen(
                 isUnreachableError = false
                 val result = scanRepository.performScan(file)
                 result.onSuccess { record ->
+                    hasCompletedScan = true
                     delay(500) // Brief smooth transition delay
                     onAnalysisComplete(record)
                 }.onFailure { err ->
@@ -200,7 +207,10 @@ fun AnalyzingScreen(
                         ) {
                             // 1. Retry Analysis Button
                             Button(
-                                onClick = { retryTrigger++ },
+                                onClick = {
+                                    hasCompletedScan = false
+                                    retryTrigger++
+                                },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(50.dp),

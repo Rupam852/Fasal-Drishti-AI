@@ -43,6 +43,9 @@ fun RemindersScreen(
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
     val isTranslating by viewModel.isTranslating.collectAsState()
 
+    // Ensure back gesture / hardware back gracefully navigates back to Home
+    androidx.activity.compose.BackHandler(onBack = onNavigateBack)
+
     val context = androidx.compose.ui.platform.LocalContext.current
     var isIgnoringBattery by remember { mutableStateOf(com.fasaldrishti.app.util.BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)) }
     var canScheduleExact by remember { mutableStateOf(com.fasaldrishti.app.util.BatteryOptimizationHelper.canScheduleExactAlarms(context)) }

@@ -196,7 +196,7 @@ class UpdateManager(private val context: Context) {
 
     fun sendUpdateNotification(newVersion: String) {
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             putExtra("navigate_to", "updater")
             putExtra("destination", "updater")
         }

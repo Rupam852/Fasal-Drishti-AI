@@ -215,7 +215,7 @@ class RemindersViewModel(
 
         CropReminderWorker.createNotificationChannel(context)
         val intent = android.content.Intent(context, com.fasaldrishti.app.MainActivity::class.java).apply {
-            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
             putExtra("destination", "reminders")
         }
         val pendingIntent = android.app.PendingIntent.getActivity(

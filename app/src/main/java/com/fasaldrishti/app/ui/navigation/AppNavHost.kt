@@ -82,18 +82,28 @@ fun AppNavHost(
     val untranslatedCount by remindersViewModel.untranslatedCount.collectAsState()
     val hasUntranslated = untranslatedCount > 0
 
-    // Direct deep-link navigation if notification tapped while app is running
-    androidx.compose.runtime.LaunchedEffect(pendingDestination) {
-        if (pendingDestination == "updater") {
-            navController.navigate(Screen.Updater.route) {
-                launchSingleTop = true
-            }
+    // Direct deep-link navigation if notification tapped while app is already running
+    androidx.compose.runtime.LaunchedEffect(pendingDestination, currentRoute) {
+        if (currentRoute != Screen.Splash.route && pendingDestination != null) {
+            val target = pendingDestination
             onClearPendingDestination()
-        } else if (pendingDestination == "reminders") {
-            navController.navigate(Screen.Reminders.route) {
-                launchSingleTop = true
+            when (target) {
+                "updater" -> {
+                    navController.navigate(Screen.Updater.route) {
+                        launchSingleTop = true
+                    }
+                }
+                "reminders" -> {
+                    navController.navigate(Screen.Reminders.route) {
+                        launchSingleTop = true
+                    }
+                }
+                "scan" -> {
+                    navController.navigate(Screen.Scan.route) {
+                        launchSingleTop = true
+                    }
+                }
             }
-            onClearPendingDestination()
         }
     }
 
@@ -137,26 +147,19 @@ fun AppNavHost(
                 SplashScreen(
                     onTimeout = {
                         val baseRoute = if (currentUser != null) Screen.Home.route else Screen.Onboarding.route
-                        if (pendingDestination == "updater") {
-                            onClearPendingDestination()
-                            navController.navigate(baseRoute) {
-                                popUpTo(Screen.Splash.route) { inclusive = true }
-                            }
-                            navController.navigate(Screen.Updater.route)
-                        } else if (pendingDestination == "reminders") {
-                            onClearPendingDestination()
-                            navController.navigate(baseRoute) {
-                                popUpTo(Screen.Splash.route) { inclusive = true }
-                            }
-                            navController.navigate(Screen.Reminders.route)
-                        } else if (currentUser != null) {
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Splash.route) { inclusive = true }
-                            }
-                        } else {
-                            navController.navigate(Screen.Onboarding.route) {
-                                popUpTo(Screen.Splash.route) { inclusive = true }
-                            }
+                        val target = pendingDestination
+                        onClearPendingDestination()
+
+                        // Pop Splash screen completely and establish baseRoute as backstack root
+                        navController.navigate(baseRoute) {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
+                        }
+
+                        // If opened via notification cold start, push destination on top of Home
+                        when (target) {
+                            "updater" -> navController.navigate(Screen.Updater.route)
+                            "reminders" -> navController.navigate(Screen.Reminders.route)
+                            "scan" -> navController.navigate(Screen.Scan.route)
                         }
                     }
                 )
@@ -247,11 +250,17 @@ fun AppNavHost(
                     scanRepository = scanRepository,
                     onAnalysisComplete = { scanRecord ->
                         navController.navigate(Screen.Result.createRoute(scanRecord.id)) {
-                            popUpTo(Screen.Analyzing.route) { inclusive = true }
+                            // Pop both ScanScreen and AnalyzingScreen off the stack so they are never revisited
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                            launchSingleTop = true
                         }
                     },
                     onAnalysisError = {
-                        navController.popBackStack()
+                        if (!navController.popBackStack()) {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        }
                     },
                     onNavigateToAiConfig = {
                         navController.navigate(Screen.AiConfig.route)
@@ -278,7 +287,14 @@ fun AppNavHost(
                 ResultScreen(
                     scanId = scanId,
                     viewModel = resultViewModel,
-                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateBack = {
+                        // Pop cleanly to Home or previous screen, never to Analyzing
+                        if (!navController.popBackStack()) {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        }
+                    },
                     onNavigateToChat = { contextMsg ->
                         navController.navigate(Screen.Chat.createRoute(contextMsg))
                     },
@@ -393,7 +409,13 @@ fun AppNavHost(
             composable(Screen.Reminders.route) {
                 com.fasaldrishti.app.ui.screens.reminders.RemindersScreen(
                     viewModel = remindersViewModel,
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = {
+                        if (!navController.popBackStack()) {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    }
                 )
             }
 
@@ -442,7 +464,13 @@ fun AppNavHost(
             composable(Screen.Updater.route) {
                 UpdaterScreen(
                     updateManager = updateManager,
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = {
+                        if (!navController.popBackStack()) {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    }
                 )
             }
 

@@ -34,6 +34,9 @@ fun UpdaterScreen(
     val autoCheckEnabled by updateManager.autoCheckEnabled.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
+    // Ensure back gesture / hardware back gracefully navigates back to Home
+    androidx.activity.compose.BackHandler(onBack = onNavigateBack)
+
     Scaffold(
         topBar = {
             Row(
