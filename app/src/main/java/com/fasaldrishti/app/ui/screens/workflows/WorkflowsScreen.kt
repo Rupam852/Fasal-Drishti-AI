@@ -1,16 +1,14 @@
 package com.fasaldrishti.app.ui.screens.workflows
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -26,6 +24,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -71,7 +70,7 @@ fun WorkflowsScreen(
             AppWorkflow(
                 id = "diagnosis",
                 title = "Crop Disease Diagnosis Pipeline",
-                shortName = "Scan to Treatment",
+                shortName = "Crop Diagnosis Engine",
                 category = "Core AI Vision Engine",
                 icon = Icons.Default.CameraAlt,
                 summary = "End-to-end diagnosis flow: from camera viewfinder capture to on-device TFLite neural inference, Room DB dossier matching, and cloud multimodal 2nd opinion.",
@@ -249,18 +248,18 @@ fun WorkflowsScreen(
                         inputSpec = "Farmer Prompt + Diagnosis Context",
                         outputSpec = "Agronomist Guardrail Prompt",
                         latencySpec = "< 5ms",
-                        icon = Icons.Default.AutoAwesome
+                        icon = Icons.Default.Rule
                     ),
                     WorkflowNode(
                         stepNumber = "04",
-                        title = "Gemini 2.5 Flash Response Generation",
-                        subtitle = "Streaming Markdown & Actionable Prescriptions",
-                        description = "Generates actionable, easy-to-follow spray advice, chemical salt safety, and field hygiene instructions. Rendered in clean markdown with bold dosage values.",
-                        techStack = "Google Gemini 2.5 Flash • OkHttp SSE",
-                        inputSpec = "Structured LLM Prompt Payload",
-                        outputSpec = "Farmer-Friendly Markdown Stream",
-                        latencySpec = "~900ms",
-                        icon = Icons.Default.ChatBubble
+                        title = "Multi-Turn Streaming Response & Audio Playback",
+                        subtitle = "Real-Time Chunk Rendering & Text-To-Speech",
+                        description = "Streams conversational agronomic advice word-by-word into chat UI. Tapping audio icon triggers Android TextToSpeech engine in the user's localized Indian dialect.",
+                        techStack = "Gemini Stream API • Android TextToSpeech",
+                        inputSpec = "Guardrail Prompt Stream",
+                        outputSpec = "Streaming Chat Bubble + Audio Playback",
+                        latencySpec = "First Token ~650ms",
+                        icon = Icons.Default.VolumeUp
                     )
                 )
             ),
@@ -393,9 +392,9 @@ fun WorkflowsScreen(
                 shortName = "Mandi Bhav & APMC",
                 category = "Market Logistics & Price Transparency",
                 icon = Icons.Default.Storefront,
-                summary = "Syncs official daily mandi arrival rates from AGMARKNET and data.gov.in, comparing current modal prices against Government Minimum Support Price (MSP).",
-                totalLatency = "~400ms Refresh",
-                capabilityBadge = "🏛️ Govt AGMARKNET Sync",
+                summary = "Fetches real-time commodity prices from Indian mandis, tracks market yard trends, and calculates Minimum Support Price (MSP) profit margins.",
+                totalLatency = "~400ms Query",
+                capabilityBadge = "📊 Real-Time Gov Open Data",
                 nodes = listOf(
                     WorkflowNode(
                         stepNumber = "01",
@@ -431,13 +430,111 @@ fun WorkflowsScreen(
                         icon = Icons.AutoMirrored.Filled.TrendingUp
                     )
                 )
+            ),
+            AppWorkflow(
+                id = "background_alarms",
+                title = "Hardware Background Reminder & Auto-Update Engine",
+                shortName = "Alarms & Auto-Updater",
+                category = "System Timing & WorkManager",
+                icon = Icons.Default.Alarm,
+                summary = "Delivers precise spray reminders even on battery-optimizing Android 14/15 phones, combined with periodic 1-hour background WorkManager release checks.",
+                totalLatency = "Exact RTC_WAKEUP (0 Drift)",
+                capabilityBadge = "⏰ Hardware AlarmManager",
+                nodes = listOf(
+                    WorkflowNode(
+                        stepNumber = "01",
+                        title = "Farmer Schedule Registration",
+                        subtitle = "Spray & Inspection Timing Capture",
+                        description = "Farmer schedules 2nd spray (e.g. 7 days post-diagnosis) or weekly monitoring in their preferred native dialect (Hindi, Bengali, Marathi, etc.).",
+                        techStack = "RemindersViewModel • Room SQLite",
+                        inputSpec = "Due Timestamp + Localized Copy",
+                        outputSpec = "FarmReminder Database Record",
+                        latencySpec = "< 3ms",
+                        icon = Icons.Default.EditCalendar
+                    ),
+                    WorkflowNode(
+                        stepNumber = "02",
+                        title = "Hardware AlarmManager Registration",
+                        subtitle = "setExactAndAllowWhileIdle RTC_WAKEUP",
+                        description = "Registers hardware-level RTC alarm using setExactAndAllowWhileIdle(). Acquires CPU Partial WakeLock for 10 seconds to guarantee alert delivery during Android 14/15 Doze Mode.",
+                        techStack = "AlarmManager • PowerManager WakeLock",
+                        inputSpec = "Exact Due Epoch Millis",
+                        outputSpec = "OS Hardware Alarm PendingIntent",
+                        latencySpec = "< 5ms",
+                        icon = Icons.Default.Alarm
+                    ),
+                    WorkflowNode(
+                        stepNumber = "03",
+                        title = "Boot Auto-Recovery & Restore",
+                        subtitle = "RECEIVE_BOOT_COMPLETED Broadcast Hook",
+                        description = "When phone reboots, BootCompletedReceiver queries active non-completed reminders from Room DB and automatically reschedules every hardware alarm.",
+                        techStack = "BootCompletedReceiver • CoroutineScope",
+                        inputSpec = "ACTION_BOOT_COMPLETED Event",
+                        outputSpec = "Restored Hardware Alarms in AlarmManager",
+                        latencySpec = "< 15ms",
+                        icon = Icons.Default.RestartAlt
+                    ),
+                    WorkflowNode(
+                        stepNumber = "04",
+                        title = "1-Hour Background WorkManager Update Check",
+                        subtitle = "Network-Constrained Release Polling",
+                        description = "WorkManager checks Render API every 1 hour only when phone is actively connected to internet. Bypasses execution when offline to conserve battery.",
+                        techStack = "AppUpdateWorker • Constraints(CONNECTED)",
+                        inputSpec = "1-Hour Periodic Trigger",
+                        outputSpec = "Version Match / Newer Release Detected",
+                        latencySpec = "~450ms (When Online)",
+                        icon = Icons.Default.Update
+                    ),
+                    WorkflowNode(
+                        stepNumber = "05",
+                        title = "Deep-Link Push Notification Delivery",
+                        subtitle = "Targeted Routing to Update / Reminder Screens",
+                        description = "Renders high-priority notification with app logo. Tapping the update alert deep-links directly into the In-App Update Screen with safe Home backstack.",
+                        techStack = "NotificationManagerCompat • DeepLink Intent",
+                        inputSpec = "PendingNotification Data",
+                        outputSpec = "Status Bar Push Notification",
+                        latencySpec = "Instant OS Dispatch",
+                        icon = Icons.Default.NotificationsActive
+                    )
+                )
             )
         )
     }
 
-    var selectedWorkflowId by remember { mutableStateOf(workflows.first().id) }
-    val currentWorkflow = workflows.firstOrNull { it.id == selectedWorkflowId } ?: workflows.first()
+    // Selected workflow state (null = directory list, non-null = flowchart detail view)
+    var selectedWorkflowId by remember { mutableStateOf<String?>(null) }
+    val selectedWorkflow = workflows.firstOrNull { it.id == selectedWorkflowId }
 
+    // Intercept hardware/system back button to return to directory view if inspecting a flowchart
+    BackHandler(enabled = selectedWorkflow != null) {
+        selectedWorkflowId = null
+    }
+
+    if (selectedWorkflow == null) {
+        // LEVEL 1: WORKFLOW DIRECTORY / SELECTION SCREEN
+        WorkflowsDirectoryView(
+            workflows = workflows,
+            onSelectWorkflow = { wf -> selectedWorkflowId = wf.id },
+            onNavigateBack = onNavigateBack
+        )
+    } else {
+        // LEVEL 2: DEDICATED ENGINEERING FLOWCHART VIEW WITH BLUEPRINT GRID
+        WorkflowFlowchartDetailView(
+            workflow = selectedWorkflow,
+            onBackToDirectory = { selectedWorkflowId = null }
+        )
+    }
+}
+
+/**
+ * Level 1 View: Directory of all available engineering workflows presented as interactive option cards.
+ */
+@Composable
+fun WorkflowsDirectoryView(
+    workflows: List<AppWorkflow>,
+    onSelectWorkflow: (AppWorkflow) -> Unit,
+    onNavigateBack: () -> Unit
+) {
     Scaffold(
         topBar = {
             Surface(
@@ -469,14 +566,14 @@ fun WorkflowsScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "System Workflows",
+                            text = "Engineering Systems",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 19.sp
                             )
                         )
                         Text(
-                            text = "Interactive Architecture & Flowcharts",
+                            text = "Interactive Architecture & Flowchart Directory",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.sp
@@ -491,87 +588,49 @@ fun WorkflowsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // 1. WORKFLOW TABS / SELECTOR (Horizontal Scrollable)
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    workflows.forEach { wf ->
-                        val isSelected = wf.id == selectedWorkflowId
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { selectedWorkflowId = wf.id },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = wf.icon,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
-                                    tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = wf.shortName,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    fontSize = 12.5.sp
-                                )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = EmeraldPrimary,
-                                selectedLabelColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                    }
-                }
-            }
-
-            // 2. ACTIVE WORKFLOW OVERVIEW CARD
+            // Header Overview Card
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.4f))
+                    border = BorderStroke(1.dp, EmeraldPrimary.copy(alpha = 0.35f))
                 ) {
                     Column(modifier = Modifier.padding(18.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = EmeraldPrimary.copy(alpha = 0.12f)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(EmeraldPrimary.copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = currentWorkflow.category.uppercase(),
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = EmeraldPrimary,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 10.sp
-                                    ),
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                Icon(
+                                    imageVector = Icons.Default.Schema,
+                                    contentDescription = null,
+                                    tint = EmeraldPrimary,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
-
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.secondaryContainer
-                            ) {
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
                                 Text(
-                                    text = currentWorkflow.capabilityBadge,
-                                    style = MaterialTheme.typography.labelSmall.copy(
+                                    text = "System Architecture Modules",
+                                    style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 10.sp
-                                    ),
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        fontSize = 15.sp
+                                    )
+                                )
+                                Text(
+                                    text = "${workflows.size} Decoupled Pipelines Active",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = EmeraldPrimary,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 11.sp
+                                    )
                                 )
                             }
                         }
@@ -579,154 +638,603 @@ fun WorkflowsScreen(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
-                            text = currentWorkflow.title,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 18.sp
+                            text = "Select any subsystem module below to open its dedicated engineering blueprint flowchart, stage-by-stage tensors, hardware delegates, and fault-tolerance branches.",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                fontSize = 12.5.sp,
+                                lineHeight = 18.sp
                             )
                         )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text = currentWorkflow.summary,
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
-                                fontSize = 13.sp,
-                                lineHeight = 19.sp
-                            )
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Speed,
-                                    contentDescription = null,
-                                    tint = EmeraldPrimary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text(
-                                    text = "Latency: ${currentWorkflow.totalLatency}",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 11.5.sp
-                                    )
-                                )
-                            }
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.AccountTree,
-                                    contentDescription = null,
-                                    tint = EmeraldPrimary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text(
-                                    text = "${currentWorkflow.nodes.size} Pipeline Stages",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 11.5.sp
-                                    )
-                                )
-                            }
-                        }
                     }
                 }
             }
 
-            // 3. FLOWCHART TITLE
+            // Section Label
             item {
-                Row(
+                Text(
+                    text = "SELECT A WORKFLOW TO INSPECT",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp,
+                        letterSpacing = 0.8.sp
+                    ),
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                )
+            }
+
+            // 7 Workflow Option Cards
+            items(workflows) { wf ->
+                WorkflowOptionCard(
+                    workflow = wf,
+                    onClick = { onSelectWorkflow(wf) }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Clickable option card representing a workflow subsystem in the directory list.
+ */
+@Composable
+fun WorkflowOptionCard(
+    workflow: AppWorkflow,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Category & Capability Badge Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = EmeraldPrimary.copy(alpha = 0.12f)
+                ) {
+                    Text(
+                        text = workflow.category.uppercase(),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = EmeraldPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.5.sp
+                        ),
+                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    Text(
+                        text = workflow.capabilityBadge,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.5.sp
+                        ),
+                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Icon + Title & Short Summary
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .size(46.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            Brush.linearGradient(listOf(EmeraldPrimary.copy(alpha = 0.2f), EmeraldDark.copy(alpha = 0.3f)))
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Schema,
+                        imageVector = workflow.icon,
                         contentDescription = null,
                         tint = EmeraldPrimary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(24.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Interactive Architecture Flowchart",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.ExtraBold,
+                        text = workflow.title,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
                             fontSize = 15.sp
                         )
                     )
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = workflow.summary,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 11.5.sp,
+                            lineHeight = 16.sp
+                        ),
+                        maxLines = 2
+                    )
                 }
             }
 
-            // 4. FLOWCHART NODES & CONNECTOR ARROWS
-            itemsIndexed(currentWorkflow.nodes) { index, node ->
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    FlowchartNodeCard(
-                        node = node
-                    )
+            Spacer(modifier = Modifier.height(14.dp))
 
-                    // Draw connecting arrow if not last node
-                    if (index < currentWorkflow.nodes.size - 1) {
-                        FlowchartConnectorArrow(
-                            isDecisionNode = node.isDecisionNode,
-                            branchA = node.branchA,
-                            branchB = node.branchB
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f),
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
+
+            // Bottom Specs & Call to action
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.AccountTree,
+                            contentDescription = null,
+                            tint = EmeraldPrimary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${workflow.nodes.size} Stages",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Speed,
+                            contentDescription = null,
+                            tint = EmeraldPrimary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = workflow.totalLatency,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 11.sp
+                            )
                         )
                     }
                 }
-            }
 
-            // 5. SYSTEM ARCHITECTURE SUMMARY BANNER
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(EmeraldPrimary.copy(alpha = 0.1f))
+                        .padding(horizontal = 9.dp, vertical = 5.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
+                    Text(
+                        text = "Inspect Flowchart",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = EmeraldPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = EmeraldPrimary,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Level 2 View: Dedicated Engineering Blueprint Flowchart with technical grid background.
+ */
+@Composable
+fun WorkflowFlowchartDetailView(
+    workflow: AppWorkflow,
+    onBackToDirectory: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 2.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        onClick = onBackToDirectory,
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.size(38.dp)
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = EmeraldPrimary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Engineering Architecture Notes",
-                                style = MaterialTheme.typography.titleSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 13.sp
-                                )
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back to Workflows",
+                                modifier = Modifier.size(20.dp)
                             )
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Fasal Drishti AI utilizes a decoupled edge-first design: offline neural inference runs locally on the mobile processor without sending images over cellular networks unless the farmer explicitly requests cloud 2nd-tier multimodal verification. All technical pipelines are optimized for zero battery drain and low memory footprints.",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 11.5.sp,
-                                lineHeight = 17.sp
+                            text = workflow.title,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 16.sp
+                            ),
+                            maxLines = 1
+                        )
+                        Text(
+                            text = "Engineering Blueprint Flowchart • ${workflow.nodes.size} Stages",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = EmeraldPrimary,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 11.sp
                             )
+                        )
+                    }
+
+                    Surface(
+                        onClick = onBackToDirectory,
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Text(
+                            text = "All Workflows",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.5.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
                         )
                     }
                 }
             }
         }
+    ) { innerPadding ->
+        // Engineering Technical CAD / Blueprint Grid Canvas
+        EngineeringGridBackground(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                // Header Blueprint Summary Card
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.5.dp, EmeraldPrimary.copy(alpha = 0.5f))
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = EmeraldPrimary.copy(alpha = 0.12f)
+                                ) {
+                                    Text(
+                                        text = "📐 SYSTEM BLUEPRINT: ${workflow.category.uppercase()}",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = EmeraldPrimary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 9.5.sp
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                                    )
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer
+                                ) {
+                                    Text(
+                                        text = workflow.capabilityBadge,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 9.5.sp
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = workflow.summary,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+                                    fontSize = 12.sp,
+                                    lineHeight = 17.sp
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Speed,
+                                        contentDescription = null,
+                                        tint = EmeraldPrimary,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Latency: ${workflow.totalLatency}",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        )
+                                    )
+                                }
+
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.AccountTree,
+                                        contentDescription = null,
+                                        tint = EmeraldPrimary,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "${workflow.nodes.size} Pipeline Nodes",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                // 1. FLOWCHART START TERMINAL
+                item {
+                    FlowchartTerminalNode(
+                        label = "START: Pipeline Trigger & Specimen Intake",
+                        isStart = true
+                    )
+                    FlowchartConnectorPipe()
+                }
+
+                // 2. FLOWCHART NODES & PIPES
+                itemsIndexed(workflow.nodes) { index, node ->
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        FlowchartNodeCard(node = node)
+
+                        if (index < workflow.nodes.size - 1) {
+                            FlowchartConnectorArrow(
+                                isDecisionNode = node.isDecisionNode,
+                                branchA = node.branchA,
+                                branchB = node.branchB
+                            )
+                        } else {
+                            FlowchartConnectorPipe()
+                        }
+                    }
+                }
+
+                // 3. FLOWCHART END TERMINAL
+                item {
+                    FlowchartTerminalNode(
+                        label = "END: Pipeline Execution Completed (Action Ready)",
+                        isStart = false
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Return Button
+                    Button(
+                        onClick = onBackToDirectory,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Back to All System Workflows",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Technical drafting graph-paper / blueprint grid canvas drawn on the background.
+ */
+@Composable
+fun EngineeringGridBackground(
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit
+) {
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val gridColor = if (isDark) Color(0xFF10B981).copy(alpha = 0.05f) else Color(0xFF0F172A).copy(alpha = 0.045f)
+    val dotColor = if (isDark) Color(0xFF10B981).copy(alpha = 0.14f) else Color(0xFF0F172A).copy(alpha = 0.09f)
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .drawBehind {
+                val step = 26.dp.toPx()
+                val width = size.width
+                val height = size.height
+
+                // Draw vertical technical lines
+                var x = 0f
+                while (x <= width) {
+                    drawLine(
+                        color = gridColor,
+                        start = androidx.compose.ui.geometry.Offset(x, 0f),
+                        end = androidx.compose.ui.geometry.Offset(x, height),
+                        strokeWidth = 1f
+                    )
+                    x += step
+                }
+
+                // Draw horizontal technical lines
+                var y = 0f
+                while (y <= height) {
+                    drawLine(
+                        color = gridColor,
+                        start = androidx.compose.ui.geometry.Offset(0f, y),
+                        end = androidx.compose.ui.geometry.Offset(width, y),
+                        strokeWidth = 1f
+                    )
+                    y += step
+                }
+
+                // Draw technical cross-dots at intersections every 2nd grid point
+                val dotStep = step * 2
+                var dotX = 0f
+                while (dotX <= width) {
+                    var dotY = 0f
+                    while (dotY <= height) {
+                        drawCircle(
+                            color = dotColor,
+                            radius = 1.8f,
+                            center = androidx.compose.ui.geometry.Offset(dotX, dotY)
+                        )
+                        dotY += dotStep
+                    }
+                    dotX += dotStep
+                }
+            }
+    ) {
+        content()
+    }
+}
+
+/**
+ * Terminal start/end pill node in standard flowchart engineering syntax.
+ */
+@Composable
+fun FlowchartTerminalNode(
+    label: String,
+    isStart: Boolean
+) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = if (isStart) EmeraldPrimary.copy(alpha = 0.15f) else Color(0xFF3B82F6).copy(alpha = 0.15f),
+            border = BorderStroke(
+                width = 1.5.dp,
+                color = if (isStart) EmeraldPrimary else Color(0xFF3B82F6)
+            ),
+            modifier = Modifier.padding(horizontal = 24.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(if (isStart) EmeraldPrimary else Color(0xFF3B82F6))
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = if (isStart) EmeraldPrimary else Color(0xFF3B82F6),
+                        fontSize = 11.5.sp,
+                        letterSpacing = 0.5.sp
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FlowchartConnectorPipe() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .width(2.5.dp)
+                .height(16.dp)
+                .background(EmeraldPrimary.copy(alpha = 0.7f))
+        )
+        Icon(
+            imageVector = Icons.Default.ArrowDownward,
+            contentDescription = null,
+            tint = EmeraldPrimary,
+            modifier = Modifier.size(16.dp)
+        )
     }
 }
 
@@ -742,7 +1250,7 @@ fun FlowchartNodeCard(
             .clickable { expanded = !expanded },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (node.isDecisionNode) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.surface
+            containerColor = if (node.isDecisionNode) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f) else MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(
             width = if (node.isDecisionNode) 1.5.dp else 1.dp,
@@ -942,7 +1450,7 @@ fun FlowchartConnectorArrow(
         ) {
             Box(
                 modifier = Modifier
-                    .width(2.dp)
+                    .width(2.5.dp)
                     .height(14.dp)
                     .background(Color(0xFFF59E0B))
             )
@@ -1007,7 +1515,7 @@ fun FlowchartConnectorArrow(
 
             Box(
                 modifier = Modifier
-                    .width(2.dp)
+                    .width(2.5.dp)
                     .height(14.dp)
                     .background(EmeraldPrimary)
             )
@@ -1028,9 +1536,9 @@ fun FlowchartConnectorArrow(
         ) {
             Box(
                 modifier = Modifier
-                    .width(2.dp)
+                    .width(2.5.dp)
                     .height(14.dp)
-                    .background(EmeraldPrimary.copy(alpha = 0.6f))
+                    .background(EmeraldPrimary.copy(alpha = 0.7f))
             )
             Icon(
                 imageVector = Icons.Default.ArrowDownward,
