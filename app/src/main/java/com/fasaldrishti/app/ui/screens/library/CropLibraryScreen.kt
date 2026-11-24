@@ -30,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fasaldrishti.app.data.local.AppLanguage
+import com.fasaldrishti.app.data.local.LanguageManager
 import com.fasaldrishti.app.domain.model.DiseaseInfo
 import com.fasaldrishti.app.domain.repository.DiseaseRepository
 import com.fasaldrishti.app.ui.components.AccordionCard
@@ -48,37 +50,63 @@ data class IndianCropCategory(
 @Composable
 fun CropLibraryScreen(
     diseaseRepository: DiseaseRepository,
+    languageManager: LanguageManager? = null,
     onNavigateBack: () -> Unit,
     onNavigateToChat: ((String) -> Unit)? = null
 ) {
+    val globalLanguage by (languageManager?.currentLanguage ?: kotlinx.coroutines.flow.MutableStateFlow(AppLanguage.ENGLISH)).collectAsState()
+    var localLangCode by remember(globalLanguage) { mutableStateOf(globalLanguage.code) }
+    var showLanguageDropdown by remember { mutableStateOf(false) }
+
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategoryId by remember { mutableStateOf("All") }
     var diseases by remember { mutableStateOf<List<DiseaseInfo>>(emptyList()) }
     var selectedDiseaseForSheet by remember { mutableStateOf<DiseaseInfo?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    val languages = listOf(
+        "en" to "English",
+        "hi" to "हिन्दी",
+        "bn" to "বাংলা",
+        "mr" to "मराठी",
+        "pa" to "ਪੰਜਾਬੀ",
+        "te" to "తెలుగు",
+        "ta" to "தமிழ்",
+        "gu" to "ગુજરાતી"
+    )
+
     LaunchedEffect(Unit) {
         val res = diseaseRepository.getAllDiseases()
         diseases = res.getOrDefault(emptyList())
     }
 
-    val indianCrops = listOf(
-        IndianCropCategory("All", "All Crops", "🌿"),
-        IndianCropCategory("Rice", "Rice", "🌾"),
-        IndianCropCategory("Wheat", "Wheat", "🌾"),
-        IndianCropCategory("Cotton", "Cotton", "🌿"),
-        IndianCropCategory("Sugarcane", "Sugarcane", "🎋"),
-        IndianCropCategory("Chilli", "Chilli", "🌶️"),
-        IndianCropCategory("Mustard", "Mustard", "🟡"),
-        IndianCropCategory("Mango", "Mango", "🥭"),
-        IndianCropCategory("Tomato", "Tomato", "🍅"),
-        IndianCropCategory("Potato", "Potato", "🥔"),
-        IndianCropCategory("Corn", "Corn", "🌽"),
-        IndianCropCategory("Soybean", "Soybean", "🫘"),
-        IndianCropCategory("Citrus", "Citrus", "🍊"),
-        IndianCropCategory("Grape", "Grape", "🍇"),
-        IndianCropCategory("Apple", "Apple", "🍎")
+    val baseCrops = listOf(
+        "All" to "🌿",
+        "Rice" to "🌾",
+        "Wheat" to "🌾",
+        "Cotton" to "🌿",
+        "Sugarcane" to "🎋",
+        "Chilli" to "🌶️",
+        "Mustard" to "🟡",
+        "Mango" to "🥭",
+        "Tomato" to "🍅",
+        "Potato" to "🥔",
+        "Corn" to "🌽",
+        "Soybean" to "🫘",
+        "Citrus" to "🍊",
+        "Grape" to "🍇",
+        "Apple" to "🍎"
     )
+
+    val indianCrops = remember(localLangCode) {
+        baseCrops.map { (cropId, icon) ->
+            IndianCropCategory(
+                id = cropId,
+                label = getLocalizedCropCategoryName(cropId, localLangCode),
+                icon = icon
+            )
+        }
+    }
 
     val filteredDiseases = diseases.filter { d ->
         val query = searchQuery.trim()
@@ -125,22 +153,82 @@ fun CropLibraryScreen(
                             )
                         }
                     }
+
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Crop Pathology Library",
+                            text = getLibraryTitle(localLangCode),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.ExtraBold,
-                                fontSize = 19.sp
+                                fontSize = 18.sp
                             )
                         )
                         Text(
-                            text = "Disease Knowledge Base & Agronomy Treatments",
+                            text = getLibrarySubtitle(localLangCode),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
                                 fontSize = 11.5.sp
                             )
                         )
+                    }
+
+                    // Language Selector Pill with Dropdown
+                    Box {
+                        Surface(
+                            onClick = { showLanguageDropdown = true },
+                            shape = RoundedCornerShape(20.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.padding(start = 6.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Translate,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = languages.find { it.first == localLangCode }?.second ?: "English",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        DropdownMenu(
+                            expanded = showLanguageDropdown,
+                            onDismissRequest = { showLanguageDropdown = false }
+                        ) {
+                            languages.forEach { (code, name) ->
+                                DropdownMenuItem(
+                                    text = { Text(name) },
+                                    onClick = {
+                                        localLangCode = code
+                                        val appLang = AppLanguage.entries.find { it.code == code }
+                                        if (appLang != null && languageManager != null) {
+                                            languageManager.setLanguage(appLang)
+                                        }
+                                        showLanguageDropdown = false
+                                    },
+                                    leadingIcon = if (localLangCode == code) {
+                                        { Icon(Icons.Default.Check, contentDescription = null, tint = EmeraldPrimary) }
+                                    } else null
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -157,64 +245,71 @@ fun CropLibraryScreen(
                         onValueChange = { searchQuery = it },
                         placeholder = { 
                             Text(
-                                "Search crop, disease, or chemical treatment...",
-                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                getSearchPlaceholder(localLangCode),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp)
                             ) 
                         },
-                        leadingIcon = { 
+                        leadingIcon = {
                             Icon(
-                                Icons.Default.Search, 
-                                contentDescription = null, 
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            ) 
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
                         },
                         trailingIcon = {
-                            if (searchQuery.isNotBlank()) {
+                            if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = "Clear search", modifier = Modifier.size(18.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = "Clear",
+                                        tint = MaterialTheme.colorScheme.outline,
+                                        modifier = Modifier.size(18.dp)
+                                    )
                                 }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
                         shape = RoundedCornerShape(22.dp),
-                        singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Transparent,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
-                        )
+                            unfocusedBorderColor = Color.Transparent
+                        ),
+                        singleLine = true
                     )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
+                // Crop Filter Chips
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 2.dp)
                 ) {
                     items(indianCrops) { cat ->
                         val isSelected = selectedCategoryId == cat.id
                         Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.surfaceVariant,
+                            onClick = { selectedCategoryId = cat.id },
+                            shape = RoundedCornerShape(20.dp),
+                            color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                             border = androidx.compose.foundation.BorderStroke(
-                                1.dp,
-                                if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
-                            ),
-                            modifier = Modifier.clickable { selectedCategoryId = cat.id }
+                                width = 1.dp,
+                                color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                            )
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Text(text = cat.icon, fontSize = 14.sp)
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "${cat.icon} ${cat.label}",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 12.sp
+                                    text = cat.label,
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                        color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface
                                     )
                                 )
                             }
@@ -263,6 +358,10 @@ fun CropLibraryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(filteredDiseases) { disease ->
+                    val displayCropName = if (localLangCode != "en" && !disease.cropHindi.isNullOrBlank()) disease.cropHindi.uppercase() else disease.cropName.uppercase()
+                    val displayDiseaseName = if (localLangCode != "en" && !disease.diseaseHindi.isNullOrBlank()) disease.diseaseHindi else disease.diseaseName
+                    val displayTreatment = if (localLangCode != "en" && !disease.treatmentHindi.isNullOrBlank()) disease.treatmentHindi else disease.treatment
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -299,7 +398,7 @@ fun CropLibraryScreen(
                             Spacer(modifier = Modifier.height(10.dp))
 
                             Text(
-                                text = disease.cropName.uppercase(),
+                                text = displayCropName,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold,
@@ -311,7 +410,7 @@ fun CropLibraryScreen(
                             )
                             Spacer(modifier = Modifier.height(3.dp))
                             Text(
-                                text = disease.diseaseName,
+                                text = displayDiseaseName,
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.5.sp
@@ -327,7 +426,7 @@ fun CropLibraryScreen(
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                             ) {
                                 Text(
-                                    text = if (disease.isHealthy) "Healthy Stand" else "Dosage: ${disease.treatment.take(45)}...",
+                                    text = if (disease.isHealthy) "Healthy Stand" else "Dosage: ${displayTreatment.take(45)}...",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontSize = 9.5.sp,
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -352,6 +451,11 @@ fun CropLibraryScreen(
                 containerColor = MaterialTheme.colorScheme.surface
             ) {
                 val d = selectedDiseaseForSheet!!
+                val sheetCrop = if (localLangCode != "en" && !d.cropHindi.isNullOrBlank()) d.cropHindi.uppercase() else d.cropName.uppercase()
+                val sheetDisease = if (localLangCode != "en" && !d.diseaseHindi.isNullOrBlank()) d.diseaseHindi else d.diseaseName
+                val sheetSymptoms = if (localLangCode != "en" && !d.symptomsHindi.isNullOrBlank()) d.symptomsHindi else d.symptoms
+                val sheetTreatment = if (localLangCode != "en" && !d.treatmentHindi.isNullOrBlank()) d.treatmentHindi else d.treatment
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -367,7 +471,7 @@ fun CropLibraryScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = d.cropName.uppercase(),
+                                text = sheetCrop,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold,
@@ -375,7 +479,7 @@ fun CropLibraryScreen(
                                 )
                             )
                             Text(
-                                text = d.diseaseName,
+                                text = sheetDisease,
                                 style = MaterialTheme.typography.headlineSmall.copy(
                                     fontWeight = FontWeight.ExtraBold,
                                     fontSize = 19.sp
@@ -388,23 +492,23 @@ fun CropLibraryScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
                     AccordionCard(
-                        title = "Symptoms & Identification",
+                        title = getSymptomsSectionTitle(localLangCode),
                         icon = Icons.Default.Coronavirus,
-                        content = d.symptoms,
+                        content = sheetSymptoms,
                         initiallyExpanded = true,
                         accentColor = CrimsonCoral
                     )
 
                     AccordionCard(
-                        title = "Chemical Treatment & Dosage",
+                        title = getTreatmentSectionTitle(localLangCode),
                         icon = Icons.Default.Science,
-                        content = d.treatment,
+                        content = sheetTreatment,
                         initiallyExpanded = true,
                         accentColor = SolarGold
                     )
 
                     AccordionCard(
-                        title = "Organic Control & Prevention",
+                        title = getOrganicSectionTitle(localLangCode),
                         icon = Icons.Default.Shield,
                         content = d.prevention,
                         initiallyExpanded = false,
@@ -430,7 +534,7 @@ fun CropLibraryScreen(
                             Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Consult AI Salah",
+                                text = if (localLangCode == "hi") "AI सलाहकार से पूछें" else if (localLangCode == "bn") "AI পরামর্শদাতার সাথে কথা বলুন" else "Consult AI Salahkar",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )
@@ -442,4 +546,123 @@ fun CropLibraryScreen(
             }
         }
     }
+}
+
+private fun getLibraryTitle(lang: String): String = when (lang) {
+    "hi" -> "फसल रोग ज्ञानकोष"
+    "bn" -> "ফসল রোগ জ্ঞানকোষ"
+    "mr" -> "पीक रोग ज्ञानकोष"
+    "pa" -> "ਫ਼ਸਲ ਰੋਗ ਗਿਆਨ ਕੋਸ਼"
+    "te" -> "పంట వ్యాధుల గ్రంథాలయం"
+    "ta" -> "பயிர் நோய் நூலகம்"
+    "gu" -> "પાક રોગ જ્ઞાનકોશ"
+    else -> "Crop Pathology Library"
+}
+
+private fun getLibrarySubtitle(lang: String): String = when (lang) {
+    "hi" -> "रोग लक्षण, वैज्ञानिक पहचान एवं सटीक उपचार"
+    "bn" -> "রোগের লক্ষণ, বৈজ্ঞানিক নির্ণয় ও প্রতিকার"
+    "mr" -> "रोगांची लक्षणे, शास्त्रीय निदान व उपचार"
+    "pa" -> "ਰੋਗ ਦੇ ਲੱਛਣ ਅਤੇ ਖੇਤੀਬਾੜੀ ਇਲਾਜ"
+    "te" -> "వ్యాధి లక్షణాలు మరియు శాస్త్రీయ చికిత్సలు"
+    "ta" -> "நோய் அறிகுறிகள் மற்றும் தீர்வுகள்"
+    "gu" -> "રોગના લક્ષણો અને વૈજ્ઞાનિક ઉપચાર"
+    else -> "Disease Knowledge Base & Agronomy Treatments"
+}
+
+private fun getSearchPlaceholder(lang: String): String = when (lang) {
+    "hi" -> "फसल, रोग या रासायनिक उपचार खोजें..."
+    "bn" -> "ফসল, রোগ বা রাসায়নিক চিকিৎসা খুঁজুন..."
+    "mr" -> "पीक, रोग किंवा औषधाचे नाव शोधा..."
+    else -> "Search crop, disease, or chemical treatment..."
+}
+
+private fun getSymptomsSectionTitle(lang: String): String = when (lang) {
+    "hi" -> "रोग के लक्षण एवं पहचान"
+    "bn" -> "রোগের লক্ষণ ও শনাক্তকরণ"
+    "mr" -> "रोगाची लक्षणे व ओळख"
+    else -> "Symptoms & Identification"
+}
+
+private fun getTreatmentSectionTitle(lang: String): String = when (lang) {
+    "hi" -> "रासायनिक उपचार एवं सटीक खुराक"
+    "bn" -> "রাসায়নিক চিকিৎসা ও মাত্রা"
+    "mr" -> "रासायनिक उपचार व मात्रा"
+    else -> "Chemical Treatment & Dosage"
+}
+
+private fun getOrganicSectionTitle(lang: String): String = when (lang) {
+    "hi" -> "जैविक नियंत्रण एवं खेत की रोकथाम"
+    "bn" -> "জৈব নিয়ন্ত্রণ ও প্রতিরোধ ব্যবস্থা"
+    "mr" -> "सेंद्रिय नियंत्रण व प्रतिबंध"
+    else -> "Organic Control & Prevention"
+}
+
+private fun getLocalizedCropCategoryName(cropId: String, lang: String): String = when (lang) {
+    "hi" -> when (cropId) {
+        "All" -> "सभी फसलें"
+        "Rice" -> "धान (Rice)"
+        "Wheat" -> "गेहूं (Wheat)"
+        "Cotton" -> "कपास (Cotton)"
+        "Sugarcane" -> "गन्ना (Sugarcane)"
+        "Chilli" -> "मिर्च (Chilli)"
+        "Mustard" -> "सरसों (Mustard)"
+        "Mango" -> "आम (Mango)"
+        "Tomato" -> "टमाटर (Tomato)"
+        "Potato" -> "आलू (Potato)"
+        "Corn" -> "मक्का (Corn)"
+        "Soybean" -> "सोयाबीन (Soybean)"
+        "Citrus" -> "नींबू (Citrus)"
+        "Grape" -> "अंगूर (Grape)"
+        "Apple" -> "सेब (Apple)"
+        else -> cropId
+    }
+    "bn" -> when (cropId) {
+        "All" -> "সব ফসল"
+        "Rice" -> "ধান (Rice)"
+        "Wheat" -> "গম (Wheat)"
+        "Cotton" -> "তুলা (Cotton)"
+        "Sugarcane" -> "আখ (Sugarcane)"
+        "Chilli" -> "লঙ্কা (Chilli)"
+        "Mustard" -> "সরিষা (Mustard)"
+        "Mango" -> "আম (Mango)"
+        "Tomato" -> "টমেটো (Tomato)"
+        "Potato" -> "আলু (Potato)"
+        "Corn" -> "ভুট্টা (Corn)"
+        "Soybean" -> "সয়াবিন (Soybean)"
+        "Citrus" -> "লেবু (Citrus)"
+        "Grape" -> "আঙুর (Grape)"
+        "Apple" -> "আপেল (Apple)"
+        else -> cropId
+    }
+    "mr" -> when (cropId) {
+        "All" -> "सर्व पिके"
+        "Rice" -> "भात (Rice)"
+        "Wheat" -> "गहू (Wheat)"
+        "Cotton" -> "कापूस (Cotton)"
+        "Sugarcane" -> "ऊस (Sugarcane)"
+        "Chilli" -> "मिरची (Chilli)"
+        "Mustard" -> "मोहरी (Mustard)"
+        "Mango" -> "आंबा (Mango)"
+        "Tomato" -> "टोमॅटो (Tomato)"
+        "Potato" -> "बटाटा (Potato)"
+        "Corn" -> "मका (Corn)"
+        "Soybean" -> "सोयाबीन (Soybean)"
+        "Citrus" -> "संत्री/लिंबू"
+        "Grape" -> "द्राक्षे (Grape)"
+        "Apple" -> "सफरचंद (Apple)"
+        else -> cropId
+    }
+    "pa" -> when (cropId) {
+        "All" -> "ਸਾਰੀਆਂ ਫਸਲਾਂ"
+        "Rice" -> "ਝੋਨਾ (Rice)"
+        "Wheat" -> "ਕਣਕ (Wheat)"
+        "Cotton" -> "ਨਰਮਾ (Cotton)"
+        "Sugarcane" -> "ਗੰਨਾ (Sugarcane)"
+        "Tomato" -> "ਟਮਾਟਰ (Tomato)"
+        "Potato" -> "ਆਲੂ (Potato)"
+        "Mustard" -> "ਸਰ੍ਹੋਂ (Mustard)"
+        else -> cropId
+    }
+    else -> if (cropId == "All") "All Crops" else cropId
 }

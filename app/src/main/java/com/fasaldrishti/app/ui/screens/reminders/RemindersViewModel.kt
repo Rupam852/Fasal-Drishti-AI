@@ -195,6 +195,77 @@ class RemindersViewModel(
         }
     }
 
+    fun sendImmediateTestNotification() {
+        val targetLang = _selectedLanguage.value
+        val (title, msg) = when (targetLang) {
+            "hi" -> Pair("🌾 फसल दृष्टि टेस्ट अलर्ट 💧", "[लाइव टेस्ट] आपका नोटिफिकेशन सिस्टम बिल्कुल सही काम कर रहा है! (टैप करके रिमाइंडर्स देखें)")
+            "bn" -> Pair("🌾 ফসল দৃষ্টি টেস্ট অ্যালার্ট 💧", "[লাইভ টেস্ট] আপনার নোটিফিকেশন সিস্টেম নিখুঁতভাবে কাজ করছে! (ট্যাপ করে রিমাইন্ডার দেখুন)")
+            "mr" -> Pair("🌾 पीक दृष्टी चाचणी सूचना 💧", "[थेट चाचणी] तुमची सूचना प्रणाली सुरळीत सुरू आहे! (तपशील पाहण्यासाठी टॅप करा)")
+            else -> Pair("🌾 Fasal Drishti Live Test 💧", "[LIVE TEST] Notification system is working perfectly on this phone! (Tap to open)")
+        }
+
+        CropReminderWorker.createNotificationChannel(context)
+        val intent = android.content.Intent(context, com.fasaldrishti.app.MainActivity::class.java).apply {
+            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("destination", "reminders")
+        }
+        val pendingIntent = android.app.PendingIntent.getActivity(
+            context,
+            77777,
+            intent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = androidx.core.app.NotificationCompat.Builder(context, CropReminderWorker.CHANNEL_ID)
+            .setSmallIcon(com.fasaldrishti.app.R.drawable.app_logo)
+            .setContentTitle(title)
+            .setContentText(msg)
+            .setStyle(androidx.core.app.NotificationCompat.BigTextStyle().bigText(msg))
+            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        try {
+            androidx.core.app.NotificationManagerCompat.from(context).notify(77777, notification)
+            android.widget.Toast.makeText(context, "⚡ Notification sent! Check status bar.", android.widget.Toast.LENGTH_SHORT).show()
+        } catch (e: SecurityException) {
+            android.widget.Toast.makeText(context, "Permission error: Please allow notifications", android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
+
+    fun scheduleDelayed10SecNotification() {
+        val targetLang = _selectedLanguage.value
+        val (title, msg) = when (targetLang) {
+            "hi" -> Pair("🌾 फसल दृष्टि बैकग्राउंड टेस्ट ✅", "[10-सेकंड टेस्ट] ऐप बैकग्राउंड में बंद होने के बाद भी नोटिफिकेशन सफलतापूर्वक पहुंच गया!")
+            "bn" -> Pair("🌾 ফসল দৃষ্টি ব্যাকগ্রাউন্ড টেস্ট ✅", "[১০-সেকেন্ড টেস্ট] অ্যাপ বন্ধ থাকা সত্ত্বেও ব্যাকগ্রাউন্ড নোটিফিকেশন সফলভাবে এসেছে!")
+            "mr" -> Pair("🌾 पीक दृष्टी बॅकग्राउंड चाचणी ✅", "[१० सेकंद चाचणी] ॲप बंद असतानाही बॅकग्राउंड सूचना यशस्वीपणे आली!")
+            else -> Pair("🌾 Fasal Drishti Background Test ✅", "[10-SEC TEST] Success! Notification arrived while app was closed or in background.")
+        }
+
+        val alarmManager = context.getSystemService(android.content.Context.ALARM_SERVICE) as? android.app.AlarmManager
+        val intent = android.content.Intent(context, com.fasaldrishti.app.worker.TestReminderReceiver::class.java).apply {
+            putExtra("test_title", title)
+            putExtra("test_message", msg)
+        }
+        val pendingIntent = android.app.PendingIntent.getBroadcast(
+            context,
+            com.fasaldrishti.app.worker.TestReminderReceiver.TEST_NOTIFICATION_ID,
+            intent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val triggerAt = System.currentTimeMillis() + 10000L // exactly 10 seconds
+        if (alarmManager != null) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+            } else {
+                alarmManager.set(android.app.AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+            }
+        }
+        android.widget.Toast.makeText(context, "⏰ 10-Second Countdown Started! Close/minimize app now to test.", android.widget.Toast.LENGTH_LONG).show()
+    }
+
     override fun onCleared() {
         super.onCleared()
         ttsHelper.shutdown()
