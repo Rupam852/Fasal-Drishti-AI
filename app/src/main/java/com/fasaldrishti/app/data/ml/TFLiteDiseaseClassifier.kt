@@ -41,32 +41,13 @@ class TFLiteDiseaseClassifier(private val context: Context) {
     private fun loadModel() {
         try {
             val buffer = FileUtil.loadMappedFile(context, modelFileName)
-
-            // 1. Attempt NNAPI acceleration first
-            var createdInterpreter: Interpreter? = null
-            try {
-                val nnapiOptions = Interpreter.Options().apply {
-                    setNumThreads(4)
-                    setUseNNAPI(true)
-                }
-                createdInterpreter = Interpreter(buffer, nnapiOptions)
-                Log.d(TAG, "Successfully initialized On-Device TFLite model ($modelFileName) with NNAPI")
-            } catch (nnapiEx: Throwable) {
-                Log.w(TAG, "NNAPI acceleration unavailable on this device, falling back to CPU: ${nnapiEx.message}")
+            val cpuOptions = Interpreter.Options().apply {
+                setNumThreads(4)
+                setUseNNAPI(false) // Pure XNNPACK CPU acceleration - rock-solid on all devices
             }
-
-            // 2. Fall back to standard multi-thread CPU if NNAPI fails or is unsupported
-            if (createdInterpreter == null) {
-                val cpuOptions = Interpreter.Options().apply {
-                    setNumThreads(4)
-                    setUseNNAPI(false)
-                }
-                createdInterpreter = Interpreter(buffer, cpuOptions)
-                Log.d(TAG, "Successfully initialized On-Device TFLite model ($modelFileName) with 4-Thread CPU")
-            }
-
-            interpreter = createdInterpreter
-        } catch (e: Exception) {
+            interpreter = Interpreter(buffer, cpuOptions)
+            Log.d(TAG, "Successfully initialized On-Device TFLite model ($modelFileName) with CPU XNNPACK")
+        } catch (e: Throwable) {
             Log.e(TAG, "Critical failure loading TFLite model ($modelFileName)", e)
             interpreter = null
         }
@@ -140,19 +121,70 @@ class TFLiteDiseaseClassifier(private val context: Context) {
     }
 
     fun classifyImage(imageFile: File): OnDevicePrediction {
-        val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
-        return classifyBitmap(bitmap)
+        if (!imageFile.exists() || imageFile.length() == 0L) {
+            Log.e(TAG, "classifyImage: Image file does not exist or is empty (${imageFile.absolutePath})")
+            return OnDevicePrediction("Invalid_Crop", 0.0f, emptyList())
+        }
+
+        val bitmap = try {
+            val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(imageFile.absolutePath, boundsOptions)
+
+            val maxDim = maxOf(boundsOptions.outWidth, boundsOptions.outHeight)
+            var sampleSize = 1
+            while (maxDim / (sampleSize * 2) >= 224) {
+                sampleSize *= 2
+            }
+
+            val decodeOptions = BitmapFactory.Options().apply {
+                inSampleSize = sampleSize
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+            }
+            BitmapFactory.decodeFile(imageFile.absolutePath, decodeOptions)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Failed to decode image file: ${imageFile.absolutePath}", t)
+            null
+        }
+
+        return if (bitmap != null) {
+            classifyBitmap(bitmap)
+        } else {
+            OnDevicePrediction("Invalid_Crop", 0.0f, emptyList())
+        }
     }
 
     fun classifyBitmap(bitmap: Bitmap): OnDevicePrediction {
+        if (bitmap.isRecycled) {
+            Log.e(TAG, "classifyBitmap: Provided bitmap is recycled")
+            return OnDevicePrediction("Invalid_Crop", 0.0f, emptyList())
+        }
+
+        // Ensure software ARGB_8888 bitmap to prevent HARDWARE bitmap crashes on modern Android
+        val safeBitmap = try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O && bitmap.config == Bitmap.Config.HARDWARE) {
+                bitmap.copy(Bitmap.Config.ARGB_8888, false) ?: bitmap
+            } else {
+                bitmap
+            }
+        } catch (t: Throwable) {
+            bitmap
+        }
+
         // 1. Run Pre-Inference Foliage Quality Guard
-        val isAuthenticFoliage = checkFoliageQuality(bitmap)
+        val isAuthenticFoliage = checkFoliageQuality(safeBitmap)
         if (!isAuthenticFoliage) {
             return OnDevicePrediction(
                 predictedClass = "Invalid_Crop",
                 confidence = 0.08f,
                 top3 = listOf("Invalid_Crop" to 0.08f)
             )
+        }
+
+        if (interpreter == null) {
+            loadModel()
+        }
+        if (labels.isEmpty()) {
+            loadLabels()
         }
 
         // 2. Neural Network Inference
@@ -164,20 +196,15 @@ class TFLiteDiseaseClassifier(private val context: Context) {
                     .build()
 
                 var tensorImage = TensorImage(org.tensorflow.lite.DataType.FLOAT32)
-                tensorImage.load(bitmap)
+                tensorImage.load(safeBitmap)
                 tensorImage = imageProcessor.process(tensorImage)
 
-                // Prepare output buffer for 43 classes
-                val outputBuffer = TensorBuffer.createFixedSize(
-                    intArrayOf(1, labels.size),
-                    org.tensorflow.lite.DataType.FLOAT32
-                )
-
-                // Execute on-device neural network
-                interpreter?.run(tensorImage.buffer, outputBuffer.buffer.rewind())
+                // Direct native 2D float array (zero buffer position / byte underflow issues)
+                val outputScores = Array(1) { FloatArray(labels.size) }
+                interpreter?.run(tensorImage.buffer.rewind(), outputScores)
 
                 // Extract and rank softmax probabilities
-                val probabilities = outputBuffer.floatArray
+                val probabilities = outputScores[0]
                 val indexedScores = probabilities.indices.map { idx ->
                     val label = if (idx < labels.size) labels[idx] else "Class_$idx"
                     label to probabilities[idx]
@@ -191,8 +218,8 @@ class TFLiteDiseaseClassifier(private val context: Context) {
                     confidence = best.second,
                     top3 = top3
                 )
-            } catch (e: Exception) {
-                Log.e(TAG, "Inference exception", e)
+            } catch (e: Throwable) {
+                Log.e(TAG, "Inference exception: ${e.message}", e)
             }
         }
 
