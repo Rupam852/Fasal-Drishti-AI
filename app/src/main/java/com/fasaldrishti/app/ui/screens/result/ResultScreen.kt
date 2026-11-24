@@ -98,24 +98,46 @@ fun ResultScreen(
 
     val isUnrecognized = scan?.predictedClass == "Unrecognized_Disease"
 
+    val isHindi = uiState.currentLanguage == AppLanguage.HINDI
+
     val effectiveDiseaseName = if (isUnrecognized) {
         strings.unrecognizedDiseaseTitle
     } else {
-        uiState.translatedDossier?.diseaseName ?: (scan?.diseaseName ?: "")
+        uiState.translatedDossier?.diseaseName ?: (
+            if (isHindi && !diseaseInfo?.diseaseHindi.isNullOrBlank()) {
+                diseaseInfo?.diseaseHindi!!
+            } else {
+                scan?.diseaseName ?: ""
+            }
+        )
     }
     val effectiveSymptoms = if (isUnrecognized) {
         strings.unrecognizedSymptoms
     } else {
-        uiState.translatedDossier?.symptoms ?: (scan?.symptoms?.ifBlank {
-            diseaseInfo?.symptoms ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces."
-        } ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces.")
+        uiState.translatedDossier?.symptoms ?: (
+            if (isHindi && !diseaseInfo?.symptomsHindi.isNullOrBlank()) {
+                diseaseInfo?.symptomsHindi!!
+            } else {
+                scan?.symptoms?.ifBlank {
+                    diseaseInfo?.symptoms ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces."
+                } ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces."
+            }
+        )
     }
     val effectiveTreatment = if (isUnrecognized) {
         strings.unrecognizedTreatment
     } else {
-        uiState.translatedDossier?.treatment ?: (scan?.treatment?.ifBlank {
-            diseaseInfo?.treatment ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)."
-        } ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water).")
+        uiState.translatedDossier?.treatment ?: (
+            if (isHindi && !diseaseInfo?.treatmentHindi.isNullOrBlank()) {
+                diseaseInfo?.treatmentHindi!!
+            } else if (scan?.isVerified == true) {
+                scan.treatment.ifBlank { diseaseInfo?.treatment ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)." }
+            } else {
+                diseaseInfo?.treatment ?: scan?.treatment?.ifBlank {
+                    "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)."
+                } ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)."
+            }
+        )
     }
     val effectivePrevention = uiState.translatedDossier?.prevention ?: (
         diseaseInfo?.prevention ?: "Spray 5% Neem oil extract, prune and destroy severely infected leaves, and maintain proper crop spacing."
@@ -565,20 +587,20 @@ fun ResultScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 20.dp),
                                 shape = RoundedCornerShape(18.dp),
-                                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.45f),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.35f))
+                                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.50f),
+                                border = BorderStroke(1.2.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.55f))
                             ) {
                                 Column(
                                     modifier = Modifier.padding(14.dp)
                                 ) {
                                     Row(
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalAlignment = Alignment.Top
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Info,
+                                            imageVector = Icons.Default.WarningAmber,
                                             contentDescription = "Notice",
                                             tint = MaterialTheme.colorScheme.tertiary,
-                                            modifier = Modifier.size(20.dp)
+                                            modifier = Modifier.size(22.dp).padding(top = 1.dp)
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
@@ -586,13 +608,14 @@ fun ResultScreen(
                                             style = MaterialTheme.typography.bodySmall.copy(
                                                 color = MaterialTheme.colorScheme.onTertiaryContainer,
                                                 fontSize = 12.sp,
-                                                lineHeight = 16.5.sp
+                                                lineHeight = 17.sp,
+                                                fontWeight = FontWeight.Medium
                                             ),
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
 
-                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Spacer(modifier = Modifier.height(12.dp))
 
                                     // Button for 2nd Online Multimodal Verification directly inside this alert
                                     Button(
@@ -639,6 +662,41 @@ fun ResultScreen(
                                             )
                                         }
                                     }
+                                }
+                            }
+                        }
+                    } else {
+                        // 2.2 VERIFIED SAFETY ADVISORY (Shown after 2nd Online Verification is successfully completed)
+                        item {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp),
+                                shape = RoundedCornerShape(18.dp),
+                                color = EmeraldPrimary.copy(alpha = 0.12f),
+                                border = BorderStroke(1.2.dp, EmeraldPrimary.copy(alpha = 0.5f))
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.VerifiedUser,
+                                        contentDescription = "Verified Advisory",
+                                        tint = EmeraldPrimary,
+                                        modifier = Modifier.size(22.dp).padding(top = 1.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = strings.professionalAdvisoryNotice,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            fontSize = 12.sp,
+                                            lineHeight = 17.sp,
+                                            fontWeight = FontWeight.Medium
+                                        ),
+                                        modifier = Modifier.weight(1f)
+                                    )
                                 }
                             }
                         }
@@ -820,7 +878,7 @@ fun ResultScreen(
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
                             AccordionCard(
-                                title = "Disease Symptoms & Identification",
+                                title = strings.resultSymptoms,
                                 icon = Icons.Default.Coronavirus,
                                 content = effectiveSymptoms,
                                 initiallyExpanded = true,
@@ -828,7 +886,7 @@ fun ResultScreen(
                             )
 
                             AccordionCard(
-                                title = "Chemical Fungicide & Spray Dosages",
+                                title = strings.resultChemicalTreatment,
                                 icon = Icons.Default.Science,
                                 content = effectiveTreatment,
                                 initiallyExpanded = true,
@@ -836,7 +894,7 @@ fun ResultScreen(
                             )
 
                             AccordionCard(
-                                title = "Organic / Desi Remedies & Prevention",
+                                title = strings.resultOrganicSolution,
                                 icon = Icons.Default.Shield,
                                 content = effectivePrevention,
                                 initiallyExpanded = false,

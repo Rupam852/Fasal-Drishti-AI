@@ -379,9 +379,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Dark brown water-soaked lesions on leaves and stems, white fungal mold underneath in humid fog.",
             symptomsHindi = "पत्तियों और तनों पर गहरे भूरे रंग के धब्बे, नम मौसम में सफेद फफूंद।",
-            treatment = "Apply Mancozeb 75 WP (2.5 g/L) or Metalaxyl + Mancozeb (Ridomil MZ @ 2 g/L).",
-            treatmentHindi = "मैनकोजेब (2.5 ग्राम/लीटर) या मेटालैक्सिल + मैनकोजेब (2 ग्राम/लीटर) का छिड़काव करें।",
-            prevention = "Ensure good air circulation, avoid overhead sprinkler irrigation, practice crop rotation."
+            treatment = "Apply Metalaxyl 8% + Mancozeb 64% WP (Ridomil Gold @ 2.5g/L, 35-40g per 15L tank) or Cymoxanil 8% + Mancozeb 64% WP @ 2g/L. Ensure complete leaf coverage.",
+            treatmentHindi = "मेटालैक्सिल 8% + मैनकोजेब 64% WP (रिडोमिल गोल्ड @ 2.5 ग्राम/लीटर, 35-40 ग्राम प्रति 15L टंकी) का तुरंत छिड़काव करें। पत्तियों को ऊपर-नीचे पूरा भिगोएं।",
+            prevention = "Organic: Trichoderma viride foliar spray @ 5g/L. Sanitation: Remove infected plants immediately, avoid overhead sprinkler watering, ensure proper row spacing."
         ),
         DiseaseInfo(
             classId = "Tomato___Early_blight",
@@ -393,9 +393,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Concentric dark brown rings forming target-board spots on older lower leaves.",
             symptomsHindi = "पुरानी पत्तियों पर भूरे रंग के छल्लेदार धब्बे।",
-            treatment = "Spray Chlorothalonil or Copper oxychloride (3 g/L) at 7-10 day intervals.",
-            treatmentHindi = "कॉपर ऑक्सीक्लोराइड (3 ग्राम/लीटर) का छिड़काव करें।",
-            prevention = "Mulch the soil surface around plants to stop soil splash, avoid leaf moisture."
+            treatment = "Spray Mancozeb 75% WP @ 2.5g/L (35-40g per 15L tank) or Copper Oxychloride 50% WP @ 3g/L. For severe spread, spray Azoxystrobin 23% SC @ 1ml/L. Repeat every 8-10 days.",
+            treatmentHindi = "मैनकोजेब 75% WP @ 2.5 ग्राम/लीटर (35-40 ग्राम प्रति 15L टंकी) या कॉपर ऑक्सीक्लोराइड @ 3 ग्राम/लीटर का छिड़काव करें। 8-10 दिन के अंतराल पर दोहराएं।",
+            prevention = "Organic: Spray 5% Neem oil (5ml/L) or sour buttermilk (500ml/15L). Sanitation: Prune lower leaves touching soil, use straw mulch to stop soil-splash, stake plants."
         ),
         DiseaseInfo(
             classId = "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
@@ -407,9 +407,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Severe leaf curling, cup-shaped deformation, yellowing margins, bushy stunted plant.",
             symptomsHindi = "पत्तियों का मुड़ना, किनारों का पीला पड़ना, पौधे का बौना रह जाना और फल न लगना।",
-            treatment = "Control whitefly vector with Imidacloprid 17.8 SL @ 0.5 ml/L or Acetamiprid 20 SP @ 0.3 g/L.",
-            treatmentHindi = "सफेद मक्खी नियंत्रण हेतु इमिडाक्लोप्रिड (0.5 मिली/लीटर) या एसिटामिप्रिड का छिड़काव करें।",
-            prevention = "Install yellow sticky traps, grow silver reflective mulch."
+            treatment = "Target whitefly vector: Spray Imidacloprid 17.8% SL @ 0.5ml/L (7-8ml per 15L tank) or Diafenthiuron 50% WP @ 1.2g/L. Add surfactant sticker for rainfastness.",
+            treatmentHindi = "सफेद मक्खी नियंत्रण हेतु इमिडाक्लोप्रिड 17.8% SL @ 0.5 मिली/लीटर (7-8 मिली प्रति 15L टंकी) या डायफेंथियूरॉन 50% WP @ 1.2 ग्राम/लीटर का छिड़काव करें।",
+            prevention = "Install 15-20 yellow sticky traps per acre, rogue out early infected stunted plants, use silver reflective plastic mulch."
         ),
         DiseaseInfo(
             classId = "Tomato___Bacterial_spot",
@@ -421,9 +421,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Small, dark greasy spots with yellow halos on leaves and fruits.",
             symptomsHindi = "पत्तियों पर छोटे, काले तैलीय धब्बे जिनके चारों ओर पीला घेरा होता है।",
-            treatment = "Apply Copper Hydroxide (2.5 g/L) mixed with Streptocycline (0.5 g/10L).",
-            treatmentHindi = "कॉपर हाइड्रॉक्साइड के साथ स्ट्रेप्टोसाइक्लिन (0.5 ग्राम / 10 लीटर) का छिड़काव करें।",
-            prevention = "Use certified disease-free seeds, avoid overhead watering."
+            treatment = "Apply Copper Hydroxide (2.5 g/L, 35g per 15L tank) mixed with Streptocycline (1g per 10L water). Repeat after 10 days.",
+            treatmentHindi = "कॉपर हाइड्रॉक्साइड (2.5 ग्राम/लीटर) के साथ स्ट्रेप्टोसाइक्लिन (1 ग्राम प्रति 10 लीटर पानी) का घोल बनाकर छिड़कें।",
+            prevention = "Use certified disease-free seeds, avoid overhead watering, disinfect pruning shears."
         ),
         DiseaseInfo(
             classId = "Tomato___healthy",
@@ -453,9 +453,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Water-soaked lesions on leaf margins rapidly turning black, white fungal growth underneath in cool foggy weather.",
             symptomsHindi = "पत्तियों के किनारों पर काले पानीदार धब्बे, कोहरे में सफेद फफूंद।",
-            treatment = "Apply Cymoxanil + Mancozeb (Curzate @ 2.5 g/L) or Dimethomorph 50 WP @ 1 g/L.",
-            treatmentHindi = "साइमोक्सानिल + मैनकोजेब (2.5 ग्राम/लीटर) या डाइमथोमोर्फ का तुरंत छिड़काव करें।",
-            prevention = "Plant certified disease-free seed tubers (Kufri Girdhari, Kufri Khyati)."
+            treatment = "Urgent: Spray Cymoxanil + Mancozeb (Curzate @ 2.5g/L, 35-40g per 15L tank) or Dimethomorph 50% WP @ 1g/L (15g/15L tank). Spray within 24 hours of cool foggy weather.",
+            treatmentHindi = "अति आवश्यक: साइमोक्सानिल + मैनकोजेब (कर्जेट @ 2.5 ग्राम/लीटर, 35-40 ग्राम प्रति 15L टंकी) या डाइमथोमोर्फ @ 1 ग्राम/लीटर का कोहरे या नम मौसम में तुरंत छिड़काव करें।",
+            prevention = "Organic: Spray 5% Neem oil (5ml/L) or Trichoderma viride. Sanitation: Destroy infected foliage 10 days before harvest, plant certified blight-resistant tubers (Kufri Girdhari)."
         ),
         DiseaseInfo(
             classId = "Potato___Early_blight",
@@ -467,9 +467,9 @@ class DiseaseRepositoryImpl(
             isHealthy = false,
             symptoms = "Dark brown circular spots with concentric target-board rings on older foliage.",
             symptomsHindi = "पुरानी पत्तियों पर भूरे छल्लेदार धब्बे।",
-            treatment = "Spray Mancozeb 75 WP @ 2.5 g/L or Propineb 70 WP @ 2 g/L.",
-            treatmentHindi = "मैनकोजेब 75 WP (2.5 ग्राम/लीटर) या प्रोपिनेब का छिड़काव करें।",
-            prevention = "Follow 3-year crop rotation, hill up soil well to protect tubers."
+            treatment = "Spray Mancozeb 75% WP @ 2.5g/L (35-40g per 15L knapsack tank) or Propineb 70% WP @ 2g/L. In advanced spread, apply Azoxystrobin + Difenoconazole @ 1ml/L. Repeat after 8-10 days.",
+            treatmentHindi = "मैनकोजेब 75% WP @ 2.5 ग्राम/लीटर (35-40 ग्राम प्रति 15L टंकी) या प्रोपिनेब @ 2 ग्राम/लीटर का छिड़काव करें। उग्र स्थिति में एजॉक्सीस्ट्रोबिन + डाइफेनोकोनाजोल @ 1 मिली/लीटर डालें। 8-10 दिन बाद दोहराएं।",
+            prevention = "Organic: Spray 5% Neem oil (5ml/L) or sour buttermilk (500ml/15L tank). Sanitation: Destroy infected lower leaves, avoid overhead watering, follow 3-year crop rotation."
         ),
         DiseaseInfo(
             classId = "Potato___healthy",

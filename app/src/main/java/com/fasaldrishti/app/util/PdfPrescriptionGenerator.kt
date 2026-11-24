@@ -2,8 +2,11 @@ package com.fasaldrishti.app.util
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import androidx.core.content.FileProvider
@@ -46,20 +49,63 @@ object PdfPrescriptionGenerator {
 
         var y = 135f
 
-        // 2. Patient / Crop Diagnosis Card
+        // 2. Patient / Crop Diagnosis Card with Plant Photo
+        val cardHeight = 115f
         paint.color = Color.parseColor("#f1f5f9")
-        canvas.drawRoundRect(25f, y, 570f, y + 100f, 12f, 12f, paint)
+        canvas.drawRoundRect(25f, y, 570f, y + cardHeight, 12f, 12f, paint)
+
+        // Scanned Plant Photo Loading & Embedding
+        var photoDrawn = false
+        val photoSize = 95f
+        val photoX = 455f
+        val photoY = y + 10f
+
+        if (scan.imageUrl.isNotBlank()) {
+            try {
+                val cleanPath = scan.imageUrl.removePrefix("file://")
+                val imgFile = File(cleanPath)
+                if (imgFile.exists()) {
+                    val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                    BitmapFactory.decodeFile(imgFile.absolutePath, boundsOptions)
+                    var sampleSize = 1
+                    while (boundsOptions.outWidth / (sampleSize * 2) >= 200) {
+                        sampleSize *= 2
+                    }
+                    val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+                    val rawBmp = BitmapFactory.decodeFile(imgFile.absolutePath, decodeOptions)
+                    if (rawBmp != null) {
+                        val scaledBmp = Bitmap.createScaledBitmap(rawBmp, photoSize.toInt(), photoSize.toInt(), true)
+
+                        // Draw photo frame background
+                        paint.color = Color.parseColor("#cbd5e1")
+                        canvas.drawRoundRect(photoX - 2f, photoY - 2f, photoX + photoSize + 2f, photoY + photoSize + 2f, 8f, 8f, paint)
+
+                        // Draw photo
+                        canvas.drawBitmap(scaledBmp, photoX, photoY, null)
+
+                        // Photo subtitle
+                        paint.color = Color.parseColor("#64748b")
+                        paint.textSize = 7.5f
+                        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                        canvas.drawText("SCANNED SPECIMEN", photoX + 6f, photoY + photoSize + 11f, paint)
+                        photoDrawn = true
+                    }
+                }
+            } catch (_: Exception) {
+                photoDrawn = false
+            }
+        }
 
         paint.color = Color.parseColor("#0f172a")
-        paint.textSize = 14f
+        paint.textSize = 13.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("DIAGNOSIS & CROP HEALTH SUMMARY", 40f, y + 25f, paint)
+        canvas.drawText("DIAGNOSIS & CROP HEALTH SUMMARY", 40f, y + 24f, paint)
 
-        paint.textSize = 12f
+        paint.textSize = 11.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         paint.color = Color.parseColor("#334155")
-        canvas.drawText("Target Crop: ${scan.cropName.ifBlank { "Crop Leaf" }}", 40f, y + 50f, paint)
-        canvas.drawText("Identified Disease: ${scan.diseaseName.ifBlank { scan.predictedClass }}", 40f, y + 70f, paint)
+        canvas.drawText("Target Crop: ${scan.cropName.ifBlank { "Crop Leaf" }}", 40f, y + 46f, paint)
+        canvas.drawText("Identified Disease: ${scan.diseaseName.ifBlank { scan.predictedClass }}", 40f, y + 66f, paint)
 
         val confPct = (scan.confidence * 100).toInt()
         val severityColor = when (scan.severity.lowercase()) {
@@ -69,11 +115,22 @@ object PdfPrescriptionGenerator {
         }
         paint.color = severityColor
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("Severity: ${scan.severity.ifBlank { "Moderate" }.uppercase()}", 340f, y + 50f, paint)
+        val statsX = if (photoDrawn) 275f else 340f
+        canvas.drawText("Severity: ${scan.severity.ifBlank { "Moderate" }.uppercase()}", statsX, y + 46f, paint)
         paint.color = Color.parseColor("#0284c7")
-        canvas.drawText("AI Confidence: $confPct%", 340f, y + 70f, paint)
+        canvas.drawText("AI Confidence: $confPct%", statsX, y + 66f, paint)
 
-        y += 120f
+        // Verification Badge
+        paint.textSize = 10f
+        if (scan.isVerified) {
+            paint.color = Color.parseColor("#059669")
+            canvas.drawText("✓ Verified with 2nd Multimodal AI", 40f, y + 88f, paint)
+        } else {
+            paint.color = Color.parseColor("#d97706")
+            canvas.drawText("⚡ On-Device Rapid Field Screening", 40f, y + 88f, paint)
+        }
+
+        y += cardHeight + 20f
 
         // 3. Observed Symptoms
         paint.color = Color.parseColor("#0f172a")
@@ -148,23 +205,24 @@ object PdfPrescriptionGenerator {
 
         y += 20f
 
-        // 6. Agro-Weather Spray Safety Notice
+        // 6. Certified Agronomist Advisory & Weather Notice
         paint.color = Color.parseColor("#fffbeb")
-        canvas.drawRoundRect(25f, y, 570f, y + 55f, 10f, 10f, paint)
+        canvas.drawRoundRect(25f, y, 570f, y + 65f, 10f, 10f, paint)
         paint.style = Paint.Style.STROKE
         paint.color = Color.parseColor("#f59e0b")
-        canvas.drawRoundRect(25f, y, 570f, y + 55f, 10f, 10f, paint)
+        canvas.drawRoundRect(25f, y, 570f, y + 65f, 10f, 10f, paint)
         paint.style = Paint.Style.FILL
 
         paint.color = Color.parseColor("#b45309")
-        paint.textSize = 11f
+        paint.textSize = 10.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("⚠️ SPRAY WEATHER ADVISORY", 40f, y + 20f, paint)
+        canvas.drawText("⚠️ CERTIFIED AGRONOMIST & SPRAY SAFETY ADVISORY", 40f, y + 20f, paint)
 
         paint.color = Color.parseColor("#78350f")
-        paint.textSize = 9.5f
+        paint.textSize = 9f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-        canvas.drawText("Do not spray in heavy winds (>15 km/h) or under direct midday sun (>35°C). Ideal time: 6:00 AM - 9:30 AM.", 40f, y + 38f, paint)
+        canvas.drawText("Confirm symptoms & tank dose with a certified KVK agronomist or Kisan Helpline (1800-180-1551) before purchase.", 40f, y + 37f, paint)
+        canvas.drawText("Ideal Spray Time: 6:30 AM - 9:30 AM in calm weather. Do not spray during high winds (>15 km/h) or direct midday heat.", 40f, y + 52f, paint)
 
         // 7. Footer
         paint.color = Color.parseColor("#94a3b8")
