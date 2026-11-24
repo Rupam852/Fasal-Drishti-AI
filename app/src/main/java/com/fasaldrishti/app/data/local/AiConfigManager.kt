@@ -41,7 +41,7 @@ data class AiConfigState(
     val secondaryProvider: AiProvider = AiProvider.NVIDIA,
     val geminiModel: String = "gemini-3.5-flash-lite",
     val geminiApiKey: String = "",
-    val nvidiaModel: String = "meta/llama-3.2-11b-vision-instruct",
+    val nvidiaModel: String = "nvidia/nemotron-3.5-bolt-e4b",
     val nvidiaApiKey: String = ""
 )
 
@@ -77,10 +77,10 @@ class AiConfigManager(private val context: Context) {
         )
 
         val AVAILABLE_NVIDIA_MODELS = listOf(
-            AiModelOption("meta/llama-3.2-11b-vision-instruct", "Llama 3.2 11B Vision", "Ultra-fast multimodal crop pathology (Recommended • ~2.5s)", true),
-            AiModelOption("microsoft/phi-3.5-vision-instruct", "Phi-3.5 Vision", "Compact lightweight vision engine (~1.8s)"),
-            AiModelOption("meta/llama-3.2-90b-vision-instruct", "Llama 3.2 90B Vision", "Deep visual reasoning for complex foliar symptoms"),
-            AiModelOption("nvidia/nemotron-3.5-super-vl-120b-a12b", "Nemotron 3.5 Super VL", "Heavy multimodal vision & leaf pathology fallback")
+            AiModelOption("nvidia/nemotron-3.5-bolt-e4b", "Nemotron 3.5 Bolt E4B", "Ultra-fast multimodal vision & agronomy (Recommended • ~1.4s)", true),
+            AiModelOption("minimaxai/minimax-m3.1-flash", "MiniMax M3.1 Flash", "Low-latency multimodal vision & leaf analysis (~1.8s)"),
+            AiModelOption("nvidia/nemotron-3.5-lightning-30b-a3b", "Nemotron 3.5 Lightning 30B", "Fast reasoning & multilingual translation (~0.8s)"),
+            AiModelOption("nvidia/nemotron-3.5-super-vl-120b-a12b", "Nemotron 3.5 Super VL", "Heavy MoE 120B multimodal fallback (Deep analysis • ~15s)")
         )
     }
 
@@ -95,10 +95,10 @@ class AiConfigManager(private val context: Context) {
         
         val geminiModel = prefs.getString(KEY_GEMINI_MODEL, "gemini-3.5-flash-lite") ?: "gemini-3.5-flash-lite"
         val geminiKey = prefs.getString(KEY_GEMINI_API_KEY, "") ?: ""
-        val rawNvidiaModel = prefs.getString(KEY_NVIDIA_MODEL, "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
-        // Auto-migrate legacy text-only models (Llama 70B & Mistral Large) to Llama 3.2 11B Vision
-        val nvidiaModel = if (rawNvidiaModel.contains("llama-3.1-70b") || rawNvidiaModel.contains("mistral-large")) {
-            "meta/llama-3.2-11b-vision-instruct"
+        val rawNvidiaModel = prefs.getString(KEY_NVIDIA_MODEL, "nvidia/nemotron-3.5-bolt-e4b") ?: "nvidia/nemotron-3.5-bolt-e4b"
+        // Auto-migrate legacy/retired models (llama-3.2, llama-3.1, phi-3.5, mistral-large) to Nemotron 3.5 Bolt
+        val nvidiaModel = if (rawNvidiaModel.contains("llama-3") || rawNvidiaModel.contains("phi-3.5") || rawNvidiaModel.contains("mistral-large")) {
+            "nvidia/nemotron-3.5-bolt-e4b"
         } else {
             rawNvidiaModel
         }
@@ -333,9 +333,10 @@ class AiConfigManager(private val context: Context) {
 
         val modelsToTest = listOf(
             primaryModelName,
-            "meta/llama-3.2-11b-vision-instruct",
-            "microsoft/phi-3.5-vision-instruct",
-            "meta/llama-3.2-90b-vision-instruct"
+            "nvidia/nemotron-3.5-bolt-e4b",
+            "minimaxai/minimax-m3.1-flash",
+            "nvidia/nemotron-3.5-lightning-30b-a3b",
+            "nvidia/nemotron-3.5-super-vl-120b-a12b"
         ).distinct()
 
         var lastError = "All NVIDIA models unavailable"

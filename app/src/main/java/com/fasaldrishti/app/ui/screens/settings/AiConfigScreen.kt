@@ -345,7 +345,7 @@ fun AiConfigScreen(
                             // Default Engine 2: NVIDIA NIM
                             DefaultEngineItem(
                                 title = "Secondary: NVIDIA NIM Agronomy",
-                                subtitle = "meta/llama-3.2-11b-vision-instruct • Fast multimodal leaf pathology & diagnosis (~2.5s)",
+                                subtitle = "nvidia/nemotron-3.5-bolt-e4b • Ultra-fast multimodal vision & diagnosis (~1.4s)",
                                 icon = Icons.Default.Memory,
                                 badge = "Standby",
                                 badgeColor = SolarGold
@@ -382,7 +382,7 @@ fun AiConfigScreen(
 
                                         // Test NVIDIA Default with Cascade
                                         val defaultNvidiaKey = supabaseManager?.getRemoteConfig("nvidia_nim_api_key", "") ?: ""
-                                        val defaultNvidiaModel = supabaseManager?.getRemoteConfig("nvidia_model_name", "meta/llama-3.2-11b-vision-instruct") ?: "meta/llama-3.2-11b-vision-instruct"
+                                        val defaultNvidiaModel = supabaseManager?.getRemoteConfig("nvidia_model_name", "nvidia/nemotron-3.5-bolt-e4b") ?: "nvidia/nemotron-3.5-bolt-e4b"
                                         val nvidiaRes = aiConfigManager.testNvidiaCascade(defaultNvidiaModel, defaultNvidiaKey)
                                         results.add(nvidiaRes)
                                         diagnosticResults = results.toList()

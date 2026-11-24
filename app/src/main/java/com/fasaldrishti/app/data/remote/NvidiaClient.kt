@@ -46,15 +46,15 @@ class NvidiaClient(
         val config = aiConfigManager?.configState?.value
         if (config?.isCustomMode == true && config.nvidiaModel.isNotBlank()) {
             val m = config.nvidiaModel
-            if (!m.contains("llama-3.1-70b") && !m.contains("mistral-large")) {
+            if (!m.contains("llama-3") && !m.contains("phi-3.5") && !m.contains("mistral-large")) {
                 return m
             }
         }
         val remote = supabaseManager?.getRemoteConfig("nvidia_model_name", "") ?: ""
-        if (remote.isNotBlank() && !remote.contains("llama-3.1-70b") && !remote.contains("mistral-large")) {
+        if (remote.isNotBlank() && !remote.contains("llama-3") && !remote.contains("phi-3.5") && !remote.contains("mistral-large")) {
             return remote
         }
-        return "meta/llama-3.2-11b-vision-instruct"
+        return "nvidia/nemotron-3.5-bolt-e4b"
     }
 
     private fun compressAndEncodeImage(imageFile: File): String {
@@ -163,8 +163,10 @@ class NvidiaClient(
             val primaryModel = resolveModelName()
             val candidateModels = listOf(
                 primaryModel,
-                "meta/llama-3.2-11b-vision-instruct",
-                "microsoft/phi-3.5-vision-instruct"
+                "nvidia/nemotron-3.5-bolt-e4b",
+                "minimaxai/minimax-m3.1-flash",
+                "nvidia/nemotron-3.5-lightning-30b-a3b",
+                "nvidia/nemotron-3.5-super-vl-120b-a12b"
             ).distinct()
 
             var lastError: Exception = Exception("Could not obtain vision verification response")
