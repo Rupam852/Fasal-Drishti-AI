@@ -86,6 +86,34 @@
   --shadow-glow: 0 0 35px rgba(52, 211, 153, 0.22);
 }
 
+[data-theme="dark"] .brand-tag {
+  background: rgba(16, 185, 129, 0.16);
+  color: var(--emerald-400);
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+[data-theme="dark"] .floating-badge {
+  background: rgba(16, 25, 20, 0.92);
+  border-color: var(--border-card);
+  color: var(--slate-800);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .app-bottom-nav {
+  background: rgba(16, 25, 20, 0.96);
+  border-top-color: rgba(52, 211, 153, 0.2);
+}
+
+[data-theme="dark"] .phone-status-bar {
+  background: #101914;
+  color: var(--slate-600);
+}
+
+[data-theme="dark"] .phone-app-header {
+  background: #101914;
+  border-bottom-color: rgba(52, 211, 153, 0.15);
+}
+
 /* ==========================================================================
    Base & Reset
    ========================================================================== */
@@ -1616,9 +1644,20 @@ h1, h2, h3, h4, h5, h6 {
    ========================================================================== */
 
 .site-footer {
-  background: #FFFFFF;
-  border-top: 1px solid var(--slate-200);
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-card);
   padding: 70px 0 30px;
+  transition: var(--transition);
+}
+
+.footer-farmer-badge {
+  font-size: 0.85rem;
+  color: var(--emerald-700);
+  font-weight: 700;
+}
+
+[data-theme="dark"] .footer-farmer-badge {
+  color: var(--emerald-400);
 }
 
 .footer-grid {
