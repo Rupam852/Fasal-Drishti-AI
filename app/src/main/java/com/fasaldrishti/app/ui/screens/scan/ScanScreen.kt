@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,10 +42,25 @@ fun ScanScreen(
     viewModel: ScanViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToAnalyzing: (String) -> Unit,
-    onScanComplete: (ScanRecord) -> Unit
+    onScanComplete: (ScanRecord) -> Unit,
+    languageManager: com.fasaldrishti.app.data.local.LanguageManager? = null,
+    networkMonitor: com.fasaldrishti.app.util.NetworkMonitor? = null,
+    scanSettingsManager: com.fasaldrishti.app.data.local.ScanSettingsManager? = null
 ) {
     val context = LocalContext.current
     val scanState by viewModel.scanState.collectAsState()
+
+    val currentAppLanguage by languageManager?.currentLanguage?.collectAsState()
+        ?: remember { mutableStateOf(com.fasaldrishti.app.data.local.AppLanguage.ENGLISH) }
+    val strings = com.fasaldrishti.app.ui.localization.getAppStrings(currentAppLanguage)
+
+    val isNetworkConnected by networkMonitor?.isConnected?.collectAsState()
+        ?: remember { mutableStateOf(false) }
+    val isOnlineVerificationEnabled by scanSettingsManager?.isOnlineVerificationEnabled?.collectAsState()
+        ?: remember { mutableStateOf(true) }
+
+    val isOfflineModeActive = !isNetworkConnected || !isOnlineVerificationEnabled
+    var showOfflineAlert by rememberSaveable { mutableStateOf(true) }
 
     var flashMode by remember { mutableStateOf(ImageCapture.FLASH_MODE_OFF) }
     var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
@@ -56,7 +72,7 @@ fun ScanScreen(
     var isCapturing by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(3500)
+        delay(4000)
         showHelperText = false
     }
 
@@ -137,11 +153,11 @@ fun ScanScreen(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(EmeraldPrimary)
+                            .background(if (isOfflineModeActive) SolarGold else EmeraldPrimary)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "AI OPTICAL SENSOR",
+                        text = if (isOfflineModeActive) "⚡ OFFLINE AI (62)" else "AI OPTICAL SENSOR",
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
@@ -165,14 +181,84 @@ fun ScanScreen(
             }
         }
 
-        // Guide Pill
+        // Offline Mode Smart Alert Banner (Multilingual & Dismissible)
         AnimatedVisibility(
-            visible = showHelperText,
+            visible = isOfflineModeActive && showOfflineAlert,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { -it / 2 }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { -it / 2 }),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 70.dp, start = 16.dp, end = 16.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = Color.Black.copy(alpha = 0.82f),
+                border = androidx.compose.foundation.BorderStroke(1.2.dp, SolarGold.copy(alpha = 0.75f)),
+                shadowElevation = 10.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(SolarGold.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "⚡",
+                            fontSize = 17.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = strings.cameraOfflineAlertTitle,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = SolarGold,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 13.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = strings.cameraOfflineAlertDesc,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = Color.White.copy(alpha = 0.92f),
+                                fontSize = 11.sp,
+                                lineHeight = 14.sp
+                            )
+                        )
+                    }
+                    IconButton(
+                        onClick = { showOfflineAlert = false },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Dismiss",
+                            tint = Color.White.copy(alpha = 0.75f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Guide Pill (Visible when online or after offline banner is dismissed)
+        AnimatedVisibility(
+            visible = showHelperText && (!isOfflineModeActive || !showOfflineAlert),
             enter = fadeIn() + slideInVertically(),
             exit = fadeOut(),
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 90.dp)
+                .statusBarsPadding()
+                .padding(top = 70.dp)
         ) {
             Surface(
                 shape = RoundedCornerShape(20.dp),

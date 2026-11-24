@@ -114,7 +114,9 @@ data class Strings(
     val unrecognizedDiseaseTitle: String = "Unrecognized Crop Condition",
     val unrecognizedCropName: String = "Uncataloged Crop",
     val unrecognizedSymptoms: String = "This crop variety or disease pattern is not in the 43 offline leaf categories. To prevent crop damage from improper chemical sprays, specific identification is required.",
-    val unrecognizedTreatment: String = "Please connect to internet and tap '2nd Online Verification' above to identify this condition using Multimodal AI, or consult Kisan Helpline (1800-180-1551)."
+    val unrecognizedTreatment: String = "Please connect to internet and tap '2nd Online Verification' above to identify this condition using Multimodal AI, or consult Kisan Helpline (1800-180-1551).",
+    val cameraOfflineAlertTitle: String = "Offline AI Mode Active",
+    val cameraOfflineAlertDesc: String = "Align a diseased crop leaf inside the frame in bright light. (62 crop diseases supported offline)"
 )
 
 val EnglishStrings = Strings(
@@ -297,7 +299,9 @@ val HindiStrings = Strings(
     unrecognizedDiseaseTitle = "अज्ञात फसल स्थिति (Unlisted Disease)",
     unrecognizedCropName = "असूचीबद्ध फसल",
     unrecognizedSymptoms = "यह फसल या रोग ऑफ़लाइन डेटाबेस (43 मुख्य पत्ती रोगों) में शामिल नहीं है। गलत कीटनाशक के छिड़काव से फसल के नुकसान से बचने के लिए, सटीक पहचान आवश्यक है।",
-    unrecognizedTreatment = "कृपया इंटरनेट कनेक्ट करें और ऊपर दिए गए 'द्वितीय ऑनलाइन सत्यापन' बटन को दबाएं, या किसान कॉल सेंटर (1800-180-1551) अथवा नजदीकी KVK से सलाह लें।"
+    unrecognizedTreatment = "कृपया इंटरनेट कनेक्ट करें और ऊपर दिए गए 'द्वितीय ऑनलाइन सत्यापन' बटन को दबाएं, या किसान कॉल सेंटर (1800-180-1551) अथवा नजदीकी KVK से सलाह लें।",
+    cameraOfflineAlertTitle = "ऑफलाइन एआई मोड सक्रिय",
+    cameraOfflineAlertDesc = "फसल की पत्ती को कैमरे के फ्रेम में रखें और अच्छी रोशनी में फोटो लें। (62 फसल रोगों का ऑफलाइन इलाज उपलब्ध)"
 )
 
 val BengaliStrings = Strings(
@@ -380,7 +384,9 @@ val BengaliStrings = Strings(
     unrecognizedDiseaseTitle = "অজ্ঞাত ফসলের অবস্থা",
     unrecognizedCropName = "তালিকাবহির্ভূত ফসল",
     unrecognizedSymptoms = "এই ফসলের জাত বা রোগের ধরণটি অফলাইন ডাটাবেসে নেই। ভুল রাসায়নিক স্প্রে থেকে ফসলের ক্ষতি রোধ করতে সঠিক শনাক্তকরণ প্রয়োজন।",
-    unrecognizedTreatment = "দয়া করে ইন্টারনেট সংযোগ করুন এবং উপরের '২য় অনলাইন যাচাইকরণ' বোতামটি আলতো চাপুন, অথবা কিষাণ কল সেন্টারে (১৮০০-১৮০-১৫৫১) যোগাযোগ করুন।"
+    unrecognizedTreatment = "দয়া করে ইন্টারনেট সংযোগ করুন এবং উপরের '২য় অনলাইন যাচাইকরণ' বোতামটি আলতো চাপুন, অথবা কিষাণ কল সেন্টারে (১৮০০-১৮০-১৫৫১) যোগাযোগ করুন।",
+    cameraOfflineAlertTitle = "অফলাইন এআই সক্রিয়",
+    cameraOfflineAlertDesc = "আক্রান্ত ফসলের পাতাটি ক্যামেরার ফ্রেমের মাঝে রাখুন এবং পরিষ্কার আলোতে স্পষ্ট ছবি তুলুন। (৬২টি ফসলের রোগ অফলাইনে সনাক্তযোগ্য)"
 )
 
 val PunjabiStrings = Strings(

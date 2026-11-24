@@ -187,7 +187,10 @@ fun AppNavHost(
                         navController.navigate(Screen.Result.createRoute(scanRecord.id)) {
                             popUpTo(Screen.Scan.route) { inclusive = true }
                         }
-                    }
+                    },
+                    languageManager = languageManager,
+                    networkMonitor = networkMonitor,
+                    scanSettingsManager = scanSettingsManager
                 )
             }
 
