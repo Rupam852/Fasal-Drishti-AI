@@ -60,6 +60,7 @@ class RemindersViewModel(
         viewModelScope.launch {
             reminderRepository.markCompleted(id)
             CropReminderWorker.dismissNotification(context, id)
+            com.fasaldrishti.app.worker.FarmAlarmScheduler.cancelReminder(context, id)
         }
     }
 
@@ -68,12 +69,17 @@ class RemindersViewModel(
             val pauseUntil = System.currentTimeMillis() + (days * 24L * 3600L * 1000L)
             reminderRepository.setPaused(id, true, pauseUntil)
             CropReminderWorker.dismissNotification(context, id)
+            com.fasaldrishti.app.worker.FarmAlarmScheduler.cancelReminder(context, id)
         }
     }
 
     fun resumeReminder(id: String) {
         viewModelScope.launch {
             reminderRepository.setPaused(id, false, 0L)
+            val reminder = reminderRepository.getReminderById(id)
+            if (reminder != null && !reminder.isCompleted) {
+                com.fasaldrishti.app.worker.FarmAlarmScheduler.scheduleReminder(context, reminder)
+            }
         }
     }
 
@@ -81,6 +87,7 @@ class RemindersViewModel(
         viewModelScope.launch {
             reminderRepository.deleteReminder(id)
             CropReminderWorker.dismissNotification(context, id)
+            com.fasaldrishti.app.worker.FarmAlarmScheduler.cancelReminder(context, id)
         }
     }
 
@@ -163,6 +170,7 @@ class RemindersViewModel(
                 needsTranslation = false
             )
             reminderRepository.saveReminder(readyReminder)
+            com.fasaldrishti.app.worker.FarmAlarmScheduler.scheduleReminder(context, readyReminder)
         }
     }
 
@@ -192,6 +200,7 @@ class RemindersViewModel(
                 needsTranslation = false
             )
             reminderRepository.saveReminder(readyReminder)
+            com.fasaldrishti.app.worker.FarmAlarmScheduler.scheduleReminder(context, readyReminder)
         }
     }
 
@@ -243,26 +252,7 @@ class RemindersViewModel(
             else -> Pair("🌾 Fasal Drishti Background Test ✅", "[10-SEC TEST] Success! Notification arrived while app was closed or in background.")
         }
 
-        val alarmManager = context.getSystemService(android.content.Context.ALARM_SERVICE) as? android.app.AlarmManager
-        val intent = android.content.Intent(context, com.fasaldrishti.app.worker.TestReminderReceiver::class.java).apply {
-            putExtra("test_title", title)
-            putExtra("test_message", msg)
-        }
-        val pendingIntent = android.app.PendingIntent.getBroadcast(
-            context,
-            com.fasaldrishti.app.worker.TestReminderReceiver.TEST_NOTIFICATION_ID,
-            intent,
-            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val triggerAt = System.currentTimeMillis() + 10000L // exactly 10 seconds
-        if (alarmManager != null) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
-            } else {
-                alarmManager.set(android.app.AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
-            }
-        }
+        com.fasaldrishti.app.worker.FarmAlarmScheduler.schedule10SecondTest(context, title, msg)
         android.widget.Toast.makeText(context, "⏰ 10-Second Countdown Started! Close/minimize app now to test.", android.widget.Toast.LENGTH_LONG).show()
     }
 

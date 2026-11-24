@@ -434,10 +434,13 @@ class NvidiaClient(
             if (response.isSuccessful) {
                 val responseString = response.body?.string() ?: ""
                 val jsonObj = JSONObject(responseString)
-                val choices = jsonObj.getJSONArray("choices")
-                if (choices.length() > 0) {
-                    val content = choices.getJSONObject(0).getJSONObject("message").getString("content")
-                    val parsed = parseTranslationJson(content, languageCode)
+                val choices = jsonObj.optJSONArray("choices")
+                if (choices != null && choices.length() > 0) {
+                    val msgObj = choices.getJSONObject(0).optJSONObject("message")
+                    val content = msgObj?.optString("content", "") ?: ""
+                    val reasoning = msgObj?.optString("reasoning_content", "") ?: ""
+                    val rawText = if (content.isNotBlank() && content != "null") content else reasoning
+                    val parsed = parseTranslationJson(rawText, languageCode)
                     if (parsed != null) {
                         return@withContext Result.success(parsed)
                     }

@@ -87,6 +87,26 @@ class ResultViewModel(
             return
         }
 
+        // Instant offline Hindi fallback from disease database
+        if (targetLanguage == AppLanguage.HINDI && !diseaseInfo?.diseaseHindi.isNullOrBlank()) {
+            val hindiDossier = TranslatedDossier(
+                languageCode = "hi",
+                diseaseName = diseaseInfo?.diseaseHindi ?: scan.diseaseName,
+                symptoms = diseaseInfo?.symptomsHindi ?: scan.symptoms,
+                treatment = diseaseInfo?.treatmentHindi ?: scan.treatment,
+                prevention = diseaseInfo?.prevention ?: "5% नीम तेल का छिड़काव करें"
+            )
+            translationManager?.saveTranslatedDossier(currentScanId, hindiDossier)
+            translationManager?.setSavedLanguage(currentScanId, "hi")
+            _uiState.value = _uiState.value.copy(
+                currentLanguage = AppLanguage.HINDI,
+                translatedDossier = hindiDossier,
+                isTranslating = false,
+                translationMessage = null
+            )
+            return
+        }
+
         // Check if already in cache
         val cached = translationManager?.getTranslatedDossier(currentScanId, targetLanguage.code)
         if (cached != null) {
@@ -103,6 +123,7 @@ class ResultViewModel(
         // Execute AI Translation
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
+                currentLanguage = targetLanguage,
                 isTranslating = true,
                 translationMessage = "Translating diagnosis into ${targetLanguage.nativeName} with AI..."
             )

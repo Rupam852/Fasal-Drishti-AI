@@ -57,7 +57,7 @@ class GeminiClient(
         if (remoteModel.isNotBlank() && !remoteModel.contains("3.7-flash") && !remoteModel.contains("2.5-flash")) {
             return remoteModel
         }
-        return "gemini-3.5-flash-lite"
+        return "gemini-3.5-flash"
     }
 
     /**
@@ -200,11 +200,10 @@ class GeminiClient(
             // Cascading fallback across tested active Gemini models (prioritizing 1.4s ultra-fast models)
             val modelsToTry = listOf(
                 primaryModel,
-                "gemini-3.5-flash-lite",
-                "gemini-flash-lite-latest",
-                "gemini-3.1-flash-lite",
                 "gemini-3.5-flash",
-                "gemini-3.7-flash"
+                "gemini-3.5-flash-lite",
+                "gemini-flash-latest",
+                "gemini-3.8-flash"
             ).distinct()
 
             for (model in modelsToTry) {
@@ -382,11 +381,10 @@ class GeminiClient(
 
             val modelsToTry = listOf(
                 primaryModel,
-                "gemini-3.5-flash-lite",
-                "gemini-flash-lite-latest",
-                "gemini-3.1-flash-lite",
                 "gemini-3.5-flash",
-                "gemini-3.7-flash"
+                "gemini-3.5-flash-lite",
+                "gemini-flash-latest",
+                "gemini-3.8-flash"
             ).distinct()
 
             for (model in modelsToTry) {
@@ -523,11 +521,10 @@ class GeminiClient(
 
             val modelsToTry = listOf(
                 primaryModel,
-                "gemini-3.5-flash-lite",
-                "gemini-flash-lite-latest",
-                "gemini-3.1-flash-lite",
                 "gemini-3.5-flash",
-                "gemini-3.7-flash"
+                "gemini-3.5-flash-lite",
+                "gemini-flash-latest",
+                "gemini-3.8-flash"
             ).distinct()
 
             for (model in modelsToTry) {

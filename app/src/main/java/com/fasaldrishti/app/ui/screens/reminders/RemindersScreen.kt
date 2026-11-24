@@ -41,6 +41,24 @@ fun RemindersScreen(
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
     val isTranslating by viewModel.isTranslating.collectAsState()
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var isIgnoringBattery by remember { mutableStateOf(com.fasaldrishti.app.util.BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)) }
+    var canScheduleExact by remember { mutableStateOf(com.fasaldrishti.app.util.BatteryOptimizationHelper.canScheduleExactAlarms(context)) }
+
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                isIgnoringBattery = com.fasaldrishti.app.util.BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)
+                canScheduleExact = com.fasaldrishti.app.util.BatteryOptimizationHelper.canScheduleExactAlarms(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     var activeFilter by remember { mutableStateOf<ReminderType?>(null) }
     var showLanguageMenu by remember { mutableStateOf(false) }
 
@@ -479,6 +497,129 @@ fun RemindersScreen(
                                             fontSize = 11.sp
                                         )
                                     )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Text(
+                            text = "🔋 Background Delivery & Battery Settings (Android 14/15)",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "To guarantee notifications arrive on time after swiping the app away, allow background activity below:",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.sp
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Battery Optimization Status & Toggle
+                        Surface(
+                            onClick = {
+                                com.fasaldrishti.app.util.BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(context)
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isIgnoringBattery) Color(0xFFECFDF5) else Color(0xFFFFFBEB),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (isIgnoringBattery) Color(0xFF10B981).copy(alpha = 0.5f) else Color(0xFFF59E0B).copy(alpha = 0.5f)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = if (isIgnoringBattery) Icons.Default.CheckCircle else Icons.Default.BatteryAlert,
+                                    contentDescription = null,
+                                    tint = if (isIgnoringBattery) Color(0xFF059669) else Color(0xFFD97706),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = if (isIgnoringBattery) "Background Activity: Unrestricted ✅" else "Disable Battery Optimization ⚡",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isIgnoringBattery) Color(0xFF047857) else Color(0xFFB45309),
+                                            fontSize = 12.5.sp
+                                        )
+                                    )
+                                    Text(
+                                        text = if (isIgnoringBattery) "App is allowed to deliver alerts when closed or idle" else "Tap here to allow timely alerts when app is swiped away",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            fontSize = 10.5.sp
+                                        )
+                                    )
+                                }
+                                if (!isIgnoringBattery) {
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = Color(0xFFD97706)
+                                    ) {
+                                        Text(
+                                            text = "Allow",
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!canScheduleExact) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Surface(
+                                onClick = {
+                                    com.fasaldrishti.app.util.BatteryOptimizationHelper.openExactAlarmSettings(context)
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                color = Color(0xFFFEF2F2),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Warning,
+                                        contentDescription = null,
+                                        tint = Color(0xFFDC2626),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Enable Exact Alarms Permission ⏰",
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFB91C1C),
+                                                fontSize = 12.5.sp
+                                            )
+                                        )
+                                        Text(
+                                            text = "Tap to grant Alarms & Reminders permission",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                fontSize = 10.5.sp
+                                            )
+                                        )
+                                    }
                                 }
                             }
                         }

@@ -51,8 +51,6 @@ data class IndianCropCategory(
 fun CropLibraryScreen(
     diseaseRepository: DiseaseRepository,
     languageManager: LanguageManager? = null,
-    geminiClient: com.fasaldrishti.app.data.remote.GeminiClient? = null,
-    nvidiaClient: com.fasaldrishti.app.data.remote.NvidiaClient? = null,
     onNavigateBack: () -> Unit,
     onNavigateToChat: ((String) -> Unit)? = null
 ) {
@@ -65,57 +63,6 @@ fun CropLibraryScreen(
     var diseases by remember { mutableStateOf<List<DiseaseInfo>>(emptyList()) }
     var selectedDiseaseForSheet by remember { mutableStateOf<DiseaseInfo?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    val cachedDossiers = remember { mutableStateMapOf<String, com.fasaldrishti.app.data.local.TranslatedDossier>() }
-    var isTranslatingSheet by remember { mutableStateOf(false) }
-
-    // Automatic AI Translation for Bottom Sheet Dossier when regional language (Bengali, Marathi, etc.) is active
-    LaunchedEffect(selectedDiseaseForSheet, localLangCode) {
-        val d = selectedDiseaseForSheet
-        if (d != null && localLangCode != "en" && localLangCode != "hi") {
-            val cacheKey = "${d.classId}_$localLangCode"
-            if (!cachedDossiers.containsKey(cacheKey)) {
-                val targetLang = AppLanguage.entries.find { it.code == localLangCode }
-                if (targetLang != null && (geminiClient != null || nvidiaClient != null)) {
-                    isTranslatingSheet = true
-                    try {
-                        val result = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                            var res: Result<com.fasaldrishti.app.data.local.TranslatedDossier>? = null
-                            if (geminiClient != null) {
-                                res = geminiClient.translateDossier(
-                                    languageCode = targetLang.code,
-                                    targetLanguageName = targetLang.englishName,
-                                    targetLanguageNative = targetLang.nativeName,
-                                    diseaseName = d.diseaseName,
-                                    symptoms = d.symptoms,
-                                    treatment = d.treatment,
-                                    prevention = d.prevention
-                                )
-                            }
-                            if ((res == null || res.isFailure) && nvidiaClient != null) {
-                                res = nvidiaClient.translateDossier(
-                                    languageCode = targetLang.code,
-                                    targetLanguageName = targetLang.englishName,
-                                    targetLanguageNative = targetLang.nativeName,
-                                    diseaseName = d.diseaseName,
-                                    symptoms = d.symptoms,
-                                    treatment = d.treatment,
-                                    prevention = d.prevention
-                                )
-                            }
-                            res
-                        }
-                        if (result != null && result.isSuccess) {
-                            cachedDossiers[cacheKey] = result.getOrThrow()
-                        }
-                    } catch (_: Exception) {
-                    } finally {
-                        isTranslatingSheet = false
-                    }
-                }
-            }
-        }
-    }
 
     val languages = listOf(
         "en" to "English",
@@ -163,15 +110,16 @@ fun CropLibraryScreen(
 
     val filteredDiseases = diseases.filter { d ->
         val query = searchQuery.trim()
+        val dossier = CropLibraryLocalization.getLocalizedDossier(d, localLangCode)
         val matchesSearch = query.isBlank() ||
+                dossier.diseaseName.contains(query, ignoreCase = true) ||
+                dossier.cropName.contains(query, ignoreCase = true) ||
                 d.diseaseName.contains(query, ignoreCase = true) ||
                 (d.diseaseHindi?.contains(query, ignoreCase = true) == true) ||
                 d.cropName.contains(query, ignoreCase = true) ||
                 (d.cropHindi?.contains(query, ignoreCase = true) == true) ||
-                d.symptoms.contains(query, ignoreCase = true) ||
-                (d.symptomsHindi?.contains(query, ignoreCase = true) == true) ||
-                d.treatment.contains(query, ignoreCase = true) ||
-                (d.treatmentHindi?.contains(query, ignoreCase = true) == true)
+                dossier.symptoms.contains(query, ignoreCase = true) ||
+                dossier.treatment.contains(query, ignoreCase = true)
 
         val matchesCategory = selectedCategoryId == "All" ||
                 d.cropName.contains(selectedCategoryId, ignoreCase = true) ||
@@ -408,19 +356,10 @@ fun CropLibraryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(filteredDiseases) { disease ->
-                    val displayCropName = getSimpleCropName(disease.cropName, localLangCode).uppercase()
-                    val cardCacheKey = "${disease.classId}_$localLangCode"
-                    val cardCached = cachedDossiers[cardCacheKey]
-                    val displayDiseaseName = when {
-                        localLangCode == "hi" -> disease.diseaseHindi ?: disease.diseaseName
-                        cardCached != null -> cardCached.diseaseName
-                        else -> disease.diseaseName
-                    }
-                    val displayTreatment = when {
-                        localLangCode == "hi" -> disease.treatmentHindi ?: disease.treatment
-                        cardCached != null -> cardCached.treatment
-                        else -> disease.treatment
-                    }
+                    val dossier = CropLibraryLocalization.getLocalizedDossier(disease, localLangCode)
+                    val displayCropName = dossier.cropName.uppercase()
+                    val displayDiseaseName = dossier.diseaseName
+                    val displayTreatment = dossier.treatment
 
                     Card(
                         modifier = Modifier
@@ -502,7 +441,7 @@ fun CropLibraryScreen(
             }
         }
 
-        // Bottom Sheet Detailed Diagnostic Dossier
+        // Bottom Sheet Detailed Diagnostic Dossier (100% Instant Offline)
         if (selectedDiseaseForSheet != null) {
             ModalBottomSheet(
                 onDismissRequest = { selectedDiseaseForSheet = null },
@@ -511,30 +450,13 @@ fun CropLibraryScreen(
                 containerColor = MaterialTheme.colorScheme.surface
             ) {
                 val d = selectedDiseaseForSheet!!
-                val sheetCacheKey = "${d.classId}_$localLangCode"
-                val sheetCached = cachedDossiers[sheetCacheKey]
+                val dossier = CropLibraryLocalization.getLocalizedDossier(d, localLangCode)
 
-                val sheetCrop = getSimpleCropName(d.cropName, localLangCode).uppercase()
-                val sheetDisease = when {
-                    localLangCode == "hi" -> d.diseaseHindi ?: d.diseaseName
-                    sheetCached != null -> sheetCached.diseaseName
-                    else -> d.diseaseName
-                }
-                val sheetSymptoms = when {
-                    localLangCode == "hi" -> d.symptomsHindi ?: d.symptoms
-                    sheetCached != null -> sheetCached.symptoms
-                    else -> d.symptoms
-                }
-                val sheetTreatment = when {
-                    localLangCode == "hi" -> d.treatmentHindi ?: d.treatment
-                    sheetCached != null -> sheetCached.treatment
-                    else -> d.treatment
-                }
-                val sheetPrevention = when {
-                    localLangCode == "hi" -> d.prevention
-                    sheetCached != null -> sheetCached.prevention
-                    else -> d.prevention
-                }
+                val sheetCrop = dossier.cropName.uppercase()
+                val sheetDisease = dossier.diseaseName
+                val sheetSymptoms = dossier.symptoms
+                val sheetTreatment = dossier.treatment
+                val sheetPrevention = dossier.prevention
 
                 Column(
                     modifier = Modifier
@@ -567,33 +489,6 @@ fun CropLibraryScreen(
                             )
                         }
                         SeverityBadge(severity = d.severity)
-                    }
-
-                    if (isTranslatingSheet) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = EmeraldPrimary.copy(alpha = 0.12f),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    strokeWidth = 2.dp,
-                                    color = EmeraldPrimary
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    text = "AI translating into ${languages.find { it.first == localLangCode }?.second ?: ""}...",
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = EmeraldPrimary
-                                    )
-                                )
-                            }
-                        }
                     }
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
@@ -641,7 +536,16 @@ fun CropLibraryScreen(
                             Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (localLangCode == "hi") "AI सलाहकार से पूछें" else if (localLangCode == "bn") "AI পরামর্শদাতার সাথে কথা বলুন" else "Consult AI Salahkar",
+                                text = when (localLangCode) {
+                                    "hi" -> "AI सलाहकार से पूछें"
+                                    "bn" -> "AI পরামর্শদাতার সাথে কথা বলুন"
+                                    "mr" -> "AI सल्लागाराशी बोला"
+                                    "pa" -> "AI ਸਲਾਹਕਾਰ ਨਾਲ ਗੱਲ ਕਰੋ"
+                                    "gu" -> "AI સલાહકાર સાથે વાત કરો"
+                                    "te" -> "AI సలహాదారుని సంప్రదించండి"
+                                    "ta" -> "AI ஆலோசகருடன் பேசுங்கள்"
+                                    else -> "Consult AI Salahkar"
+                                },
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )

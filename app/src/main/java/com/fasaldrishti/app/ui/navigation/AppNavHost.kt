@@ -267,8 +267,8 @@ fun AppNavHost(
                     ResultViewModel(
                         scanRepository = scanRepository,
                         diseaseRepository = diseaseRepository,
-                        geminiClient = app?.geminiClient,
-                        nvidiaClient = app?.nvidiaClient,
+                        geminiClient = app?.geminiClient ?: geminiClient,
+                        nvidiaClient = app?.nvidiaClient ?: nvidiaClient,
                         translationManager = app?.scanTranslationManager
                     )
                 }
@@ -447,8 +447,6 @@ fun AppNavHost(
                 CropLibraryScreen(
                     diseaseRepository = diseaseRepository,
                     languageManager = languageManager,
-                    geminiClient = geminiClient,
-                    nvidiaClient = nvidiaClient,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToChat = { contextMsg ->
                         navController.navigate(Screen.Chat.createRoute(contextMsg))
