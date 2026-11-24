@@ -348,19 +348,26 @@ fun ChatScreen(
                             expanded = showLanguageMenu,
                             onDismissRequest = { showLanguageMenu = false },
                             modifier = Modifier
+                                .width(220.dp)
+                                .heightIn(max = 380.dp)
+                                .shadow(10.dp, RoundedCornerShape(22.dp))
+                                .clip(RoundedCornerShape(22.dp))
                                 .background(MaterialTheme.colorScheme.surface)
-                                .heightIn(max = 360.dp)
+                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), RoundedCornerShape(22.dp))
                         ) {
                             Text(
-                                text = "🌐 AI Response Language",
+                                text = "🌐 AI RESPONSE LANGUAGE",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = EmeraldPrimary
+                                    color = EmeraldPrimary,
+                                    letterSpacing = 0.6.sp,
+                                    fontSize = 10.5.sp
                                 ),
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
                             )
-                            HorizontalDivider(modifier = Modifier.padding(bottom = 4.dp))
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
                             supportedLanguages.forEach { lang ->
+                                val isSelected = uiState.selectedLanguage == lang
                                 DropdownMenuItem(
                                     text = {
                                         Row(
@@ -371,11 +378,11 @@ fun ChatScreen(
                                             Text(
                                                 text = if (lang == "English") "English (Default)" else lang,
                                                 style = MaterialTheme.typography.bodyMedium.copy(
-                                                    fontWeight = if (uiState.selectedLanguage == lang) FontWeight.Bold else FontWeight.Normal,
-                                                    color = if (uiState.selectedLanguage == lang) EmeraldPrimary else MaterialTheme.colorScheme.onSurface
+                                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                                    color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.onSurface
                                                 )
                                             )
-                                            if (uiState.selectedLanguage == lang) {
+                                            if (isSelected) {
                                                 Icon(
                                                     imageVector = Icons.Default.Check,
                                                     contentDescription = null,
@@ -388,7 +395,11 @@ fun ChatScreen(
                                     onClick = {
                                         viewModel.setResponseLanguage(lang)
                                         showLanguageMenu = false
-                                    }
+                                    },
+                                    modifier = Modifier
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(if (isSelected) EmeraldPrimary.copy(alpha = 0.10f) else Color.Transparent)
                                 )
                             }
                         }

@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -548,40 +550,72 @@ fun AiConfigScreen(
                                 )
                                 ExposedDropdownMenu(
                                     expanded = geminiDropdownExpanded,
-                                    onDismissRequest = { geminiDropdownExpanded = false }
+                                    onDismissRequest = { geminiDropdownExpanded = false },
+                                    modifier = Modifier
+                                        .shadow(8.dp, RoundedCornerShape(20.dp))
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
                                 ) {
                                     AiConfigManager.AVAILABLE_GEMINI_MODELS.forEach { model ->
+                                        val isSelected = selectedGeminiModel == model.id
                                         DropdownMenuItem(
                                             text = {
                                                 Column {
                                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                                         Text(
                                                             text = model.name,
-                                                            fontWeight = FontWeight.Bold
+                                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold,
+                                                            color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.onSurface
                                                         )
                                                         if (model.isRecommended) {
                                                             Spacer(modifier = Modifier.width(6.dp))
-                                                            Text(
-                                                                text = "★ Best",
-                                                                color = EmeraldPrimary,
-                                                                fontSize = 11.sp,
-                                                                fontWeight = FontWeight.ExtraBold
-                                                            )
+                                                            Surface(
+                                                                shape = RoundedCornerShape(6.dp),
+                                                                color = EmeraldPrimary.copy(alpha = 0.15f)
+                                                            ) {
+                                                                Text(
+                                                                    text = "★ Best",
+                                                                    color = EmeraldPrimary,
+                                                                    fontSize = 10.sp,
+                                                                    fontWeight = FontWeight.ExtraBold,
+                                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                                )
+                                                            }
                                                         }
                                                     }
                                                     Text(
                                                         text = model.description,
                                                         style = MaterialTheme.typography.bodySmall.copy(
-                                                            fontSize = 10.5.sp,
+                                                            fontSize = 11.sp,
                                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                                         )
                                                     )
                                                 }
                                             },
+                                            leadingIcon = {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(28.dp)
+                                                        .clip(CircleShape)
+                                                        .background(if (isSelected) EmeraldPrimary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    if (isSelected) {
+                                                        Icon(Icons.Default.Check, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(16.dp))
+                                                    } else {
+                                                        Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
+                                                    }
+                                                }
+                                            },
                                             onClick = {
                                                 selectedGeminiModel = model.id
                                                 geminiDropdownExpanded = false
-                                            }
+                                            },
+                                            modifier = Modifier
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(if (isSelected) EmeraldPrimary.copy(alpha = 0.10f) else Color.Transparent)
                                         )
                                     }
                                 }
@@ -695,40 +729,72 @@ fun AiConfigScreen(
                                 )
                                 ExposedDropdownMenu(
                                     expanded = nvidiaDropdownExpanded,
-                                    onDismissRequest = { nvidiaDropdownExpanded = false }
+                                    onDismissRequest = { nvidiaDropdownExpanded = false },
+                                    modifier = Modifier
+                                        .shadow(8.dp, RoundedCornerShape(20.dp))
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
                                 ) {
                                     AiConfigManager.AVAILABLE_NVIDIA_MODELS.forEach { model ->
+                                        val isSelected = selectedNvidiaModel == model.id
                                         DropdownMenuItem(
                                             text = {
                                                 Column {
                                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                                         Text(
                                                             text = model.name,
-                                                            fontWeight = FontWeight.Bold
+                                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold,
+                                                            color = if (isSelected) SolarGold else MaterialTheme.colorScheme.onSurface
                                                         )
                                                         if (model.isRecommended) {
                                                             Spacer(modifier = Modifier.width(6.dp))
-                                                            Text(
-                                                                text = "★ Best",
-                                                                color = SolarGold,
-                                                                fontSize = 11.sp,
-                                                                fontWeight = FontWeight.ExtraBold
-                                                            )
+                                                            Surface(
+                                                                shape = RoundedCornerShape(6.dp),
+                                                                color = SolarGold.copy(alpha = 0.15f)
+                                                            ) {
+                                                                Text(
+                                                                    text = "★ Best",
+                                                                    color = SolarGold,
+                                                                    fontSize = 10.sp,
+                                                                    fontWeight = FontWeight.ExtraBold,
+                                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                                )
+                                                            }
                                                         }
                                                     }
                                                     Text(
                                                         text = model.description,
                                                         style = MaterialTheme.typography.bodySmall.copy(
-                                                            fontSize = 10.5.sp,
+                                                            fontSize = 11.sp,
                                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                                         )
                                                     )
                                                 }
                                             },
+                                            leadingIcon = {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(28.dp)
+                                                        .clip(CircleShape)
+                                                        .background(if (isSelected) SolarGold.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    if (isSelected) {
+                                                        Icon(Icons.Default.Check, contentDescription = null, tint = SolarGold, modifier = Modifier.size(16.dp))
+                                                    } else {
+                                                        Icon(Icons.Default.Memory, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
+                                                    }
+                                                }
+                                            },
                                             onClick = {
                                                 selectedNvidiaModel = model.id
                                                 nvidiaDropdownExpanded = false
-                                            }
+                                            },
+                                            modifier = Modifier
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(if (isSelected) SolarGold.copy(alpha = 0.10f) else Color.Transparent)
                                         )
                                     }
                                 }

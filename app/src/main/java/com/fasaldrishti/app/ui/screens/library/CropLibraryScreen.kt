@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -174,56 +176,152 @@ fun CropLibraryScreen(
                         )
                     }
 
-                    // Language Selector Pill with Dropdown
+                    // Language Selector Pill with Modern Dropdown
                     Box {
+                        val rotation by androidx.compose.animation.core.animateFloatAsState(
+                            targetValue = if (showLanguageDropdown) 180f else 0f,
+                            label = "lang_chevron"
+                        )
+
                         Surface(
-                            onClick = { showLanguageDropdown = true },
-                            shape = RoundedCornerShape(20.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer,
+                            onClick = { showLanguageDropdown = !showLanguageDropdown },
+                            shape = RoundedCornerShape(24.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+                            shadowElevation = 2.dp,
                             modifier = Modifier.padding(start = 6.dp)
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Translate,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Translate,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = languages.find { it.first == localLangCode }?.second ?: "English",
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontSize = 11.5.sp
                                     )
                                 )
+                                Spacer(modifier = Modifier.width(2.dp))
                                 Icon(
                                     imageVector = Icons.Default.ArrowDropDown,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .rotate(rotation)
                                 )
                             }
                         }
 
                         DropdownMenu(
                             expanded = showLanguageDropdown,
-                            onDismissRequest = { showLanguageDropdown = false }
+                            onDismissRequest = { showLanguageDropdown = false },
+                            modifier = Modifier
+                                .width(215.dp)
+                                .shadow(10.dp, RoundedCornerShape(22.dp))
+                                .clip(RoundedCornerShape(22.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.18f), RoundedCornerShape(22.dp))
                         ) {
+                            Text(
+                                text = "SELECT LANGUAGE",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                    fontSize = 10.sp,
+                                    letterSpacing = 0.8.sp
+                                ),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+
                             languages.forEach { (code, name) ->
+                                val isSelected = localLangCode == code
+                                val englishSubtitle = when (code) {
+                                    "en" -> "English"
+                                    "hi" -> "Hindi"
+                                    "bn" -> "Bengali"
+                                    "mr" -> "Marathi"
+                                    "pa" -> "Punjabi"
+                                    "te" -> "Telugu"
+                                    "ta" -> "Tamil"
+                                    "gu" -> "Gujarati"
+                                    else -> ""
+                                }
+
                                 DropdownMenuItem(
-                                    text = { Text(name) },
+                                    text = {
+                                        Column {
+                                            Text(
+                                                text = name,
+                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                                    color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.onSurface,
+                                                    fontSize = 13.5.sp
+                                                )
+                                            )
+                                            if (englishSubtitle.isNotBlank() && englishSubtitle != name) {
+                                                Text(
+                                                    text = englishSubtitle,
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                                        fontSize = 10.5.sp
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    },
                                     onClick = {
                                         localLangCode = code
-                                        // Isolated to Crop Pathology Library screen only (does NOT alter global app language)
                                         showLanguageDropdown = false
                                     },
-                                    leadingIcon = if (localLangCode == code) {
-                                        { Icon(Icons.Default.Check, contentDescription = null, tint = EmeraldPrimary) }
-                                    } else null
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(CircleShape)
+                                                .background(if (isSelected) EmeraldPrimary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (isSelected) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    tint = EmeraldPrimary,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = name.take(1),
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(if (isSelected) EmeraldPrimary.copy(alpha = 0.10f) else Color.Transparent)
                                 )
                             }
                         }

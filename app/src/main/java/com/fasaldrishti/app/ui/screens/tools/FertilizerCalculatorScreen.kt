@@ -286,15 +286,39 @@ fun FertilizerCalculatorScreen(
 
                                 DropdownMenu(
                                     expanded = expanded,
-                                    onDismissRequest = { expanded = false }
+                                    onDismissRequest = { expanded = false },
+                                    modifier = Modifier
+                                        .width(180.dp)
+                                        .shadow(8.dp, RoundedCornerShape(18.dp))
+                                        .clip(RoundedCornerShape(18.dp))
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), RoundedCornerShape(18.dp))
                                 ) {
                                     LandUnit.values().forEach { unit ->
+                                        val isSelected = selectedUnit == unit
                                         DropdownMenuItem(
-                                            text = { Text(unit.label) },
+                                            text = {
+                                                Text(
+                                                    text = unit.label,
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                    color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.onSurface
+                                                )
+                                            },
+                                            leadingIcon = {
+                                                if (isSelected) {
+                                                    Icon(Icons.Default.Check, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(18.dp))
+                                                } else {
+                                                    Icon(Icons.Default.SquareFoot, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
+                                                }
+                                            },
                                             onClick = {
                                                 selectedUnit = unit
                                                 expanded = false
-                                            }
+                                            },
+                                            modifier = Modifier
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(if (isSelected) EmeraldPrimary.copy(alpha = 0.10f) else Color.Transparent)
                                         )
                                     }
                                 }

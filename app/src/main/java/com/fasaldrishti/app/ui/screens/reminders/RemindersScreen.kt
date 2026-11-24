@@ -17,6 +17,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -108,55 +110,143 @@ fun RemindersScreen(
                     }
                 },
                 actions = {
-                    // Language Selector Pill for Reminders
+                    // Language Selector Pill for Reminders (Option 1: Modern Popover Card)
                     Box {
+                        val rotation by androidx.compose.animation.core.animateFloatAsState(
+                            targetValue = if (showLanguageMenu) 180f else 0f,
+                            label = "reminder_lang_chevron"
+                        )
+
                         Surface(
-                            onClick = { showLanguageMenu = true },
-                            shape = RoundedCornerShape(20.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer,
+                            onClick = { showLanguageMenu = !showLanguageMenu },
+                            shape = RoundedCornerShape(24.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+                            shadowElevation = 2.dp,
                             modifier = Modifier.padding(end = 12.dp)
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Translate,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Translate,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = languages.find { it.first == selectedLanguage }?.second?.takeWhile { it != ' ' } ?: "English",
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontSize = 11.5.sp
                                     )
                                 )
+                                Spacer(modifier = Modifier.width(2.dp))
                                 Icon(
                                     imageVector = Icons.Default.ArrowDropDown,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .rotate(rotation)
                                 )
                             }
                         }
 
                         DropdownMenu(
                             expanded = showLanguageMenu,
-                            onDismissRequest = { showLanguageMenu = false }
+                            onDismissRequest = { showLanguageMenu = false },
+                            modifier = Modifier
+                                .width(220.dp)
+                                .shadow(10.dp, RoundedCornerShape(22.dp))
+                                .clip(RoundedCornerShape(22.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.18f), RoundedCornerShape(22.dp))
                         ) {
+                            Text(
+                                text = "SELECT LANGUAGE",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                    fontSize = 10.sp,
+                                    letterSpacing = 0.8.sp
+                                ),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+
                             languages.forEach { (code, label) ->
+                                val isSelected = selectedLanguage == code
+                                val primaryName = label.substringBefore(" (")
+                                val englishName = if (label.contains("(")) label.substringAfter("(").substringBefore(")") else label
+
                                 DropdownMenuItem(
-                                    text = { Text(label) },
+                                    text = {
+                                        Column {
+                                            Text(
+                                                text = primaryName,
+                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                                    color = if (isSelected) EmeraldPrimary else MaterialTheme.colorScheme.onSurface,
+                                                    fontSize = 13.5.sp
+                                                )
+                                            )
+                                            if (englishName != primaryName) {
+                                                Text(
+                                                    text = englishName,
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                                        fontSize = 10.5.sp
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    },
                                     onClick = {
                                         viewModel.setReminderLanguage(code)
                                         showLanguageMenu = false
                                     },
-                                    leadingIcon = if (selectedLanguage == code) {
-                                        { Icon(Icons.Default.Check, contentDescription = null, tint = EmeraldPrimary) }
-                                    } else null
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(CircleShape)
+                                                .background(if (isSelected) EmeraldPrimary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (isSelected) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    tint = EmeraldPrimary,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = primaryName.take(1),
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(if (isSelected) EmeraldPrimary.copy(alpha = 0.10f) else Color.Transparent)
                                 )
                             }
                         }
@@ -747,42 +837,98 @@ private fun ReminderCard(
 
                         DropdownMenu(
                             expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
+                            onDismissRequest = { showMenu = false },
+                            modifier = Modifier
+                                .width(190.dp)
+                                .shadow(10.dp, RoundedCornerShape(18.dp))
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.18f), RoundedCornerShape(18.dp))
                         ) {
                             if (reminder.isPaused) {
                                 DropdownMenuItem(
-                                    text = { Text("Resume Reminder") },
+                                    text = { Text("Resume Reminder", fontWeight = FontWeight.SemiBold) },
                                     onClick = {
                                         onResume()
                                         showMenu = false
                                     },
-                                    leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) }
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFECFDF5)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(Icons.Default.PlayArrow, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(16.dp))
+                                        }
+                                    },
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp).clip(RoundedCornerShape(12.dp))
                                 )
                             } else {
                                 DropdownMenuItem(
-                                    text = { Text("Pause for 2 Days") },
+                                    text = { Text("Pause for 2 Days", fontWeight = FontWeight.Medium) },
                                     onClick = {
                                         onPause(2)
                                         showMenu = false
                                     },
-                                    leadingIcon = { Icon(Icons.Default.Pause, contentDescription = null) }
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFFEF3C7)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(Icons.Default.Pause, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(15.dp))
+                                        }
+                                    },
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp).clip(RoundedCornerShape(12.dp))
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Pause for 7 Days") },
+                                    text = { Text("Pause for 7 Days", fontWeight = FontWeight.Medium) },
                                     onClick = {
                                         onPause(7)
                                         showMenu = false
                                     },
-                                    leadingIcon = { Icon(Icons.Default.Pause, contentDescription = null) }
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFFEF3C7)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(Icons.Default.Pause, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(15.dp))
+                                        }
+                                    },
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp).clip(RoundedCornerShape(12.dp))
                                 )
                             }
+
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f), modifier = Modifier.padding(vertical = 4.dp))
+
                             DropdownMenuItem(
-                                text = { Text("Delete", color = Color(0xFFDC2626)) },
+                                text = { Text("Delete", color = Color(0xFFDC2626), fontWeight = FontWeight.Bold) },
                                 onClick = {
                                     onDelete()
                                     showMenu = false
                                 },
-                                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFDC2626)) }
+                                leadingIcon = {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFFFEF2F2)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFDC2626), modifier = Modifier.size(15.dp))
+                                    }
+                                },
+                                modifier = Modifier
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFFEF2F2).copy(alpha = 0.6f))
                             )
                         }
                     }
