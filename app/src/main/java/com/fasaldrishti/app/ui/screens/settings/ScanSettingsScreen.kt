@@ -337,24 +337,6 @@ fun ScanSettingsScreen(
                                 Spacer(modifier = Modifier.width(14.dp))
                                 Column {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        // Left question mark icon in a simple circle
-                                        Surface(
-                                            onClick = onNavigateToOfflineModelInfo,
-                                            shape = CircleShape,
-                                            color = EmeraldPrimary.copy(alpha = 0.12f),
-                                            border = BorderStroke(1.2.dp, EmeraldPrimary.copy(alpha = 0.45f)),
-                                            modifier = Modifier.size(24.dp)
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Text(
-                                                    text = "?",
-                                                    color = EmeraldPrimary,
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 14.sp
-                                                )
-                                            }
-                                        }
-                                        Spacer(modifier = Modifier.width(8.dp))
                                         Text(
                                             text = strings.offlineModelToggleTitle,
                                             style = MaterialTheme.typography.titleMedium.copy(
