@@ -289,25 +289,25 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 76px;
+  height: 56px;
 }
 
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .brand-logo img,
 .brand-logo svg {
-  width: 42px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
 }
 
 .brand-name {
   font-family: var(--font-heading);
-  font-size: 1.45rem;
-  font-weight: 900;
+  font-size: 1.22rem;
+  font-weight: 800;
   color: var(--slate-900);
   display: flex;
   align-items: center;
@@ -315,14 +315,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .brand-tag {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   background: #ECFDF5;
   color: #059669;
   border: 1.2px solid #A7F3D0;
-  padding: 2px 8px;
+  padding: 1px 6px;
   border-radius: var(--radius-full);
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -331,16 +331,16 @@ h1, h2, h3, h4, h5, h6 {
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 24px;
   list-style: none;
 }
 
 .nav-link {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--slate-600);
   position: relative;
-  padding: 6px 0;
+  padding: 4px 0;
 }
 
 .nav-link:hover {
@@ -353,7 +353,7 @@ h1, h2, h3, h4, h5, h6 {
   bottom: 0;
   left: 0;
   width: 0;
-  height: 2.5px;
+  height: 2px;
   background: var(--emerald-500);
   border-radius: var(--radius-full);
   transition: var(--transition);
@@ -366,7 +366,7 @@ h1, h2, h3, h4, h5, h6 {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* Theme Toggle Button (Light/Dark Mode) */
@@ -374,8 +374,8 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-full);
   background: var(--bg-surface);
   border: 1.5px solid var(--border-card);
@@ -391,6 +391,11 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--emerald-600);
   transform: translateY(-2px);
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
+}
+
+.theme-toggle-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .theme-toggle-btn .sun-icon {
@@ -409,16 +414,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .nav-btn {
-  padding: 10px 20px;
-  font-size: 0.9rem;
+  padding: 7px 16px;
+  font-size: 0.85rem;
   border-radius: var(--radius-full);
 }
 
 /* Mobile Menu Toggle Button */
 .menu-toggle-btn {
   display: none;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-md);
