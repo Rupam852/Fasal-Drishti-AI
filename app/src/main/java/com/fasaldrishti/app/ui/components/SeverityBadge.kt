@@ -41,6 +41,12 @@ fun SeverityBadge(
             EmeraldPrimary.copy(alpha = 0.45f),
             EmeraldPrimary
         )
+        "undetermined", "uncataloged", "unknown" -> Quadruple(
+            SolarGold.copy(alpha = 0.18f),
+            SolarGold,
+            SolarGold.copy(alpha = 0.5f),
+            SolarGold
+        )
         else -> Quadruple(
             MaterialTheme.colorScheme.surfaceVariant,
             MaterialTheme.colorScheme.onSurfaceVariant,

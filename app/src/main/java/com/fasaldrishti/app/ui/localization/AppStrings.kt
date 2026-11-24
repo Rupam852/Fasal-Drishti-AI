@@ -110,7 +110,11 @@ data class Strings(
     val btnGoToSettings: String = "Go to Settings",
     val btnClose: String = "Close",
     val chatOfflineNotice: String = "Please connect to the internet to chat with AI Agronomist.",
-    val offlineLeafModelNotice: String = "Offline AI model is specialized for crop leaves. For best accuracy on tubers or fruits, scan a crop leaf or use 2nd Online Verification."
+    val offlineLeafModelNotice: String = "Offline AI model is specialized for crop leaves. For best accuracy on tubers or fruits, scan a crop leaf or use 2nd Online Verification.",
+    val unrecognizedDiseaseTitle: String = "Unrecognized Crop Condition",
+    val unrecognizedCropName: String = "Uncataloged Crop",
+    val unrecognizedSymptoms: String = "This crop variety or disease pattern is not in the 43 offline leaf categories. To prevent crop damage from improper chemical sprays, specific identification is required.",
+    val unrecognizedTreatment: String = "Please connect to internet and tap '2nd Online Verification' above to identify this condition using Multimodal AI, or consult Kisan Helpline (1800-180-1551)."
 )
 
 val EnglishStrings = Strings(
@@ -289,7 +293,11 @@ val HindiStrings = Strings(
     btnGoToSettings = "सेटिंग्स पर जाएं",
     btnClose = "बंद करें",
     chatOfflineNotice = "AI कृषि सलाहकार से चैट करने के लिए कृपया इंटरनेट से कनेक्ट करें।",
-    offlineLeafModelNotice = "ऑफ़लाइन AI मॉडल फसल की पत्तियों के लिए विशेष रूप से बना है। कंद या फलों के सटीक परिणाम के लिए पत्ती स्कैन करें या 2nd ऑनलाइन सत्यापन का उपयोग करें।"
+    offlineLeafModelNotice = "ऑफ़लाइन AI मॉडल फसल की पत्तियों के लिए विशेष रूप से बना है। कंद या फलों के सटीक परिणाम के लिए पत्ती स्कैन करें या 2nd ऑनलाइन सत्यापन का उपयोग करें।",
+    unrecognizedDiseaseTitle = "अज्ञात फसल स्थिति (Unlisted Disease)",
+    unrecognizedCropName = "असूचीबद्ध फसल",
+    unrecognizedSymptoms = "यह फसल या रोग ऑफ़लाइन डेटाबेस (43 मुख्य पत्ती रोगों) में शामिल नहीं है। गलत कीटनाशक के छिड़काव से फसल के नुकसान से बचने के लिए, सटीक पहचान आवश्यक है।",
+    unrecognizedTreatment = "कृपया इंटरनेट कनेक्ट करें और ऊपर दिए गए 'द्वितीय ऑनलाइन सत्यापन' बटन को दबाएं, या किसान कॉल सेंटर (1800-180-1551) अथवा नजदीकी KVK से सलाह लें।"
 )
 
 val BengaliStrings = Strings(
@@ -368,7 +376,11 @@ val BengaliStrings = Strings(
     backButton = "পেছনে",
     closeButton = "বন্ধ",
     applyButton = "প্রয়োগ করুন",
-    offlineLeafModelNotice = "অফলাইন এআই মডেলটি ফসলের পাতার জন্য তৈরি। কন্দ বা ফলের সঠিক ফলাফলের জন্য পাতা স্ক্যান করুন বা ২য় অনলাইন যাচাইকরণ ব্যবহার করুন।"
+    offlineLeafModelNotice = "অফলাইন এআই মডেলটি ফসলের পাতার জন্য তৈরি। কন্দ বা ফলের সঠিক ফলাফলের জন্য পাতা স্ক্যান করুন বা ২য় অনলাইন যাচাইকরণ ব্যবহার করুন।",
+    unrecognizedDiseaseTitle = "অজ্ঞাত ফসলের অবস্থা",
+    unrecognizedCropName = "তালিকাবহির্ভূত ফসল",
+    unrecognizedSymptoms = "এই ফসলের জাত বা রোগের ধরণটি অফলাইন ডাটাবেসে নেই। ভুল রাসায়নিক স্প্রে থেকে ফসলের ক্ষতি রোধ করতে সঠিক শনাক্তকরণ প্রয়োজন।",
+    unrecognizedTreatment = "দয়া করে ইন্টারনেট সংযোগ করুন এবং উপরের '২য় অনলাইন যাচাইকরণ' বোতামটি আলতো চাপুন, অথবা কিষাণ কল সেন্টারে (১৮০০-১৮০-১৫৫১) যোগাযোগ করুন।"
 )
 
 val PunjabiStrings = Strings(

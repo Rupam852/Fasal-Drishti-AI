@@ -96,13 +96,27 @@ fun ResultScreen(
         }
     }
 
-    val effectiveDiseaseName = uiState.translatedDossier?.diseaseName ?: (scan?.diseaseName ?: "")
-    val effectiveSymptoms = uiState.translatedDossier?.symptoms ?: (scan?.symptoms?.ifBlank {
-        diseaseInfo?.symptoms ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces."
-    } ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces.")
-    val effectiveTreatment = uiState.translatedDossier?.treatment ?: (scan?.treatment?.ifBlank {
-        diseaseInfo?.treatment ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)."
-    } ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water).")
+    val isUnrecognized = scan?.predictedClass == "Unrecognized_Disease"
+
+    val effectiveDiseaseName = if (isUnrecognized) {
+        strings.unrecognizedDiseaseTitle
+    } else {
+        uiState.translatedDossier?.diseaseName ?: (scan?.diseaseName ?: "")
+    }
+    val effectiveSymptoms = if (isUnrecognized) {
+        strings.unrecognizedSymptoms
+    } else {
+        uiState.translatedDossier?.symptoms ?: (scan?.symptoms?.ifBlank {
+            diseaseInfo?.symptoms ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces."
+        } ?: "Discolored lesions, leaf necrosis, or mold patches observed on leaf surfaces.")
+    }
+    val effectiveTreatment = if (isUnrecognized) {
+        strings.unrecognizedTreatment
+    } else {
+        uiState.translatedDossier?.treatment ?: (scan?.treatment?.ifBlank {
+            diseaseInfo?.treatment ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water)."
+        } ?: "Spray recommended copper-based or systemic fungicide (e.g. Mancozeb 75% WP @ 2.5g/L water).")
+    }
     val effectivePrevention = uiState.translatedDossier?.prevention ?: (
         diseaseInfo?.prevention ?: "Spray 5% Neem oil extract, prune and destroy severely infected leaves, and maintain proper crop spacing."
     )
