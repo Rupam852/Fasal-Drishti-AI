@@ -104,13 +104,6 @@ The offline model training pipeline and export notebooks are located in [`Fasal-
 │   ├── style.css                       # Responsive design & Dark/Light mode theme
 │   ├── script.js                       # UI controller, language switcher, dataset modal
 │   └── vercel.json                     # Vercel deployment configuration
-├── backend/                            # Optional FastAPI Microservice
-│   ├── app/
-│   │   ├── main.py                     # REST API endpoints
-│   │   ├── model_handler.py            # Image inference pipeline
-│   │   └── disease_db.py               # 38-class agronomy disease encyclopedia
-│   ├── Dockerfile
-│   └── requirements.txt
 ├── supabase/                           # Cloud Database Schemas & Migrations
 │   ├── schema.sql                      # Supabase PostgreSQL tables & RLS policies
 │   └── insert_gemini_key.sql           # Dynamic AI API key vault
